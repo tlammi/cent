@@ -2,6 +2,6 @@
 #include "interface.hpp"
 
 int main() {
-  Interface i{};
-  cent::Cent c{&i};
+    Interface i{};
+    cent::Cent c{&i};
 }

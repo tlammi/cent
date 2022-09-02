@@ -8,11 +8,11 @@ namespace cent {
 
 class Cent {
  public:
-  Cent(Interface* iface);
-  ~Cent();
+    Cent(Interface* iface);
+    ~Cent();
 
  private:
-  class CentImpl;
-  std::unique_ptr<CentImpl> m_impl;
+    class CentImpl;
+    std::unique_ptr<CentImpl> m_impl;
 };
 }  // namespace cent

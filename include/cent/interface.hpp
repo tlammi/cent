@@ -6,10 +6,8 @@ namespace cent {
 
 class Interface {
  public:
-  virtual ~Interface() {}
+    virtual ~Interface() {}
 
-  virtual HttpSession* http_session() = 0;
-
- private:
+    virtual HttpSession* http_session() = 0;
 };
 }  // namespace cent

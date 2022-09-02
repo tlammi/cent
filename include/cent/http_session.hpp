@@ -4,6 +4,6 @@ namespace cent {
 
 class HttpSession {
  public:
-  virtual ~HttpSession() {}
+    virtual ~HttpSession() {}
 };
 }  // namespace cent
