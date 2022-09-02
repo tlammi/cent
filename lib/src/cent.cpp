@@ -18,6 +18,11 @@ class Cent::CentImpl {
  public:
     CentImpl(Interface* iface) : m_iface{iface} {}
 
+    Result pull(std::string_view image) {
+        int code = m_iface->http_session()->get("https://google.com");
+        return {code, "foobar"};
+    }
+
  private:
     Interface* m_iface;
 };
@@ -25,9 +30,6 @@ class Cent::CentImpl {
 Cent::Cent(Interface* iface) : m_impl{new CentImpl(iface)} {}
 Cent::~Cent() {}
 
-Result Cent::pull(std::string_view image) {
-    logs::info("Not implemented yet");
-    return {ENOTSUP, "Not implemented"};
-}
+Result Cent::pull(std::string_view image) { return m_impl->pull(image); }
 
 }  // namespace cent

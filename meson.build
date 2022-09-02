@@ -1,5 +1,6 @@
 project('cent', 'cpp', default_options: ['cpp_std=c++20'])
 
+cmake = import('cmake')
 
 PUBLIC_INCLUDE = include_directories('include')
 
