@@ -1,12 +1,11 @@
 #pragma once
 
 #include "cent.hpp"
-#include "http_session.hpp"
 
 class Interface final : public cent::Interface {
  public:
-    cent::HttpSession* http_session() { return &m_tmp; }
+    cent::HttpSession* http_session() { return m_tmp.get(); }
 
  private:
-    HttpSession m_tmp{};
+    std::unique_ptr<cent::HttpSession> m_tmp{cent::default_http_session()};
 };
