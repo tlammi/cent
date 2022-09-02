@@ -8,6 +8,8 @@
 
 namespace cent {
 
+extern std::reference_wrapper<std::ostream> LOG_STREAM;
+
 class Cent {
  public:
     Cent(Interface* iface);
