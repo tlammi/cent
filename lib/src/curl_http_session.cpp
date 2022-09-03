@@ -9,6 +9,7 @@ namespace cent {
 class CurlHttpSession final : public HttpSession {
  public:
     CurlHttpSession() {}
+    void on_header(std::string_view field, std::string& value) override {}
 
     int get(std::string_view url) override {
         m_easy.setOpt(curlpp::options::Url(std::string(url)));

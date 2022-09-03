@@ -21,7 +21,8 @@ class Cent::CentImpl {
 
     Result pull(std::string_view image) {
         HttpClient client{m_iface->http_session()};
-        int code = client.get("https://google.com");
+        int code = client.get(
+            "https://registry-1.docker.io/v2/ubuntu/manifests/20.04");
         return {code, "foobar"};
     }
 

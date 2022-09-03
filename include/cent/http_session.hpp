@@ -8,6 +8,8 @@ namespace cent {
 class HttpSession {
  public:
     virtual ~HttpSession() {}
+
+    virtual void on_header(std::string_view field, std::string& value) = 0;
     virtual int get(std::string_view url) = 0;
 };
 
