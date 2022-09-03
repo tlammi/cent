@@ -15,6 +15,8 @@ class HttpClient final : public HttpSession {
  public:
     HttpClient(HttpSession* sess);
 
+    int get(std::string_view url) override;
+
  private:
     HttpSession* m_sess;
 };

@@ -3,6 +3,7 @@
 #include <cerrno>
 #include <iostream>
 
+#include "cent/http_client.hpp"
 #include "cent/logs.hpp"
 
 namespace cent {
@@ -19,7 +20,8 @@ class Cent::CentImpl {
     CentImpl(Interface* iface) : m_iface{iface} {}
 
     Result pull(std::string_view image) {
-        int code = m_iface->http_session()->get("https://google.com");
+        HttpClient client{m_iface->http_session()};
+        int code = client.get("https://google.com");
         return {code, "foobar"};
     }
 
