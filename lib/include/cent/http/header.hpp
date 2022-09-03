@@ -1,13 +1,21 @@
 #pragma once
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 
 namespace cent::http {
 
+// TODO: Rename to BasicHeaderField
 template <class StringT>
 class BasicHeader {
  public:
+    static std::optional<BasicHeader> try_parse(StringT value) {
+        auto idx = value.find(':');
+        if (idx == StringT::npos) return std::nullopt;
+        return BasicHeader(std::move(value));
+    }
+
     constexpr BasicHeader() : BasicHeader("") {}
     constexpr BasicHeader(StringT value) : m_value{std::move(value)} {
         if (m_value.empty()) m_value = ":";
@@ -76,4 +84,4 @@ std::ostream& operator<<(std::ostream& os, const BasicHeader<T>& bh) {
 using Header = BasicHeader<std::string>;
 using HeaderView = BasicHeader<std::string_view>;
 
-}  // namespace cent
+}  // namespace cent::http

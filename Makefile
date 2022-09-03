@@ -9,6 +9,8 @@ build:
 
 run: compile
 	cd build && bin/cent
+debug: compile
+	cd build && gdb bin/cent
 
 test: build
 	cd build && meson test
