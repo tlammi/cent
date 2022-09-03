@@ -21,9 +21,12 @@ class Cent::CentImpl {
 
     Result pull(std::string_view image) {
         HttpClient client{m_iface->http_session()};
+        client.set_header_field(
+            "Accept",
+            "application/vnd.docker.distribution.manifest.list.v2+json");
         int code = client.get(
             "https://registry-1.docker.io/v2/library/ubuntu/manifests/20.04");
-        return {code, "foobar"};
+        return {code, std::string(client.get_body())};
     }
 
  private:

@@ -20,7 +20,9 @@ HttpClient::HttpClient(HttpSession* sess) : m_sess{sess} {}
 void HttpClient::on_header(std::string_view field, std::string& value) {}
 
 void HttpClient::set_header_field(std::string_view field,
-                                  std::string_view value) {}
+                                  std::string_view value) {
+    m_sess->set_header_field(field, value);
+}
 
 std::string_view HttpClient::get_body() { return m_sess->get_body(); }
 
