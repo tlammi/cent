@@ -3,6 +3,7 @@
 #include <string>
 
 #include "cent/http/header.hpp"
+#include "cent/http/token.hpp"
 #include "cent/logs.hpp"
 #include "cent/raise.hpp"
 namespace cent {
@@ -18,6 +19,11 @@ constexpr std::string_view strip(std::string_view what, char token) {
 HttpClient::HttpClient(HttpSession* sess) : m_sess{sess} {}
 void HttpClient::on_header(std::string_view field, std::string& value) {}
 
+void HttpClient::set_header_field(std::string_view field,
+                                  std::string_view value) {}
+
+std::string_view HttpClient::get_body() { return m_sess->get_body(); }
+
 int HttpClient::get(std::string_view url) {
     std::string auth_challenge;
     m_sess->on_header("www-authenticate", auth_challenge);
@@ -27,9 +33,26 @@ int HttpClient::get(std::string_view url) {
         if (!auth_challenge.empty()) {
             logs::debug("Got challenge: \'", auth_challenge, '\'');
             http::HeaderView auth_challenge_header(auth_challenge);
-            auto url = auth_challenge_header.sub_value("bearer realm");
-            url = strip(url, '"');
-            raise("auth challenge not implemented yet");
+            auto token_url = auth_challenge_header.sub_value("Bearer realm");
+            auto service = auth_challenge_header.sub_value("service");
+            auto scope = auth_challenge_header.sub_value("scope");
+            token_url = strip(token_url, '"');
+            service = strip(service, '"');
+            scope = strip(scope, '"');
+            auto token_url_str = std::string(token_url) +
+                                 "?service=" + std::string(service) +
+                                 "&scope=" + std::string(scope);
+            res = m_sess->get(token_url_str);
+            if (res != 200)
+                raise("Unsupported status code when accessing ", url, ": ",
+                      200);
+            auto body = m_sess->get_body();
+            auto token = http::Token::parse(body);
+            if (!token) raise("Could not parse token from '", body, "'");
+            logs::debug("token: ", token->token);
+            std::string value = "Bearer " + token->token;
+            m_sess->set_header_field("Authorization", value);
+            return m_sess->get(url);
         }
     }
     raise("Unsupported status code '", res, '\'');

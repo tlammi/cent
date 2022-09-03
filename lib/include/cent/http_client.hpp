@@ -17,6 +17,9 @@ class HttpClient final : public HttpSession {
 
     void on_header(std::string_view field, std::string& value) override;
 
+    void set_header_field(std::string_view field,
+                          std::string_view value) override;
+    std::string_view get_body() override;
     int get(std::string_view url) override;
 
  private:
