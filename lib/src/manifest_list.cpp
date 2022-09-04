@@ -55,6 +55,7 @@ std::ostream& operator<<(std::ostream& os, const ManifestList& mlist) {
         if (!entry.platform.os.empty()) pform["os"] = entry.platform.os;
         if (!entry.platform.variant.empty())
             pform["variant"] = entry.platform.variant;
+        mfest["size"] = entry.size;
         json["manifests"].push_back(std::move(mfest));
     }
     json["mediaType"] = mlist.media_type().mime;

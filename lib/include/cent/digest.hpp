@@ -10,6 +10,7 @@ namespace cent {
 template <class StringT>
 class BasicDigest {
  public:
+    BasicDigest() {}
     BasicDigest(StringT str) : m_str{std::move(str)} {}
 
     std::string_view algo() const noexcept {
@@ -28,7 +29,7 @@ class BasicDigest {
 
  private:
     size_t sep() const noexcept { return m_str.find(':'); }
-    StringT m_str;
+    StringT m_str{};
 };
 
 using Digest = BasicDigest<std::string>;

@@ -33,6 +33,7 @@ class Cent::CentImpl {
             logs::debug(manifest_list);
             raise("no entry: 'amd64'");
         }
+        logs::debug(manifest_list);
         std::string manifest_img_ref{image.repo()};
         manifest_img_ref += "@";
         manifest_img_ref += entry->digest.str();
