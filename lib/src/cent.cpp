@@ -21,19 +21,23 @@ class Cent::CentImpl {
  public:
     CentImpl(Interface* iface) : m_iface{iface} {}
 
-    Result pull(std::string_view image) {
+    Result pull(std::string_view image_ref) {
+        Image image{std::string(image_ref)};
         HttpClient http_client{m_iface};
         RegistryClient client{&http_client};
         std::stringstream ss;
-        ss << client.manifest_list(Image{std::string{image}});
-        return {0, ss.str()};
-
-        // client.set_header_field(
-        //     "Accept",
-        //     "application/vnd.docker.distribution.manifest.list.v2+json");
-        // int code = client.get(
-        //     "https://registry-1.docker.io/v2/library/ubuntu/manifests/20.04");
-        // return {code, std::string(client.get_body())};
+        auto manifest_list = client.manifest_list(image);
+        auto entry =
+            manifest_list.platform_manifest(Platform{"amd64", "linux"});
+        if (!entry) {
+            logs::debug(manifest_list);
+            raise("no entry: 'amd64'");
+        }
+        std::string manifest_img_ref{image.repo()};
+        manifest_img_ref += "@";
+        manifest_img_ref += entry->digest.str();
+        Image manifest_image{manifest_img_ref};
+        return {0, client.manifest(manifest_image)};
     }
 
  private:

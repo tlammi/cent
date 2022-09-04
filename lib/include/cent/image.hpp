@@ -3,6 +3,8 @@
 #include <string>
 #include <string_view>
 
+#include "cent/digest.hpp"
+
 namespace cent {
 
 /**
@@ -74,9 +76,13 @@ class Image {
      */
     std::string_view repo() const noexcept;
 
+    DigestView digest() const noexcept;
+
  private:
     static constexpr inline auto NPOS = std::string::npos;
     size_t tag_separator() const noexcept;
+    size_t digest_separator() const noexcept;
+    size_t ref_separator() const noexcept;
 
     std::string m_str;
 };

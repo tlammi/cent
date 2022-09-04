@@ -24,6 +24,8 @@ class ManifestList {
     MediaType media_type() const noexcept;
     size_t schema_version() const noexcept;
 
+    const Entry* platform_manifest(const Platform& platform) const;
+
  private:
     std::vector<Entry> m_enries{};
     MediaType m_media_type{

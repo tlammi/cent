@@ -42,7 +42,7 @@ class CurlHttpSession final : public HttpSession {
                                                           size_t n) {
             if (auto header =
                     http::HeaderView::try_parse(std::string_view(buf, s * n))) {
-                auto iter = m_on_header.find(header->field_name());
+                auto iter = m_on_header.find(std::string(header->field_name()));
                 if (iter != m_on_header.end())
                     iter->second.get() = header->value();
             }
@@ -60,8 +60,7 @@ class CurlHttpSession final : public HttpSession {
 
  private:
     curlpp::Easy m_easy{};
-    std::map<std::string_view, std::reference_wrapper<std::string>>
-        m_on_header{};
+    std::map<std::string, std::reference_wrapper<std::string>> m_on_header{};
     std::list<std::string> m_headers{};
     std::stringstream m_body{};
 };

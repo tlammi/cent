@@ -18,6 +18,8 @@ class RegistryClient {
 
     ManifestList manifest_list(const Image& img);
 
+    std::string manifest(const Image& img);
+
  private:
     HttpSession* m_sess;
 };

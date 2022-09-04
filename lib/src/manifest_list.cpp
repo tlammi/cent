@@ -30,6 +30,18 @@ MediaType ManifestList::media_type() const noexcept { return m_media_type; }
 size_t ManifestList::schema_version() const noexcept {
     return m_schema_version;
 }
+
+auto ManifestList::platform_manifest(const Platform& platform) const
+    -> const Entry* {
+    for (const auto& manifest : m_enries) {
+        if (platform.architecture == manifest.platform.architecture &&
+            platform.os == manifest.platform.os &&
+            platform.variant == manifest.platform.variant)
+            return &manifest;
+    }
+    return nullptr;
+}
+
 std::ostream& operator<<(std::ostream& os, const ManifestList& mlist) {
     nlohmann::json json{};
     json["manifests"] = nlohmann::json::array();

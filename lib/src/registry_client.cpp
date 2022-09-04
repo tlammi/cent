@@ -42,7 +42,8 @@ std::string registry_root_url(std::string_view registry) {
 std::string manifest_url(const Image& img) {
     auto registry = img.registry();
     auto name = img.name();
-    auto ref = img.tag();
+    auto ref = img.digest().str();
+    if (ref == "") ref = img.tag();
     std::stringstream url{};
     url << registry_root_url(registry);
     url << name << "/manifests/" << ref;
@@ -59,12 +60,24 @@ ManifestList RegistryClient::manifest_list(const Image& img) {
     if (status_code != 200) raise("Failure status code: ", status_code);
     logs::debug("docker api dist: '", docker_dist_api_ver, "'");
     bool is_docker_registry = !docker_dist_api_ver.empty();
-    std::stringstream ss{"Bearer: "};
+    std::stringstream ss{};
     ss << get_accept(AcceptIndex::ManifestList, is_docker_registry);
     m_sess->set_header_field("Accept", ss.rdbuf()->view());
     logs::debug("url: ", manifest_url(img));
     status_code = m_sess->get(manifest_url(img));
     logs::debug("status code: ", status_code);
     return ManifestList{nlohmann::json::parse(m_sess->get_body())};
+}
+
+std::string RegistryClient::manifest(const Image& img) {
+    // TODO: method to allow reseting this to avoid dangling references
+    std::string foo;
+    m_sess->on_header("docker-distribution-api-version", foo);
+    m_sess->set_header_field(
+        "Accept", "application/vnd.docker.distribution.manifest.v2+json");
+    auto res = m_sess->get(manifest_url(img));
+    logs::debug("RESULT: ", res);
+    logs::debug("BODY: ", m_sess->get_body());
+    return std::string(m_sess->get_body());
 }
 }  // namespace cent
