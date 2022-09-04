@@ -6,9 +6,13 @@ namespace cent {
 namespace {
 
 constexpr EnumArr<MediaKind, std::string_view> MIME_MAP{
+    "application/vnd.docker.image.rootfs.diff.tar.gzip",
+    "application/vnd.docker.container.image.v1+json",
     "application/vnd.docker.distribution.manifest.v2+json",
     "application/vnd.docker.distribution.manifest.list.v2+json"};
 
+static_assert(static_cast<size_t>(MediaKind::COUNT_) == MIME_MAP.size(),
+              "MediaKind and or MIME_MAP was modified without the other");
 }  // namespace
 
 MediaType MediaType::from_mime(std::string_view mime) {

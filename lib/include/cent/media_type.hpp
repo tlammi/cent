@@ -7,6 +7,8 @@
 namespace cent {
 
 enum class MediaKind {
+    DockerImageRootfsDiffTarGz,
+    DockerContainerImageV1,
     DockerManifestV2,
     DockerManifestListV2,
     COUNT_,
