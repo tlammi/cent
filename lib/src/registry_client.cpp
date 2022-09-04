@@ -49,6 +49,16 @@ std::string manifest_url(const Image& img) {
     return url.str();
 }
 
+std::string blob_url(const Image& img) {
+    auto registry = img.registry();
+    auto name = img.name();
+    auto ref = img.digest().str();
+    if (ref == "") ref = img.tag();
+    std::stringstream url{};
+    url << registry_root_url(registry);
+    url << name << "/blobs/" << ref;
+    return url.str();
+}
 }  // namespace
 RegistryClient::RegistryClient(HttpSession* sess) : m_sess{sess} {}
 
@@ -76,5 +86,18 @@ Manifest RegistryClient::manifest(const Image& img) {
         "Accept", "application/vnd.docker.distribution.manifest.v2+json");
     auto res = m_sess->get(manifest_url(img));
     return Manifest{nlohmann::json::parse(std::string(m_sess->get_body()))};
+}
+
+std::vector<uint8_t> RegistryClient::blob(const Image& img) {
+    // TODO: method to allow resetting this to avoid dangling references
+    std::string foo;
+    m_sess->on_header("docker-distribution-api-version", foo);
+    m_sess->set_header_field(
+        "Accept",
+        MediaType::from_kind(MediaKind::DockerImageRootfsDiffTarGz).mime);
+    auto res = m_sess->get(blob_url(img));
+    logs::debug(m_sess->get_body());
+    logs::debug("blob status code: ", res);
+    return {};
 }
 }  // namespace cent

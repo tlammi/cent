@@ -21,6 +21,8 @@ class RegistryClient {
 
     Manifest manifest(const Image& img);
 
+    std::vector<uint8_t> blob(const Image& img);
+
  private:
     HttpSession* m_sess;
 };

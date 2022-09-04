@@ -40,6 +40,13 @@ class Cent::CentImpl {
         Image manifest_image{manifest_img_ref};
         auto manifest = client.manifest(manifest_image);
         logs::debug(manifest);
+        for (const auto& layer : manifest.layers()) {
+            std::string blob_img_ref{image.repo()};
+            blob_img_ref += "@";
+            blob_img_ref += layer.digest.str();
+            Image blob_image{blob_img_ref};
+            client.blob(blob_image);
+        }
         return {0, "foo"};
     }
 
