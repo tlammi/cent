@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <ostream>
 #include <vector>
 
 #include "cent/digest.hpp"
@@ -29,4 +30,6 @@ class ManifestList {
         MediaType::from_kind(MediaKind::DockerManifestListV2)};
     size_t m_schema_version{};
 };
+
+std::ostream& operator<<(std::ostream& os, const ManifestList& mlist);
 }  // namespace cent

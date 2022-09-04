@@ -30,4 +30,25 @@ MediaType ManifestList::media_type() const noexcept { return m_media_type; }
 size_t ManifestList::schema_version() const noexcept {
     return m_schema_version;
 }
+std::ostream& operator<<(std::ostream& os, const ManifestList& mlist) {
+    nlohmann::json json{};
+    json["manifests"] = nlohmann::json::array();
+    for (const auto& entry : mlist.manifests()) {
+        nlohmann::json mfest{};
+        mfest["digest"] = entry.digest.str();
+        mfest["mediaType"] = entry.media_type.mime;
+        auto& pform = mfest["platform"] = nlohmann::json::object();
+        if (!entry.platform.architecture.empty())
+            pform["architecture"] = entry.platform.architecture;
+        if (!entry.platform.os.empty()) pform["os"] = entry.platform.os;
+        if (!entry.platform.variant.empty())
+            pform["variant"] = entry.platform.variant;
+        json["manifests"].push_back(std::move(mfest));
+    }
+    json["mediaType"] = mlist.media_type().mime;
+    json["schemaVersion"] = mlist.schema_version();
+    os << json.dump(4);
+    return os;
+}
+
 }  // namespace cent

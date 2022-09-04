@@ -52,7 +52,7 @@ std::string manifest_url(const Image& img) {
 }  // namespace
 RegistryClient::RegistryClient(HttpSession* sess) : m_sess{sess} {}
 
-std::string RegistryClient::manifest_list(const Image& img) {
+ManifestList RegistryClient::manifest_list(const Image& img) {
     std::string docker_dist_api_ver{};
     m_sess->on_header("docker-distribution-api-version", docker_dist_api_ver);
     int status_code = m_sess->get(registry_root_url(img.registry()));
@@ -65,7 +65,6 @@ std::string RegistryClient::manifest_list(const Image& img) {
     logs::debug("url: ", manifest_url(img));
     status_code = m_sess->get(manifest_url(img));
     logs::debug("status code: ", status_code);
-    ManifestList manifest_list{nlohmann::json::parse(m_sess->get_body())};
-    return std::string{m_sess->get_body()};
+    return ManifestList{nlohmann::json::parse(m_sess->get_body())};
 }
 }  // namespace cent

@@ -24,7 +24,9 @@ class Cent::CentImpl {
     Result pull(std::string_view image) {
         HttpClient http_client{m_iface};
         RegistryClient client{&http_client};
-        return {0, client.manifest_list(Image{std::string{image}})};
+        std::stringstream ss;
+        ss << client.manifest_list(Image{std::string{image}});
+        return {0, ss.str()};
 
         // client.set_header_field(
         //     "Accept",

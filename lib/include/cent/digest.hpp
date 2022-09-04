@@ -24,6 +24,8 @@ class BasicDigest {
         return std::string_view(m_str).substr(idx + 1);
     }
 
+    std::string_view str() const noexcept { return m_str; }
+
  private:
     size_t sep() const noexcept { return m_str.find(':'); }
     StringT m_str;

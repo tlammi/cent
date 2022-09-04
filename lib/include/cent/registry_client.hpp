@@ -2,6 +2,7 @@
 
 #include "cent/image.hpp"
 #include "cent/interface.hpp"
+#include "cent/manifest_list.hpp"
 
 namespace cent {
 
@@ -15,7 +16,7 @@ class RegistryClient {
  public:
     RegistryClient(HttpSession* sess);
 
-    std::string manifest_list(const Image& img);
+    ManifestList manifest_list(const Image& img);
 
  private:
     HttpSession* m_sess;
