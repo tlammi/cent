@@ -1,5 +1,5 @@
 
-SRCS = SRCS + files('cent.cpp', 'http_client.cpp', 'logs.cpp', 'image.cpp')
+SRCS = SRCS + files('cent.cpp', 'http_client.cpp', 'logs.cpp', 'image.cpp', 'registry_client.cpp')
 
 
 

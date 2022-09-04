@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cent/http_session.hpp"
+#include "cent/interface.hpp"
 
 namespace cent {
 
@@ -13,7 +13,7 @@ namespace cent {
  */
 class HttpClient final : public HttpSession {
  public:
-    HttpClient(HttpSession* sess);
+    HttpClient(Interface* iface);
 
     void on_header(std::string_view field, std::string& value) override;
 
@@ -23,6 +23,7 @@ class HttpClient final : public HttpSession {
     int get(std::string_view url) override;
 
  private:
-    HttpSession* m_sess;
+    Interface* m_iface;
+    std::unique_ptr<HttpSession> m_sess;
 };
 }  // namespace cent

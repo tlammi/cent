@@ -4,8 +4,9 @@
 
 class Interface final : public cent::Interface {
  public:
-    cent::HttpSession* http_session() { return m_tmp.get(); }
+    std::unique_ptr<cent::HttpSession> http_session() override {
+        return cent::default_http_session();
+    }
 
  private:
-    std::unique_ptr<cent::HttpSession> m_tmp{cent::default_http_session()};
 };

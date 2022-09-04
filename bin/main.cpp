@@ -5,5 +5,5 @@
 int main() {
     Interface i{};
     cent::Cent c{&i};
-    std::cerr << c.pull("registry-1.docker.io/ubuntu:20.04") << '\n';
+    std::cerr << c.pull("docker.io/library/ubuntu:20.04") << '\n';
 }

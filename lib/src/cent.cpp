@@ -4,7 +4,9 @@
 #include <iostream>
 
 #include "cent/http_client.hpp"
+#include "cent/image.hpp"
 #include "cent/logs.hpp"
+#include "cent/registry_client.hpp"
 
 namespace cent {
 
@@ -20,13 +22,16 @@ class Cent::CentImpl {
     CentImpl(Interface* iface) : m_iface{iface} {}
 
     Result pull(std::string_view image) {
-        HttpClient client{m_iface->http_session()};
-        client.set_header_field(
-            "Accept",
-            "application/vnd.docker.distribution.manifest.list.v2+json");
-        int code = client.get(
-            "https://registry-1.docker.io/v2/library/ubuntu/manifests/20.04");
-        return {code, std::string(client.get_body())};
+        HttpClient http_client{m_iface};
+        RegistryClient client{&http_client};
+        return {0, client.manifest(Image{std::string{image}})};
+
+        // client.set_header_field(
+        //     "Accept",
+        //     "application/vnd.docker.distribution.manifest.list.v2+json");
+        // int code = client.get(
+        //     "https://registry-1.docker.io/v2/library/ubuntu/manifests/20.04");
+        // return {code, std::string(client.get_body())};
     }
 
  private:

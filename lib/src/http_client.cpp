@@ -16,8 +16,12 @@ constexpr std::string_view strip(std::string_view what, char token) {
 }
 }  // namespace
 
-HttpClient::HttpClient(HttpSession* sess) : m_sess{sess} {}
-void HttpClient::on_header(std::string_view field, std::string& value) {}
+HttpClient::HttpClient(Interface* iface)
+    : m_iface{iface}, m_sess{m_iface->http_session()} {}
+
+void HttpClient::on_header(std::string_view field, std::string& value) {
+    m_sess->on_header(field, value);
+}
 
 void HttpClient::set_header_field(std::string_view field,
                                   std::string_view value) {
@@ -44,11 +48,12 @@ int HttpClient::get(std::string_view url) {
             auto token_url_str = std::string(token_url) +
                                  "?service=" + std::string(service) +
                                  "&scope=" + std::string(scope);
-            res = m_sess->get(token_url_str);
+            auto challenge_session = m_iface->http_session();
+            res = challenge_session->get(token_url_str);
             if (res != 200)
                 raise("Unsupported status code when accessing ", url, ": ",
-                      200);
-            auto body = m_sess->get_body();
+                      res);
+            auto body = challenge_session->get_body();
             auto token = http::Token::parse(body);
             if (!token) raise("Could not parse token from '", body, "'");
             logs::debug("token: ", token->token);
