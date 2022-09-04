@@ -12,7 +12,12 @@ class CurlHttpSession final : public HttpSession {
  public:
     CurlHttpSession() { m_easy.setOpt(curlpp::options::Verbose(true)); }
     void on_header(std::string_view field, std::string& value) override {
-        m_on_header.emplace(field, std::reference_wrapper(value));
+        auto iter = m_on_header.find(field);
+        if (iter == m_on_header.end()) {
+            m_on_header.emplace(field, std::reference_wrapper(value));
+        } else {
+            iter->second = value;
+        }
     }
     void set_header_field(std::string_view field,
                           std::string_view value) override {
@@ -43,8 +48,9 @@ class CurlHttpSession final : public HttpSession {
             if (auto header =
                     http::HeaderView::try_parse(std::string_view(buf, s * n))) {
                 auto iter = m_on_header.find(std::string(header->field_name()));
-                if (iter != m_on_header.end())
+                if (iter != m_on_header.end()) {
                     iter->second.get() = header->value();
+                }
             }
             return s * n;
         }));
@@ -60,7 +66,8 @@ class CurlHttpSession final : public HttpSession {
 
  private:
     curlpp::Easy m_easy{};
-    std::map<std::string, std::reference_wrapper<std::string>> m_on_header{};
+    std::map<std::string, std::reference_wrapper<std::string>, std::less<>>
+        m_on_header{};
     std::list<std::string> m_headers{};
     std::stringstream m_body{};
 };
