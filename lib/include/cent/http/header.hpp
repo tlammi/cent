@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "cent/raise.hpp"
 namespace cent::http {
 
 // TODO: Rename to BasicHeaderField
@@ -20,13 +21,13 @@ class BasicHeader {
     constexpr BasicHeader(StringT value) : m_value{std::move(value)} {
         if (m_value.empty()) m_value = ":";
         const auto idx = m_value.find(':');
-        if (idx == StringT::npos) throw std::runtime_error("Invalid header");
+        if (idx == StringT::npos) raise("Invalid header: ", value);
     }
 
     constexpr BasicHeader& operator=(StringT value) {
         if (value.empty()) m_value = ":";
         const auto idx = value.find(':');
-        if (idx == StringT::npos) throw std::runtime_error("Invalid header");
+        if (idx == StringT::npos) raise("Invalid header: ", value);
         m_value = std::move(value);
         return *this;
     }
