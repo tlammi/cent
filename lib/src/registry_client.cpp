@@ -76,8 +76,6 @@ std::string RegistryClient::manifest(const Image& img) {
     m_sess->set_header_field(
         "Accept", "application/vnd.docker.distribution.manifest.v2+json");
     auto res = m_sess->get(manifest_url(img));
-    logs::debug("RESULT: ", res);
-    logs::debug("BODY: ", m_sess->get_body());
     return std::string(m_sess->get_body());
 }
 }  // namespace cent
