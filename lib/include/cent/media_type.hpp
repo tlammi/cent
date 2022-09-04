@@ -7,6 +7,7 @@
 namespace cent {
 
 enum class MediaKind {
+    DockerManifestV2,
     DockerManifestListV2,
     COUNT_,
 };

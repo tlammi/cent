@@ -5,6 +5,7 @@
 #include <sstream>
 
 #include "cent/logs.hpp"
+#include "cent/manifest_list.hpp"
 #include "cent/raise.hpp"
 
 namespace cent {
@@ -64,6 +65,7 @@ std::string RegistryClient::manifest_list(const Image& img) {
     logs::debug("url: ", manifest_url(img));
     status_code = m_sess->get(manifest_url(img));
     logs::debug("status code: ", status_code);
+    ManifestList manifest_list{nlohmann::json::parse(m_sess->get_body())};
     return std::string{m_sess->get_body()};
 }
 }  // namespace cent

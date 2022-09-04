@@ -6,6 +6,7 @@ namespace cent {
 namespace {
 
 constexpr EnumArr<MediaKind, std::string_view> MIME_MAP{
+    "application/vnd.docker.distribution.manifest.v2+json",
     "application/vnd.docker.distribution.manifest.list.v2+json"};
 
 }  // namespace
