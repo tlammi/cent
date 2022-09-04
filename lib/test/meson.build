@@ -10,6 +10,8 @@ test_kwargs = {
 
 test_image = executable('test_image', 'image.cpp', kwargs: test_kwargs)
 test_http_header = executable('test_http_header', 'http_header.cpp', kwargs: test_kwargs)
+test_enum_arr = executable('test_enum_arr', 'enum_arr.cpp', kwargs: test_kwargs)
 
 test('Image', test_image)
 test('HTTP Header', test_http_header)
+test('Enum Array', test_enum_arr)
