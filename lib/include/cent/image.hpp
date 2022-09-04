@@ -17,6 +17,7 @@ namespace cent {
  * - bar:baz
  * - foo
  *
+ * TODO: Rename as it can reference various things, like manifests or blobs.
  */
 class Image {
  public:
