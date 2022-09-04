@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <ostream>
 #include <vector>
 
 #include "cent/digest.hpp"
@@ -33,4 +34,6 @@ class Manifest {
     Config m_config{};
     std::vector<Layer> m_layers{};
 };
+
+std::ostream& operator<<(std::ostream& os, const Manifest& manifest);
 }  // namespace cent

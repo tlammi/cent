@@ -38,7 +38,9 @@ class Cent::CentImpl {
         manifest_img_ref += "@";
         manifest_img_ref += entry->digest.str();
         Image manifest_image{manifest_img_ref};
-        return {0, client.manifest(manifest_image)};
+        auto manifest = client.manifest(manifest_image);
+        logs::debug(manifest);
+        return {0, "foo"};
     }
 
  private:

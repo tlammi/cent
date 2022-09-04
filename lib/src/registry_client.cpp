@@ -5,7 +5,6 @@
 #include <sstream>
 
 #include "cent/logs.hpp"
-#include "cent/manifest_list.hpp"
 #include "cent/raise.hpp"
 
 namespace cent {
@@ -69,13 +68,13 @@ ManifestList RegistryClient::manifest_list(const Image& img) {
     return ManifestList{nlohmann::json::parse(m_sess->get_body())};
 }
 
-std::string RegistryClient::manifest(const Image& img) {
+Manifest RegistryClient::manifest(const Image& img) {
     // TODO: method to allow reseting this to avoid dangling references
     std::string foo;
     m_sess->on_header("docker-distribution-api-version", foo);
     m_sess->set_header_field(
         "Accept", "application/vnd.docker.distribution.manifest.v2+json");
     auto res = m_sess->get(manifest_url(img));
-    return std::string(m_sess->get_body());
+    return Manifest{nlohmann::json::parse(std::string(m_sess->get_body()))};
 }
 }  // namespace cent

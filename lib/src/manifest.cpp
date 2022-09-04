@@ -25,4 +25,26 @@ auto Manifest::config() const noexcept -> const Config& { return m_config; }
 auto Manifest::layers() const noexcept -> const std::vector<Layer>& {
     return m_layers;
 }
+
+std::ostream& operator<<(std::ostream& os, const Manifest& manifest) {
+    nlohmann::json json{};
+    json["schemaVersion"] = manifest.schema_version();
+    json["mediaType"] = manifest.media_type().mime;
+    auto& config = json["config"] = nlohmann::json::object();
+    config["mediaType"] = manifest.config().media_type.mime;
+    config["size"] = manifest.config().size;
+    config["digest"] = manifest.config().digest.str();
+
+    auto& layers = json["layers"] = nlohmann::json::array();
+
+    for (const auto& layer : manifest.layers()) {
+        nlohmann::json obj{};
+        obj["mediaType"] = layer.media_type.mime;
+        obj["size"] = layer.size;
+        obj["digest"] = layer.digest.str();
+        layers.push_back(std::move(obj));
+    }
+    os << json.dump(4);
+    return os;
+}
 }  // namespace cent
