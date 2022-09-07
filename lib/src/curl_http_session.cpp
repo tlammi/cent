@@ -10,7 +10,11 @@ namespace cent {
 
 class CurlHttpSession final : public HttpSession {
  public:
-    CurlHttpSession() { m_easy.setOpt(curlpp::options::Verbose(true)); }
+    CurlHttpSession() {
+        m_easy.setOpt(curlpp::options::Verbose(true));
+        m_easy.setOpt(curlpp::options::FollowLocation(true));
+    }
+
     void on_header(std::string_view field, std::string& value) override {
         auto iter = m_on_header.find(field);
         if (iter == m_on_header.end()) {

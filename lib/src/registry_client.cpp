@@ -96,8 +96,10 @@ std::vector<uint8_t> RegistryClient::blob(const Image& img) {
         "Accept",
         MediaType::from_kind(MediaKind::DockerImageRootfsDiffTarGz).mime);
     auto res = m_sess->get(blob_url(img));
-    logs::debug(m_sess->get_body());
     logs::debug("blob status code: ", res);
-    return {};
+    auto body = m_sess->get_body();
+    std::vector<uint8_t> v{body.begin(), body.end()};
+    logs::debug("response size: ", v.size());
+    return v;
 }
 }  // namespace cent

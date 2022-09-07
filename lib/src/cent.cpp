@@ -1,6 +1,7 @@
 #include "cent.hpp"
 
 #include <cerrno>
+#include <fstream>
 #include <iostream>
 
 #include "cent/http_client.hpp"
@@ -45,7 +46,7 @@ class Cent::CentImpl {
             blob_img_ref += "@";
             blob_img_ref += layer.digest.str();
             Image blob_image{blob_img_ref};
-            client.blob(blob_image);
+            auto blob = client.blob(blob_image);
         }
         return {0, "foo"};
     }
