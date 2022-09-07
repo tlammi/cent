@@ -35,6 +35,7 @@ class FileSystemApi {
         const stdfs::path& path,
         std::ios_base::openmode mode = std::ios_base::in |
                                        std::ios_base::out) = 0;
+    virtual bool exists(const stdfs::path& path) = 0;
 };
 
 std::unique_ptr<FileSystemApi> default_file_system_api();

@@ -13,6 +13,15 @@ class BasicDigest {
     BasicDigest() {}
     BasicDigest(StringT str) : m_str{std::move(str)} {}
 
+    template <class StringT2,
+              class = std::enable_if_t<!std::is_same_v<StringT, StringT2>>>
+    BasicDigest(const BasicDigest<StringT2>& other) : m_str{other.str()} {}
+
+    template <class StringT2,
+              class = std::enable_if_t<!std::is_same_v<StringT, StringT2>>>
+    BasicDigest(BasicDigest<StringT2>&& other)
+        : m_str{std::move(other.str())} {}
+
     std::string_view algo() const noexcept {
         const auto idx = sep();
         if (idx == StringT::npos) return "";

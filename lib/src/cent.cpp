@@ -8,6 +8,7 @@
 #include "cent/image.hpp"
 #include "cent/logs.hpp"
 #include "cent/registry_client.hpp"
+#include "cent/storage.hpp"
 
 namespace cent {
 
@@ -23,6 +24,7 @@ class Cent::CentImpl {
     CentImpl(Interface* iface) : m_iface{iface} {}
 
     Result pull(std::string_view image_ref) {
+        Storage storage{m_iface->file_system(), "/home/tlammi/.cent/"};
         Image image{std::string(image_ref)};
         HttpClient http_client{m_iface};
         RegistryClient client{&http_client};
@@ -47,6 +49,10 @@ class Cent::CentImpl {
             blob_img_ref += layer.digest.str();
             Image blob_image{blob_img_ref};
             auto blob = client.blob(blob_image);
+            auto stream = storage.write_layer(layer.digest);
+            stream->write(
+                static_cast<const char*>(static_cast<const void*>(blob.data())),
+                blob.size());
         }
         return {0, "foo"};
     }

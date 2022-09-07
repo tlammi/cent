@@ -22,6 +22,10 @@ class LinuxFileSystemApi final : public FileSystemApi {
         const stdfs::path& path, std::ios_base::openmode mode) override {
         return std::make_unique<std::fstream>(path, mode);
     }
+
+    bool exists(const stdfs::path& path) override {
+        return stdfs::exists(path);
+    }
 };
 
 std::unique_ptr<FileSystemApi> default_file_system_api() {
