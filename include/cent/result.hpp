@@ -17,6 +17,9 @@ class Result {
      */
     Result(int code, std::string msg) : m_code{code}, m_msg{std::move(msg)} {}
 
+    Result(const std::error_code& ec)
+        : m_code{ec.value()}, m_msg{ec.message()} {}
+
     // alias for ok()
     explicit operator bool() const noexcept { return !m_code; }
     // True if error code is 0
