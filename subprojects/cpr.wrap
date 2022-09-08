@@ -1,0 +1,4 @@
+[wrap-git]
+url = https://github.com/libcpr/cpr.git
+revision = 7938bc7702130f989b76822909b57b829dcd806a
+depth = 1

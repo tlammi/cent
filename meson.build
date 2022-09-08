@@ -1,5 +1,7 @@
 project('cent', 'cpp', default_options: ['cpp_std=c++20'])
 
+add_project_arguments('-fno-rtti', language: 'cpp')
+
 cmake = import('cmake')
 
 PUBLIC_INCLUDE = include_directories('include')
