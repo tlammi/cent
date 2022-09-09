@@ -2,10 +2,13 @@
 
 #include <sstream>
 
+#include "cent/log_level.hpp"
+
 namespace cent::logs {
 namespace detail {
+
 struct LogMsg {
-    bool is_debug;
+    LogLevel log_level;
     std::stringstream ss;
 };
 
@@ -18,21 +21,47 @@ void log_recurse(std::stringstream& ss, T&& t, Ts&&... ts) {
 }
 
 template <class... Ts>
-void do_log(bool is_debug, Ts&&... ts) {
-    LogMsg msg{is_debug, std::stringstream{}};
+void do_log(LogLevel log_level, Ts&&... ts) {
+    LogMsg msg{log_level, std::stringstream{}};
     log_recurse(msg.ss, std::forward<Ts>(ts)...);
     push_log(std::move(msg));
 }
+
 }  // namespace detail
 
 template <class... Ts>
-void debug(Ts&&... ts) {
-    detail::do_log(true, std::forward<Ts>(ts)...);
+constexpr void trace(Ts&&... ts) {
+    detail::do_log(LogLevel::Trace, std::forward<Ts>(ts)...);
+};
+
+template <class... Ts>
+constexpr void debug(Ts&&... ts) {
+    detail::do_log(LogLevel::Debug, std::forward<Ts>(ts)...);
 }
 
 template <class... Ts>
-void info(Ts&&... ts) {
-    detail::do_log(false, std::forward<Ts>(ts)...);
+constexpr void info(Ts&&... ts) {
+    detail::do_log(LogLevel::Info, std::forward<Ts>(ts)...);
+}
+
+template <class... Ts>
+constexpr void note(Ts&&... ts) {
+    detail::do_log(LogLevel::Note, std::forward<Ts>(ts)...);
+}
+
+template <class... Ts>
+constexpr void warn(Ts&&... ts) {
+    detail::do_log(LogLevel::Warn, std::forward<Ts>(ts)...);
+}
+
+template <class... Ts>
+constexpr void err(Ts&&... ts) {
+    detail::do_log(LogLevel::Err, std::forward<Ts>(ts)...);
+}
+
+template <class... Ts>
+constexpr void fatal(Ts&&... ts) {
+    detail::do_log(LogLevel::Fatal, std::forward<Ts>(ts)...);
 }
 
 }  // namespace cent::logs

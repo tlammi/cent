@@ -12,6 +12,8 @@
 
 namespace cent {
 
+LogLevel LOG_LEVEL{LogLevel::Info};
+
 /**
  * Log consuming stream
  *

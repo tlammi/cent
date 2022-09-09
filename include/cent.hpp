@@ -4,6 +4,7 @@
 #include <string_view>
 
 #include "cent/interface.hpp"
+#include "cent/log_level.hpp"
 #include "cent/result.hpp"
 
 namespace cent {

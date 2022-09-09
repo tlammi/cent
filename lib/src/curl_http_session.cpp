@@ -10,7 +10,7 @@ namespace cent {
 class CurlHttpSession final : public HttpSession {
  public:
     CurlHttpSession() {
-        m_sess.SetVerbose(true);
+        if (LOG_LEVEL == LogLevel::Trace) m_sess.SetVerbose(true);
         m_sess.SetRedirect(cpr::Redirect(true));
     }
 
