@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include "cent/http_client.hpp"
-#include "cent/reference.hpp"
 #include "cent/logs.hpp"
+#include "cent/reference.hpp"
 #include "cent/registry_client.hpp"
 #include "cent/storage.hpp"
 
@@ -20,6 +20,11 @@ LogLevel LOG_LEVEL{LogLevel::Info};
  * Set this to change where logs are written
  */
 std::reference_wrapper<std::ostream> LOG_STREAM{std::cerr};
+
+/**
+ * Stdout stream
+ */
+std::reference_wrapper<std::ostream> OUT_STREAM{std::cout};
 
 class Cent::CentImpl {
  public:
@@ -86,6 +91,12 @@ class Cent::CentImpl {
         return {0, "foo"};
     }
 
+    Result image_list() {
+        logs::print("foobar");
+        logs::print("baz");
+        return {0, ""};
+    }
+
  private:
     Interface* m_iface;
 };
@@ -94,5 +105,6 @@ Cent::Cent(Interface* iface) : m_impl{new CentImpl(iface)} {}
 Cent::~Cent() {}
 
 Result Cent::pull(std::string_view image) { return m_impl->pull(image); }
+Result Cent::image_list() { return m_impl->image_list(); }
 
 }  // namespace cent

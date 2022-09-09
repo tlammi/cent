@@ -10,6 +10,7 @@
 namespace cent {
 
 extern std::reference_wrapper<std::ostream> LOG_STREAM;
+extern std::reference_wrapper<std::ostream> OUT_STREAM;
 
 class Cent {
  public:
@@ -17,6 +18,7 @@ class Cent {
     ~Cent();
 
     Result pull(std::string_view image);
+    Result image_list();
 
  private:
     class CentImpl;

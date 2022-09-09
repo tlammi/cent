@@ -14,6 +14,8 @@ struct LogMsg {
 
 void push_log(LogMsg&& msg);
 
+void do_print(std::stringbuf* buf);
+
 template <class T, class... Ts>
 void log_recurse(std::stringstream& ss, T&& t, Ts&&... ts) {
     ss << std::forward<T>(t);
@@ -62,6 +64,13 @@ constexpr void err(Ts&&... ts) {
 template <class... Ts>
 constexpr void fatal(Ts&&... ts) {
     detail::do_log(LogLevel::Fatal, std::forward<Ts>(ts)...);
+}
+
+template <class... Ts>
+void print(Ts&&... ts) {
+    std::stringstream ss;
+    detail::log_recurse(ss, std::forward<Ts>(ts)...);
+    detail::do_print(ss.rdbuf());
 }
 
 }  // namespace cent::logs
