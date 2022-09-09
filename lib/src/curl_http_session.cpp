@@ -13,16 +13,23 @@ class CurlHttpSession final : public HttpSession {
         if (LOG_LEVEL == LogLevel::Trace) m_sess.SetVerbose(true);
         m_sess.SetRedirect(cpr::Redirect(true));
     }
-
-    void on_header(std::string_view field, std::string& value) override {
-        auto iter = m_on_header.find(field);
-        if (iter == m_on_header.end()) {
-            m_on_header.emplace(field, std::reference_wrapper(value));
-        } else {
-            iter->second = value;
-        }
+    void capture_header_field(std::string_view field) override {
+        m_received_headers[std::string(field)] = "";
     }
+
+    std::string& header_field(std::string_view field) override {
+        auto iter = m_received_headers.find(field);
+        if (iter != m_received_headers.end()) { return iter->second; }
+        raise("Header not captured: ", field);
+    }
+    const std::string& header_field(std::string_view field) const override {
+        auto iter = m_received_headers.find(field);
+        if (iter != m_received_headers.end()) { return iter->second; }
+        raise("Header not captured: ", field);
+    }
+
     void set_header_field(std::string_view field,
+
                           std::string_view value) override {
         m_headers[std::string(field)] = std::string(value);
     }
@@ -38,9 +45,10 @@ class CurlHttpSession final : public HttpSession {
         m_sess.SetHeaderCallback(cpr::HeaderCallback([&](std::string buf,
                                                          intptr_t /*unused*/) {
             if (auto header = http::HeaderView::try_parse(buf)) {
-                auto iter = m_on_header.find(std::string(header->field_name()));
-                if (iter != m_on_header.end()) {
-                    iter->second.get() = header->value();
+                auto iter =
+                    m_received_headers.find(std::string(header->field_name()));
+                if (iter != m_received_headers.end()) {
+                    iter->second = header->value();
                 }
             }
             return true;
@@ -72,8 +80,7 @@ class CurlHttpSession final : public HttpSession {
 
  private:
     cpr::Session m_sess{};
-    std::map<std::string, std::reference_wrapper<std::string>, std::less<>>
-        m_on_header{};
+    std::map<std::string, std::string, std::less<>> m_received_headers{};
     cpr::Header m_headers{};
     std::stringstream m_body{};
 };

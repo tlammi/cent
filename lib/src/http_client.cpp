@@ -17,10 +17,19 @@ constexpr std::string_view strip(std::string_view what, char token) {
 }  // namespace
 
 HttpClient::HttpClient(Interface* iface)
-    : m_iface{iface}, m_sess{m_iface->http_session()} {}
+    : m_iface{iface}, m_sess{m_iface->http_session()} {
+    m_sess->capture_header_field("www-authenticate");
+}
 
-void HttpClient::on_header(std::string_view field, std::string& value) {
-    m_sess->on_header(field, value);
+void HttpClient::capture_header_field(std::string_view field) {
+    m_sess->capture_header_field(field);
+}
+
+std::string& HttpClient::header_field(std::string_view field) {
+    return m_sess->header_field(field);
+}
+const std::string& HttpClient::header_field(std::string_view field) const {
+    return m_sess->header_field(field);
 }
 
 void HttpClient::set_header_field(std::string_view field,
@@ -31,11 +40,10 @@ void HttpClient::set_header_field(std::string_view field,
 std::string_view HttpClient::get_body() { return m_sess->get_body(); }
 
 int HttpClient::get(std::string_view url) {
-    std::string auth_challenge;
-    m_sess->on_header("www-authenticate", auth_challenge);
     int res = m_sess->get(url);
     if (res >= 200 && res < 300) return res;
     if (res >= 400 && res < 500) {
+        std::string auth_challenge = m_sess->header_field("www-authenticate");
         if (!auth_challenge.empty()) {
             logs::debug("Got challenge: \'", auth_challenge, '\'');
             http::HeaderView auth_challenge_header(auth_challenge);

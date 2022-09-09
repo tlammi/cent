@@ -15,7 +15,10 @@ class HttpClient final : public HttpSession {
  public:
     HttpClient(Interface* iface);
 
-    void on_header(std::string_view field, std::string& value) override;
+    void capture_header_field(std::string_view field) override;
+
+    std::string& header_field(std::string_view field) override;
+    const std::string& header_field(std::string_view field) const override;
 
     void set_header_field(std::string_view field,
                           std::string_view value) override;

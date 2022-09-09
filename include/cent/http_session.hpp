@@ -9,8 +9,11 @@ class HttpSession {
  public:
     virtual ~HttpSession() {}
 
-    // TODO: Rename to on_header_field
-    virtual void on_header(std::string_view field, std::string& value) = 0;
+    virtual void capture_header_field(std::string_view field) = 0;
+
+    virtual std::string& header_field(std::string_view field) = 0;
+    virtual const std::string& header_field(std::string_view field) const = 0;
+
     virtual void set_header_field(std::string_view field,
                                   std::string_view value) = 0;
 

@@ -60,13 +60,16 @@ std::string blob_url(const Image& img) {
     return url.str();
 }
 }  // namespace
-RegistryClient::RegistryClient(HttpSession* sess) : m_sess{sess} {}
+RegistryClient::RegistryClient(HttpSession* sess) : m_sess{sess} {
+    m_sess->capture_header_field("docker-distribution-api-version");
+    m_sess->capture_header_field("docker-content-digest");
+}
 
 ManifestList RegistryClient::manifest_list(const Image& img) {
-    std::string docker_dist_api_ver{};
-    m_sess->on_header("docker-distribution-api-version", docker_dist_api_ver);
     int status_code = m_sess->get(registry_root_url(img.registry()));
     if (status_code != 200) raise("Failure status code: ", status_code);
+    auto docker_dist_api_ver =
+        m_sess->header_field("docker-distribution-api-version");
     logs::debug("docker api dist: '", docker_dist_api_ver, "'");
     bool is_docker_registry = !docker_dist_api_ver.empty();
     std::stringstream ss{};
@@ -79,11 +82,7 @@ ManifestList RegistryClient::manifest_list(const Image& img) {
 }
 
 Manifest RegistryClient::manifest(const Image& img) {
-    // TODO: method to allow reseting this to avoid dangling references
-    std::string foo;
-    m_sess->on_header("docker-distribution-api-version", foo);
-    std::string digest;
-    m_sess->on_header("docker-content-digest", digest);
+    std::string digest = m_sess->header_field("docker-content-digest");
     m_sess->set_header_field(
         "Accept", "application/vnd.docker.distribution.manifest.v2+json");
     auto res = m_sess->get(manifest_url(img));
@@ -92,9 +91,6 @@ Manifest RegistryClient::manifest(const Image& img) {
 }
 
 std::vector<uint8_t> RegistryClient::blob(const Image& img) {
-    // TODO: method to allow resetting this to avoid dangling references
-    std::string foo;
-    m_sess->on_header("docker-distribution-api-version", foo);
     m_sess->set_header_field(
         "Accept",
         MediaType::from_kind(MediaKind::DockerImageRootfsDiffTarGz).mime);
