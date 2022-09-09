@@ -48,6 +48,12 @@ bool Storage::layer_exists(DigestView digest) const {
     return m_fs->exists(path);
 }
 
+bool Storage::config_exists(DigestView digest) const {
+    auto path = configpath(m_root, digest);
+    LockFile lk{m_fs, lockfile(m_root)};
+    return m_fs->exists(path);
+}
+
 std::unique_ptr<std::iostream> Storage::write_layer(DigestView digest) {
     auto path = layerpath(m_root, digest);
     LockFile lk{m_fs, lockfile(m_root)};

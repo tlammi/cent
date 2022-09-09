@@ -14,6 +14,11 @@ class Storage {
      */
     bool layer_exists(DigestView digest) const;
 
+    /**
+     * Check if a config with the given  digest exists
+     */
+    bool config_exists(DigestView digest) const;
+
     /// Open a layer file for reading
     std::unique_ptr<std::iostream> read_layer(DigestView digest);
 

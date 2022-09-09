@@ -35,17 +35,22 @@ class Cent::CentImpl {
         auto entry =
             manifest_list.platform_manifest(Platform{"amd64", "linux"});
         if (!entry) {
-            logs::debug(manifest_list);
+            logs::fatal("Manifest list: ", manifest_list);
             raise("no entry: 'amd64'");
         }
-        logs::debug(manifest_list);
+        logs::trace("Manifest list: ", manifest_list);
         std::string manifest_img_ref{image.repo()};
         manifest_img_ref += "@";
         manifest_img_ref += entry->digest.str();
         Image manifest_image{manifest_img_ref};
         auto manifest = client.manifest(manifest_image);
-        logs::debug(manifest);
+        logs::trace("Manifest: ", manifest);
         for (const auto& layer : manifest.layers()) {
+            if (storage.layer_exists(layer.digest)) {
+                logs::debug("Layer '", layer.digest.str(),
+                            "' already present. Skipping");
+                continue;
+            }
             std::string blob_img_ref{image.repo()};
             blob_img_ref += "@";
             blob_img_ref += layer.digest.str();
@@ -56,16 +61,20 @@ class Cent::CentImpl {
                 static_cast<const char*>(static_cast<const void*>(blob.data())),
                 blob.size());
         }
-
-        std::string blob_img_ref{image.repo()};
-        blob_img_ref += "@";
-        blob_img_ref += manifest.config().digest.str();
-        Image config_image{blob_img_ref};
-        auto blob = client.blob(config_image);
-        auto stream = storage.write_config(manifest.config().digest);
-        stream->write(
-            static_cast<const char*>(static_cast<const void*>(blob.data())),
-            blob.size());
+        if (!storage.config_exists(manifest.config().digest)) {
+            std::string blob_img_ref{image.repo()};
+            blob_img_ref += "@";
+            blob_img_ref += manifest.config().digest.str();
+            Image config_image{blob_img_ref};
+            auto blob = client.blob(config_image);
+            auto stream = storage.write_config(manifest.config().digest);
+            stream->write(
+                static_cast<const char*>(static_cast<const void*>(blob.data())),
+                blob.size());
+        } else {
+            logs::debug("Config '", manifest.config().digest.str(),
+                        "' already present. Skipping");
+        }
         return {0, "foo"};
     }
 
