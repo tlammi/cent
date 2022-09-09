@@ -8,8 +8,20 @@ stdfs::path layerdir(const stdfs::path& root) {
     return out;
 }
 
+stdfs::path configdir(const stdfs::path& root) {
+    stdfs::path out{root};
+    out /= "configs";
+    return out;
+}
+
 stdfs::path layerpath(const stdfs::path& root, DigestView digest) {
     auto path = layerdir(root);
+    path /= digest.str();
+    return path;
+}
+
+stdfs::path configpath(const stdfs::path& root, DigestView digest) {
+    auto path = configdir(root);
     path /= digest.str();
     return path;
 }
@@ -18,6 +30,7 @@ stdfs::path layerpath(const stdfs::path& root, DigestView digest) {
 Storage::Storage(FileSystemApi* fs, const stdfs::path& root)
     : m_fs{fs}, m_root{root} {
     m_fs->mkdir(layerdir(m_root), true);
+    m_fs->mkdir(configdir(m_root), true);
 }
 
 bool Storage::layer_exists(DigestView digest) const {
@@ -32,6 +45,16 @@ std::unique_ptr<std::iostream> Storage::write_layer(DigestView digest) {
 
 std::unique_ptr<std::iostream> Storage::read_layer(DigestView digest) {
     auto path = layerpath(m_root, digest);
+    return m_fs->open_file(path, std::ios_base::in | std::ios_base::binary);
+}
+
+std::unique_ptr<std::iostream> Storage::write_config(DigestView digest) {
+    auto path = configpath(m_root, digest);
+    return m_fs->open_file(path, std::ios_base::out | std::ios_base::binary);
+}
+
+std::unique_ptr<std::iostream> Storage::read_config(DigestView digest) {
+    auto path = configpath(m_root, digest);
     return m_fs->open_file(path, std::ios_base::in | std::ios_base::binary);
 }
 

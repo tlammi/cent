@@ -25,6 +25,10 @@ class Storage {
      */
     std::unique_ptr<std::iostream> write_layer(DigestView digest);
 
+    std::unique_ptr<std::iostream> read_config(DigestView digest);
+
+    std::unique_ptr<std::iostream> write_config(DigestView digest);
+
  private:
     FileSystemApi* m_fs;
     stdfs::path m_root;

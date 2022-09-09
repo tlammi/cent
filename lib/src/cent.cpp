@@ -56,6 +56,16 @@ class Cent::CentImpl {
                 static_cast<const char*>(static_cast<const void*>(blob.data())),
                 blob.size());
         }
+
+        std::string blob_img_ref{image.repo()};
+        blob_img_ref += "@";
+        blob_img_ref += manifest.config().digest.str();
+        Image config_image{blob_img_ref};
+        auto blob = client.blob(config_image);
+        auto stream = storage.write_config(manifest.config().digest);
+        stream->write(
+            static_cast<const char*>(static_cast<const void*>(blob.data())),
+            blob.size());
         return {0, "foo"};
     }
 
