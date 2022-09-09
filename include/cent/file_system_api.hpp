@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <istream>
 #include <memory>
+#include <optional>
 
 #include "cent/result.hpp"
 
@@ -36,6 +37,22 @@ class FileSystemApi {
         std::ios_base::openmode mode = std::ios_base::in |
                                        std::ios_base::out) = 0;
     virtual bool exists(const stdfs::path& path) = 0;
+
+    /**
+     * Lock a file and create one if it does not exist
+     *
+     * \param path Path to lock file to aqcuire
+     * \return File descriptor to lock file
+     */
+    virtual int lock_file(const stdfs::path& path) = 0;
+    /**
+     * Unlock a previously locked file
+     *
+     * This is guaranteed to be called once for each lock_file call.
+     *
+     * \param handle Lock file handle
+     */
+    virtual void unlock_file(int fd) = 0;
 };
 
 std::unique_ptr<FileSystemApi> default_file_system_api();

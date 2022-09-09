@@ -1,6 +1,10 @@
+#include <sys/file.h>
+#include <unistd.h>
+
 #include <fstream>
 
 #include "cent/file_system_api.hpp"
+#include "cent/raise.hpp"
 
 namespace cent {
 
@@ -26,6 +30,15 @@ class LinuxFileSystemApi final : public FileSystemApi {
     bool exists(const stdfs::path& path) override {
         return stdfs::exists(path);
     }
+
+    int lock_file(const stdfs::path& path) override {
+        int fd = open(path.c_str(), O_RDWR | O_CREAT, 0666);
+        int rc = flock(fd, LOCK_EX);
+        if (rc) { raise("Could not lock", path); }
+        return fd;
+    }
+
+    void unlock_file(int fd) override { close(fd); }
 };
 
 std::unique_ptr<FileSystemApi> default_file_system_api() {
