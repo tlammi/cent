@@ -82,10 +82,13 @@ Manifest RegistryClient::manifest(const Image& img) {
     // TODO: method to allow reseting this to avoid dangling references
     std::string foo;
     m_sess->on_header("docker-distribution-api-version", foo);
+    std::string digest;
+    m_sess->on_header("docker-content-digest", digest);
     m_sess->set_header_field(
         "Accept", "application/vnd.docker.distribution.manifest.v2+json");
     auto res = m_sess->get(manifest_url(img));
-    return Manifest{nlohmann::json::parse(std::string(m_sess->get_body()))};
+    return Manifest{nlohmann::json::parse(std::string(m_sess->get_body())),
+                    std::move(digest)};
 }
 
 std::vector<uint8_t> RegistryClient::blob(const Image& img) {

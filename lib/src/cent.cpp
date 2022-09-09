@@ -26,7 +26,7 @@ class Cent::CentImpl {
     CentImpl(Interface* iface) : m_iface{iface} {}
 
     Result pull(std::string_view image_ref) {
-        Storage storage{m_iface->file_system(), "/home/tlammi/.cent/"};
+        Storage storage{m_iface->file_system(), "/home/tlammi/.cent/storage"};
         Image image{std::string(image_ref)};
         HttpClient http_client{m_iface};
         RegistryClient client{&http_client};
@@ -75,6 +75,14 @@ class Cent::CentImpl {
             logs::debug("Config '", manifest.config().digest.str(),
                         "' already present. Skipping");
         }
+        if (!storage.manifest_exists(manifest.digest())) {
+            logs::trace("Storing manifest '", manifest.digest().str(), "'");
+            (*storage.write_manifest(manifest.digest())) << manifest;
+        } else {
+            logs::debug("Manifest '", manifest.digest().str(),
+                        "' already present. Skipping");
+        }
+
         return {0, "foo"};
     }
 

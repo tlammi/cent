@@ -3,7 +3,8 @@
 namespace cent {
 
 Manifest::Manifest() {}
-Manifest::Manifest(const nlohmann::json& json) {
+Manifest::Manifest(const nlohmann::json& json, Digest digest)
+    : m_digest{std::move(digest)} {
     m_schema_version = json["schemaVersion"].get<size_t>();
     m_media_type = MediaType::from_mime(json["mediaType"].get<std::string>());
     const auto& conf = json["config"];
@@ -25,6 +26,7 @@ auto Manifest::config() const noexcept -> const Config& { return m_config; }
 auto Manifest::layers() const noexcept -> const std::vector<Layer>& {
     return m_layers;
 }
+DigestView Manifest::digest() const noexcept { return m_digest; }
 
 std::ostream& operator<<(std::ostream& os, const Manifest& manifest) {
     nlohmann::json json{};

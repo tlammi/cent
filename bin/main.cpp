@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     CLI::App* run_cmd = app.add_subcommand("run", "Run a container");
     run_cmd->final_callback([]() { std::cerr << "you wanted to run\n"; });
 
-    cent::LOG_LEVEL = cent::LogLevel::Debug;
+    cent::LOG_LEVEL = cent::LogLevel::Trace;
     CLI11_PARSE(app, argc, argv);
 
     /*
