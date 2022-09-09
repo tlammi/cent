@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "cent/http_client.hpp"
-#include "cent/image.hpp"
+#include "cent/reference.hpp"
 #include "cent/logs.hpp"
 #include "cent/registry_client.hpp"
 #include "cent/storage.hpp"
@@ -27,7 +27,7 @@ class Cent::CentImpl {
 
     Result pull(std::string_view image_ref) {
         Storage storage{m_iface->file_system(), "/home/tlammi/.cent/storage"};
-        Image image{std::string(image_ref)};
+        Reference image{std::string(image_ref)};
         HttpClient http_client{m_iface};
         RegistryClient client{&http_client};
         std::stringstream ss;
@@ -42,7 +42,7 @@ class Cent::CentImpl {
         std::string manifest_img_ref{image.repo()};
         manifest_img_ref += "@";
         manifest_img_ref += entry->digest.str();
-        Image manifest_image{manifest_img_ref};
+        Reference manifest_image{manifest_img_ref};
         auto manifest = client.manifest(manifest_image);
         logs::trace("Manifest: ", manifest);
         for (const auto& layer : manifest.layers()) {
@@ -54,7 +54,7 @@ class Cent::CentImpl {
             std::string blob_img_ref{image.repo()};
             blob_img_ref += "@";
             blob_img_ref += layer.digest.str();
-            Image blob_image{blob_img_ref};
+            Reference blob_image{blob_img_ref};
             auto blob = client.blob(blob_image);
             auto stream = storage.write_layer(layer.digest);
             stream->write(
@@ -65,7 +65,7 @@ class Cent::CentImpl {
             std::string blob_img_ref{image.repo()};
             blob_img_ref += "@";
             blob_img_ref += manifest.config().digest.str();
-            Image config_image{blob_img_ref};
+            Reference config_image{blob_img_ref};
             auto blob = client.blob(config_image);
             auto stream = storage.write_config(manifest.config().digest);
             stream->write(

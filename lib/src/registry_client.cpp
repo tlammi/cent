@@ -38,7 +38,7 @@ std::string registry_root_url(std::string_view registry) {
     return ss.str();
 }
 
-std::string manifest_url(const Image& img) {
+std::string manifest_url(const Reference& img) {
     auto registry = img.registry();
     auto name = img.name();
     auto ref = img.digest().str();
@@ -49,7 +49,7 @@ std::string manifest_url(const Image& img) {
     return url.str();
 }
 
-std::string blob_url(const Image& img) {
+std::string blob_url(const Reference& img) {
     auto registry = img.registry();
     auto name = img.name();
     auto ref = img.digest().str();
@@ -65,7 +65,7 @@ RegistryClient::RegistryClient(HttpSession* sess) : m_sess{sess} {
     m_sess->capture_header_field("docker-content-digest");
 }
 
-ManifestList RegistryClient::manifest_list(const Image& img) {
+ManifestList RegistryClient::manifest_list(const Reference& img) {
     int status_code = m_sess->get(registry_root_url(img.registry()));
     if (status_code != 200) raise("Failure status code: ", status_code);
     auto docker_dist_api_ver =
@@ -81,7 +81,7 @@ ManifestList RegistryClient::manifest_list(const Image& img) {
     return ManifestList{nlohmann::json::parse(m_sess->get_body())};
 }
 
-Manifest RegistryClient::manifest(const Image& img) {
+Manifest RegistryClient::manifest(const Reference& img) {
     std::string digest = m_sess->header_field("docker-content-digest");
     m_sess->set_header_field(
         "Accept", "application/vnd.docker.distribution.manifest.v2+json");
@@ -90,7 +90,7 @@ Manifest RegistryClient::manifest(const Image& img) {
                     std::move(digest)};
 }
 
-std::vector<uint8_t> RegistryClient::blob(const Image& img) {
+std::vector<uint8_t> RegistryClient::blob(const Reference& img) {
     m_sess->set_header_field(
         "Accept",
         MediaType::from_kind(MediaKind::DockerImageRootfsDiffTarGz).mime);

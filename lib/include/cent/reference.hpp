@@ -19,23 +19,23 @@ namespace cent {
  *
  * TODO: Rename as it can reference various things, like manifests or blobs.
  */
-class Image {
+class Reference {
  public:
     /**
      * Image from a reference
      *
      * \param str E.g. "docker.io/ubuntu:20.40"
      */
-    Image(std::string str);
+    Reference(std::string str);
 
     /// Assign a new value to the str
-    Image& operator=(std::string str);
+    Reference& operator=(std::string str);
 
-    Image(const Image&) = default;
-    Image& operator=(const Image&) = default;
+    Reference(const Reference&) = default;
+    Reference& operator=(const Reference&) = default;
 
-    Image(Image&&) noexcept = default;
-    Image& operator=(Image&&) noexcept = default;
+    Reference(Reference&&) noexcept = default;
+    Reference& operator=(Reference&&) noexcept = default;
 
     /**
      * Access the tag in the image

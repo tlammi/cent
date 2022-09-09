@@ -1,9 +1,9 @@
 #pragma once
 
-#include "cent/image.hpp"
 #include "cent/interface.hpp"
 #include "cent/manifest.hpp"
 #include "cent/manifest_list.hpp"
+#include "cent/reference.hpp"
 
 namespace cent {
 
@@ -17,11 +17,11 @@ class RegistryClient {
  public:
     RegistryClient(HttpSession* sess);
 
-    ManifestList manifest_list(const Image& img);
+    ManifestList manifest_list(const Reference& img);
 
-    Manifest manifest(const Image& img);
+    Manifest manifest(const Reference& img);
 
-    std::vector<uint8_t> blob(const Image& img);
+    std::vector<uint8_t> blob(const Reference& img);
 
  private:
     HttpSession* m_sess;
