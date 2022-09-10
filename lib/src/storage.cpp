@@ -1,6 +1,7 @@
 #include "cent/storage.hpp"
 
 #include "cent/lock_file.hpp"
+#include "cent/storage/images.hpp"
 
 namespace cent {
 namespace {
@@ -11,6 +12,9 @@ stdfs::path configdir(const stdfs::path& root) { return root / "configs"; }
 stdfs::path manifestdir(const stdfs::path& root) { return root / "manifests"; }
 
 stdfs::path lockfile(const stdfs::path& root) { return root / "cent.lock"; }
+stdfs::path imagedb_file(const stdfs::path& root) {
+    return root / "images.json";
+}
 
 stdfs::path layerpath(const stdfs::path& root, DigestView digest) {
     return layerdir(root) / digest.str();
@@ -81,6 +85,33 @@ std::unique_ptr<std::iostream> Storage::write_manifest(DigestView digest) {
     auto path = manifestpath(m_root, digest);
     LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::out);
+}
+
+Digest Storage::lookup_manifest(const Reference& image) {
+    auto path = imagedb_file(m_root);
+    LockFile lk{m_fs, lockfile(m_root)};
+    auto data =
+        nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
+    storage::Images images{data};
+    auto& entry = images[image];
+    return entry.manifest_digest;
+}
+
+void Storage::store_image_name(DigestView manifest, const Reference& image) {
+    auto path = imagedb_file(m_root);
+    LockFile lk{m_fs, lockfile(m_root)};
+    nlohmann::json data = nlohmann::json::array();
+    if (m_fs->exists(path))
+        data = nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
+
+    storage::Images images{data};
+    auto& entry = images[manifest];
+    for (const auto& i : entry.image_names) {
+        if (i.str() == image.str()) return;
+    }
+    entry.image_names.push_back(image);
+    auto file = m_fs->open_file(path, std::ios_base::out);
+    (*file) << images.json().dump();
 }
 
 }  // namespace cent

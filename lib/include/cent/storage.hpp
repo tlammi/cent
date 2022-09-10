@@ -2,6 +2,7 @@
 
 #include "cent/digest.hpp"
 #include "cent/file_system_api.hpp"
+#include "cent/reference.hpp"
 
 namespace cent {
 
@@ -45,6 +46,9 @@ class Storage {
 
     std::unique_ptr<std::iostream> read_manifest(DigestView digest);
     std::unique_ptr<std::iostream> write_manifest(DigestView digest);
+
+    Digest lookup_manifest(const Reference& image);
+    void store_image_name(DigestView manifest, const Reference& image);
 
  private:
     FileSystemApi* m_fs;

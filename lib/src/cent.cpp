@@ -87,6 +87,7 @@ class Cent::CentImpl {
             logs::debug("Manifest '", manifest.digest().str(),
                         "' already present. Skipping");
         }
+        storage.store_image_name(manifest.digest(), image);
 
         return {0, "foo"};
     }
