@@ -4,5 +4,6 @@ SRCS = SRCS + files(
     'linux_file_system_api.cpp', 'storage.cpp', 'lock_file.cpp')
 
 
+SRCS += files('curl_http_session.cpp')
 
-SRCS = SRCS + files('curl_http_session.cpp')
+subdir('storage')

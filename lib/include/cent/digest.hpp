@@ -43,4 +43,10 @@ class BasicDigest {
 
 using Digest = BasicDigest<std::string>;
 using DigestView = BasicDigest<std::string_view>;
+
+template <class S>
+std::ostream& operator<<(std::ostream& os, const BasicDigest<S>& d) {
+    os << d.str();
+    return os;
+}
 }  // namespace cent

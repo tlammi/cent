@@ -61,4 +61,9 @@ size_t Reference::ref_separator() const noexcept {
 
 size_t Reference::digest_separator() const noexcept { return m_str.rfind('@'); }
 
+std::ostream& operator<<(std::ostream& os, const Reference& r) {
+    os << r.str();
+    return os;
+}
+
 }  // namespace cent

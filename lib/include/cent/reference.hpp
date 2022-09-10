@@ -87,4 +87,6 @@ class Reference {
 
     std::string m_str;
 };
+
+std::ostream& operator<<(std::ostream& os, const Reference& r);
 }  // namespace cent
