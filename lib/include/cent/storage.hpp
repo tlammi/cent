@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "cent/digest.hpp"
 #include "cent/file_system_api.hpp"
 #include "cent/reference.hpp"
@@ -49,6 +51,8 @@ class Storage {
 
     Digest lookup_manifest(const Reference& image);
     void store_image_name(DigestView manifest, const Reference& image);
+
+    std::vector<Reference> list_images() const;
 
  private:
     FileSystemApi* m_fs;

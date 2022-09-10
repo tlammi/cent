@@ -28,6 +28,8 @@ class Images {
     Entry& operator[](Reference image);
     Entry& operator[](DigestView image);
 
+    const std::vector<Entry>& entries() const;
+
     nlohmann::json json() const;
 
  private:

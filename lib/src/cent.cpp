@@ -93,8 +93,8 @@ class Cent::CentImpl {
     }
 
     Result image_list() {
-        logs::print("foobar");
-        logs::print("baz");
+        Storage storage{m_iface->file_system(), "/home/tlammi/.cent/storage"};
+        for (const auto& ref : storage.list_images()) { logs::print(ref); }
         return {0, ""};
     }
 

@@ -114,4 +114,22 @@ void Storage::store_image_name(DigestView manifest, const Reference& image) {
     (*file) << images.json().dump();
 }
 
+std::vector<Reference> Storage::list_images() const {
+    auto path = imagedb_file(m_root);
+    LockFile lk{m_fs, lockfile(m_root)};
+    nlohmann::json data = nlohmann::json::array();
+    if (m_fs->exists(path))
+        data = nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
+
+    storage::Images images{data};
+    const auto& entries = images.entries();
+    std::vector<Reference> out{};
+    // Guess the size so each manifest has two aliases
+    out.reserve(entries.size() * 2);
+    for (const auto& e : entries) {
+        for (const auto& i : e.image_names) { out.push_back(i); }
+    }
+    return out;
+}
+
 }  // namespace cent

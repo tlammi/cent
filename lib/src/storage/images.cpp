@@ -91,5 +91,6 @@ nlohmann::json Images::json() const {
     }
     return out;
 }
+auto Images::entries() const -> const std::vector<Entry>& { return m_entries; }
 
 }  // namespace cent::storage
