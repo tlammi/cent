@@ -6,6 +6,9 @@
 
 namespace cent::drv {
 
+/**
+ * Wrapper class for passing all drivers to cent::Cent one time
+ */
 class Drivers {
  public:
     virtual ~Drivers() {}
