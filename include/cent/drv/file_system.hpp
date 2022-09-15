@@ -5,13 +5,11 @@
 #include <memory>
 #include <optional>
 
+#include "cent/def.hpp"
 #include "cent/result.hpp"
 
-namespace cent {
+namespace cent::drv {
 
-namespace stdfs = std::filesystem;
-
-namespace drv {
 /**
  * Interface for libcent to access the file system
  */
@@ -57,5 +55,5 @@ class FileSystem {
 };
 
 std::unique_ptr<FileSystem> default_file_system();
-}  // namespace drv
-}  // namespace cent
+
+}  // namespace cent::drv

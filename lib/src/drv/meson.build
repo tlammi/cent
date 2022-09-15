@@ -1,1 +1,1 @@
-SRCS += files('curl_http_session.cpp', 'linux_file_system.cpp')
+SRCS += files('curl_http_session.cpp', 'linux_file_system.cpp', 'default_context.cpp')

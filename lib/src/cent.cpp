@@ -31,7 +31,8 @@ class Cent::CentImpl {
     CentImpl(drv::Drivers* drivers) : m_drivers{drivers} {}
 
     Result pull(std::string_view image_ref) {
-        Storage storage{m_drivers->file_system(), "/home/tlammi/.cent/storage"};
+        Storage storage{m_drivers->file_system(),
+                        m_drivers->context()->storage_path()};
         Reference image{std::string(image_ref)};
         HttpClient http_client{m_drivers};
         RegistryClient client{&http_client};
