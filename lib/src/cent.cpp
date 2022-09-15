@@ -28,12 +28,12 @@ std::reference_wrapper<std::ostream> OUT_STREAM{std::cout};
 
 class Cent::CentImpl {
  public:
-    CentImpl(Interface* iface) : m_iface{iface} {}
+    CentImpl(drv::Drivers* drivers) : m_drivers{drivers} {}
 
     Result pull(std::string_view image_ref) {
-        Storage storage{m_iface->file_system(), "/home/tlammi/.cent/storage"};
+        Storage storage{m_drivers->file_system(), "/home/tlammi/.cent/storage"};
         Reference image{std::string(image_ref)};
-        HttpClient http_client{m_iface};
+        HttpClient http_client{m_drivers};
         RegistryClient client{&http_client};
         std::stringstream ss;
         auto manifest_list = client.manifest_list(image);
@@ -93,16 +93,16 @@ class Cent::CentImpl {
     }
 
     Result image_list() {
-        Storage storage{m_iface->file_system(), "/home/tlammi/.cent/storage"};
+        Storage storage{m_drivers->file_system(), "/home/tlammi/.cent/storage"};
         for (const auto& ref : storage.list_images()) { logs::print(ref); }
         return {0, ""};
     }
 
  private:
-    Interface* m_iface;
+    drv::Drivers* m_drivers;
 };
 
-Cent::Cent(Interface* iface) : m_impl{new CentImpl(iface)} {}
+Cent::Cent(drv::Drivers* drivers) : m_impl{new CentImpl(drivers)} {}
 Cent::~Cent() {}
 
 Result Cent::pull(std::string_view image) { return m_impl->pull(image); }

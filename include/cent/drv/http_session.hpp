@@ -3,7 +3,7 @@
 #include <memory>
 #include <string_view>
 
-namespace cent {
+namespace cent::drv {
 
 class HttpSession {
  public:

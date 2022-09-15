@@ -11,12 +11,13 @@ namespace cent {
 
 namespace stdfs = std::filesystem;
 
+namespace drv {
 /**
  * Interface for libcent to access the file system
  */
-class FileSystemApi {
+class FileSystem {
  public:
-    virtual ~FileSystemApi() {}
+    virtual ~FileSystem() {}
 
     /**
      * Make a directory
@@ -55,5 +56,6 @@ class FileSystemApi {
     virtual void unlock_file(int fd) = 0;
 };
 
-std::unique_ptr<FileSystemApi> default_file_system_api();
+std::unique_ptr<FileSystem> default_file_system();
+}  // namespace drv
 }  // namespace cent

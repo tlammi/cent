@@ -16,8 +16,8 @@ constexpr std::string_view strip(std::string_view what, char token) {
 }
 }  // namespace
 
-HttpClient::HttpClient(Interface* iface)
-    : m_iface{iface}, m_sess{m_iface->http_session()} {
+HttpClient::HttpClient(drv::Drivers* drivers)
+    : m_drivers{drivers}, m_sess{m_drivers->http_session()} {
     m_sess->capture_header_field("www-authenticate");
 }
 
@@ -56,7 +56,7 @@ int HttpClient::get(std::string_view url) {
             auto token_url_str = std::string(token_url) +
                                  "?service=" + std::string(service) +
                                  "&scope=" + std::string(scope);
-            auto challenge_session = m_iface->http_session();
+            auto challenge_session = m_drivers->http_session();
             res = challenge_session->get(token_url_str);
             if (res != 200)
                 raise("Unsupported status code when accessing ", url, ": ",

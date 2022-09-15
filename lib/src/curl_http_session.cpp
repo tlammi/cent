@@ -1,11 +1,11 @@
 
 #include <cpr/cpr.h>
 
+#include "cent/drv/http_session.hpp"
 #include "cent/http/header.hpp"
-#include "cent/http_session.hpp"
 #include "cent/logs.hpp"
 
-namespace cent {
+namespace cent::drv {
 
 class CurlHttpSession final : public HttpSession {
  public:
@@ -61,21 +61,6 @@ class CurlHttpSession final : public HttpSession {
             }));
         auto resp = m_sess.Get();
         return resp.status_code;
-
-        // m_easy.setOpt(curlpp::options::HttpHeader(m_headers));
-        // m_easy.setOpt(curlpp::options::Url(std::string(url)));
-        /*m_easy.setOpt(curlpp::options::HeaderFunction(
-            [&](char* buf, size_t s, size_t n) { return s * n; }));
-*/
-        /*
-                m_easy.setOpt(
-                    curlpp::options::WriteFunction([&](char* buf, size_t s,
-           size_t n) { m_body << std::string_view(buf, s * n); return s * n;
-                    }));
-
-        m_easy.perform();
-        return curlpp::infos::ResponseCode::get(m_easy);
-                    */
     }
 
  private:
@@ -89,4 +74,4 @@ std::unique_ptr<HttpSession> default_http_session() {
     return std::make_unique<CurlHttpSession>();
 }
 
-}  // namespace cent
+}  // namespace cent::drv

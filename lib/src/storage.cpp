@@ -29,7 +29,7 @@ stdfs::path manifestpath(const stdfs::path& root, DigestView digest) {
 }
 }  // namespace
 
-Storage::Storage(FileSystemApi* fs, const stdfs::path& root)
+Storage::Storage(drv::FileSystem* fs, const stdfs::path& root)
     : m_fs{fs}, m_root{root} {
     m_fs->mkdir(layerdir(m_root), true);
     m_fs->mkdir(configdir(m_root), true);

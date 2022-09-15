@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cent/interface.hpp"
+#include "cent/drv/http_session.hpp"
 #include "cent/manifest.hpp"
 #include "cent/manifest_list.hpp"
 #include "cent/reference.hpp"
@@ -15,7 +15,7 @@ namespace cent {
  */
 class RegistryClient {
  public:
-    RegistryClient(HttpSession* sess);
+    RegistryClient(drv::HttpSession* sess);
 
     ManifestList manifest_list(const Reference& img);
 
@@ -24,6 +24,6 @@ class RegistryClient {
     std::vector<uint8_t> blob(const Reference& img);
 
  private:
-    HttpSession* m_sess;
+    drv::HttpSession* m_sess;
 };
 }  // namespace cent

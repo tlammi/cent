@@ -3,7 +3,7 @@
 #include <memory>
 #include <string_view>
 
-#include "cent/interface.hpp"
+#include "cent/drv/drivers.hpp"
 #include "cent/log_level.hpp"
 #include "cent/result.hpp"
 
@@ -14,7 +14,7 @@ extern std::reference_wrapper<std::ostream> OUT_STREAM;
 
 class Cent {
  public:
-    Cent(Interface* iface);
+    Cent(drv::Drivers* drivers);
     ~Cent();
 
     Result pull(std::string_view image);

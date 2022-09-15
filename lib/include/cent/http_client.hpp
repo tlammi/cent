@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cent/interface.hpp"
+#include "cent/drv/drivers.hpp"
 
 namespace cent {
 
@@ -11,9 +11,9 @@ namespace cent {
  * HTTP errors, such as authentication challenges.
  *
  */
-class HttpClient final : public HttpSession {
+class HttpClient final : public drv::HttpSession {
  public:
-    HttpClient(Interface* iface);
+    HttpClient(drv::Drivers* drivers);
 
     void capture_header_field(std::string_view field) override;
 
@@ -26,7 +26,7 @@ class HttpClient final : public HttpSession {
     int get(std::string_view url) override;
 
  private:
-    Interface* m_iface;
-    std::unique_ptr<HttpSession> m_sess;
+    drv::Drivers* m_drivers;
+    std::unique_ptr<drv::HttpSession> m_sess;
 };
 }  // namespace cent

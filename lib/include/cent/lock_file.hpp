@@ -1,13 +1,13 @@
 #pragma once
 
-#include "cent/file_system_api.hpp"
+#include "cent/drv/file_system.hpp"
 
 namespace cent {
 
 class LockFile {
  public:
     LockFile();
-    LockFile(FileSystemApi* fs, const stdfs::path& path);
+    LockFile(drv::FileSystem* fs, const stdfs::path& path);
     LockFile(const LockFile&) = delete;
     LockFile& operator=(const LockFile&) = delete;
     LockFile(LockFile&&) = delete;
@@ -15,7 +15,7 @@ class LockFile {
     ~LockFile();
 
  private:
-    FileSystemApi* m_fs{nullptr};
+    drv::FileSystem* m_fs{nullptr};
     int m_handle{0};
 };
 }  // namespace cent

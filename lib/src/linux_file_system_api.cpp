@@ -3,12 +3,12 @@
 
 #include <fstream>
 
-#include "cent/file_system_api.hpp"
+#include "cent/drv/file_system.hpp"
 #include "cent/raise.hpp"
 
-namespace cent {
+namespace cent::drv {
 
-class LinuxFileSystemApi final : public FileSystemApi {
+class LinuxFileSystemApi final : public FileSystem {
  public:
     Result mkdir(const stdfs::path& path, bool parents) override {
         std::error_code ec;
@@ -41,7 +41,7 @@ class LinuxFileSystemApi final : public FileSystemApi {
     void unlock_file(int fd) override { close(fd); }
 };
 
-std::unique_ptr<FileSystemApi> default_file_system_api() {
+std::unique_ptr<FileSystem> default_file_system() {
     return std::make_unique<LinuxFileSystemApi>();
 }
-}  // namespace cent
+}  // namespace cent::drv

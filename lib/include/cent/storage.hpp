@@ -3,14 +3,14 @@
 #include <vector>
 
 #include "cent/digest.hpp"
-#include "cent/file_system_api.hpp"
+#include "cent/drv/file_system.hpp"
 #include "cent/reference.hpp"
 
 namespace cent {
 
 class Storage {
  public:
-    Storage(FileSystemApi* fs, const stdfs::path& root);
+    Storage(drv::FileSystem* fs, const stdfs::path& root);
 
     /**
      * Check if a layer with the given digest exists
@@ -55,7 +55,7 @@ class Storage {
     std::vector<Reference> list_images() const;
 
  private:
-    FileSystemApi* m_fs;
+    drv::FileSystem* m_fs;
     stdfs::path m_root;
 };
 }  // namespace cent

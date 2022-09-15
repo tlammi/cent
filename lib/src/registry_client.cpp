@@ -60,7 +60,7 @@ std::string blob_url(const Reference& img) {
     return url.str();
 }
 }  // namespace
-RegistryClient::RegistryClient(HttpSession* sess) : m_sess{sess} {
+RegistryClient::RegistryClient(drv::HttpSession* sess) : m_sess{sess} {
     m_sess->capture_header_field("docker-distribution-api-version");
     m_sess->capture_header_field("docker-content-digest");
 }
