@@ -12,6 +12,10 @@ class Drivers final : public cent::drv::Drivers {
 
     cent::drv::Context* context() override { return m_ctx.get(); }
 
+    std::unique_ptr<cent::drv::Sandbox> sandbox() override {
+        return cent::drv::default_sandbox();
+    }
+
  private:
     std::unique_ptr<cent::drv::FileSystem> m_fs{
         cent::drv::default_file_system()};

@@ -3,6 +3,7 @@
 #include "cent/drv/context.hpp"
 #include "cent/drv/file_system.hpp"
 #include "cent/drv/http_session.hpp"
+#include "cent/drv/sandbox.hpp"
 
 namespace cent::drv {
 
@@ -15,6 +16,8 @@ class Drivers {
     virtual std::unique_ptr<HttpSession> http_session() = 0;
     virtual FileSystem* file_system() = 0;
     virtual Context* context() = 0;
+
+    virtual std::unique_ptr<Sandbox> sandbox() = 0;
 };
 
 }  // namespace cent::drv
