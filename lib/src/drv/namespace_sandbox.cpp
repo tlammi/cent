@@ -35,14 +35,14 @@ void map_ids(std::string_view mapper, pid_t child_pid,
 
 class NamespaceSandbox final : public Sandbox {
  public:
-    void set_uid_maps(const std::vector<IdMap>& map) override {
-        m_uid_maps = map;
+    void set_uid_maps(std::vector<IdMap> map) override {
+        m_uid_maps = std::move(map);
     }
 
     const std::vector<IdMap>& uid_maps() const override { return m_uid_maps; }
 
-    void set_gid_maps(const std::vector<IdMap>& map) override {
-        m_gid_maps = map;
+    void set_gid_maps(std::vector<IdMap> map) override {
+        m_gid_maps = std::move(map);
     }
 
     const std::vector<IdMap>& gid_maps() const override { return m_gid_maps; }

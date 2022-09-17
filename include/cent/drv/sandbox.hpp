@@ -24,13 +24,13 @@ class Sandbox {
     virtual ~Sandbox() {}
 
     /// Set UID maps to apply on the following calls to fork()
-    virtual void set_uid_maps(const std::vector<IdMap>& map) = 0;
+    virtual void set_uid_maps(std::vector<IdMap> map) = 0;
 
     /// Get the current UID maps
     virtual const std::vector<IdMap>& uid_maps() const = 0;
 
     /// Set GID maps to apply on the following calls to fork()
-    virtual void set_gid_maps(const std::vector<IdMap>& map) = 0;
+    virtual void set_gid_maps(std::vector<IdMap> map) = 0;
 
     /// Get the current GID maps
     virtual const std::vector<IdMap>& gid_maps() const = 0;
