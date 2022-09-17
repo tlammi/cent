@@ -19,6 +19,7 @@ class Cent {
 
     Result pull(std::string_view image);
     Result image_list();
+    Result create(std::string_view image);
 
  private:
     class CentImpl;

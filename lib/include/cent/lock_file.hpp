@@ -10,8 +10,8 @@ class LockFile {
     LockFile(drv::FileSystem* fs, const stdfs::path& path);
     LockFile(const LockFile&) = delete;
     LockFile& operator=(const LockFile&) = delete;
-    LockFile(LockFile&&) = delete;
-    LockFile& operator=(LockFile&&) = delete;
+    LockFile(LockFile&& rhs);
+    LockFile& operator=(LockFile&& rhs);
     ~LockFile();
 
  private:

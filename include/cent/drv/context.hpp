@@ -17,6 +17,7 @@ class Context {
     virtual ~Context() {}
 
     virtual stdfs::path storage_path() = 0;
+    virtual stdfs::path workspace_path() = 0;
 };
 
 std::unique_ptr<Context> default_context();

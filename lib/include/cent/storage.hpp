@@ -4,6 +4,7 @@
 
 #include "cent/digest.hpp"
 #include "cent/drv/file_system.hpp"
+#include "cent/lock_file.hpp"
 #include "cent/reference.hpp"
 
 namespace cent {
@@ -24,6 +25,9 @@ class Storage {
 
     /// Check if a manifest with the given digest exists
     bool manifest_exists(DigestView digest) const;
+
+    /// Path to file where the layer is stored
+    stdfs::path layer_path(DigestView digest);
 
     /// Open a layer file for reading
     std::unique_ptr<std::iostream> read_layer(DigestView digest);
@@ -55,6 +59,7 @@ class Storage {
     std::vector<Reference> list_images() const;
 
  private:
+    LockFile m_lk{};
     drv::FileSystem* m_fs;
     stdfs::path m_root;
 };

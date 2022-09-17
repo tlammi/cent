@@ -25,6 +25,10 @@ int main(int argc, char** argv) {
     CLI::App* image_ls_cmd = image_cmd->add_subcommand("ls", "List images");
     image_ls_cmd->final_callback(ls_callback);
 
+    CLI::App* create_cmd = app.add_subcommand("create", "Create a container");
+    create_cmd->add_option("image", image);
+    create_cmd->final_callback([&]() { c.create(image); });
+
     cent::LOG_LEVEL = cent::LogLevel::Trace;
     CLI11_PARSE(app, argc, argv);
 

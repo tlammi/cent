@@ -4,6 +4,7 @@
 #include "cent/drv/file_system.hpp"
 #include "cent/drv/http_session.hpp"
 #include "cent/drv/sandbox.hpp"
+#include "cent/drv/unpacker.hpp"
 
 namespace cent::drv {
 
@@ -18,6 +19,8 @@ class Drivers {
     virtual Context* context() = 0;
 
     virtual std::unique_ptr<Sandbox> sandbox() = 0;
+
+    virtual Unpacker* unpacker() = 0;
 };
 
 }  // namespace cent::drv
