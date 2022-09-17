@@ -15,11 +15,21 @@ namespace {
 
 constexpr uint64_t CHILD_CONTINUE = 0x06;
 
-void to_newuidmap(std::stringstream& ss,
-                  const std::vector<Sandbox::UidMap>& maps) {
+void serialize_uidmap(std::stringstream& ss,
+                      const std::vector<Sandbox::UidMap>& maps) {
     for (const auto& [in, out, count] : maps) {
         ss << " " << in << " " << out << " " << count;
     }
+}
+
+void map_ids(std::string_view mapper, pid_t child_pid,
+             const std::vector<Sandbox::UidMap>& maps) {
+    if (maps.empty()) return;
+    std::stringstream ss;
+    ss << mapper << " " << child_pid;
+    serialize_uidmap(ss, maps);
+    int res = system(ss.str().c_str());
+    if (res) { raise("Failed to create mapping '", ss.str(), "': ", res); }
 }
 }  // namespace
 
@@ -30,6 +40,12 @@ class NamespaceSandbox final : public Sandbox {
     }
 
     const std::vector<UidMap>& uid_maps() const override { return m_uid_maps; }
+
+    void set_gid_maps(const std::vector<UidMap>& map) override {
+        m_gid_maps = map;
+    }
+
+    const std::vector<UidMap>& gid_maps() const override { return m_gid_maps; }
 
     void fork(const std::function<void()>& func) override {
         clone_args cargs{
@@ -58,11 +74,8 @@ class NamespaceSandbox final : public Sandbox {
             exit(EXIT_SUCCESS);
         } else {
             logs::trace("Created sandbox process ", pid);
-            std::stringstream ss;
-            ss << "newuidmap " << pid;
-            to_newuidmap(ss, m_uid_maps);
-            logs::trace("Creating uidmap: '", ss.str(), '\'');
-            system(ss.str().c_str());
+            map_ids("newuidmap", pid, m_uid_maps);
+            map_ids("newgidmap", pid, m_gid_maps);
             write(fd, &CHILD_CONTINUE, sizeof(CHILD_CONTINUE));
             close(fd);
             int status;
@@ -79,6 +92,7 @@ class NamespaceSandbox final : public Sandbox {
 
  private:
     std::vector<UidMap> m_uid_maps{};
+    std::vector<UidMap> m_gid_maps{};
 };
 
 std::unique_ptr<Sandbox> default_sandbox() {

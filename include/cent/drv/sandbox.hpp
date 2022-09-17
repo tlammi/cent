@@ -29,6 +29,10 @@ class Sandbox {
     /// Get the current UID maps
     virtual const std::vector<UidMap>& uid_maps() const = 0;
 
+    virtual void set_gid_maps(const std::vector<UidMap>& map) = 0;
+
+    virtual const std::vector<UidMap>& gid_maps() const = 0;
+
     /**
      * Run the given callable in a sandboxed environment.
      *
