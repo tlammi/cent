@@ -49,14 +49,21 @@ class LibarchiveUnpacker final : public Unpacker {
         }};
 
         static constexpr int secure_flags =
-            ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_SECURE_SYMLINKS |
-            ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;
+            /*  ARCHIVE_EXTRACT_SECURE_NODOTDOT | */
+            ARCHIVE_EXTRACT_SECURE_SYMLINKS |  // Do not extract when resulting
+                                               // symlink would relocate the
+                                               // file
+            ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;  // Fail if trying to
+                                                     // extract an absolute path
+
         static constexpr int attribute_flags =
             ARCHIVE_EXTRACT_ACL | ARCHIVE_EXTRACT_FFLAGS |
             ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_XATTR |
             ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_OWNER;
         static constexpr int optimization_flags =
-            ARCHIVE_EXTRACT_UNLINK | ARCHIVE_EXTRACT_SPARSE;
+            ARCHIVE_EXTRACT_UNLINK |  // faster extract, might break existing
+                                      // hardlinks
+            ARCHIVE_EXTRACT_SPARSE;   // Try to keep sparse files sparse
 
         static constexpr int flags =
             secure_flags | attribute_flags | optimization_flags;
