@@ -16,14 +16,14 @@ namespace {
 constexpr uint64_t CHILD_CONTINUE = 0x06;
 
 void serialize_uidmap(std::stringstream& ss,
-                      const std::vector<Sandbox::UidMap>& maps) {
+                      const std::vector<Sandbox::IdMap>& maps) {
     for (const auto& [in, out, count] : maps) {
         ss << " " << in << " " << out << " " << count;
     }
 }
 
 void map_ids(std::string_view mapper, pid_t child_pid,
-             const std::vector<Sandbox::UidMap>& maps) {
+             const std::vector<Sandbox::IdMap>& maps) {
     if (maps.empty()) return;
     std::stringstream ss;
     ss << mapper << " " << child_pid;
@@ -35,17 +35,17 @@ void map_ids(std::string_view mapper, pid_t child_pid,
 
 class NamespaceSandbox final : public Sandbox {
  public:
-    void set_uid_maps(const std::vector<UidMap>& map) override {
+    void set_uid_maps(const std::vector<IdMap>& map) override {
         m_uid_maps = map;
     }
 
-    const std::vector<UidMap>& uid_maps() const override { return m_uid_maps; }
+    const std::vector<IdMap>& uid_maps() const override { return m_uid_maps; }
 
-    void set_gid_maps(const std::vector<UidMap>& map) override {
+    void set_gid_maps(const std::vector<IdMap>& map) override {
         m_gid_maps = map;
     }
 
-    const std::vector<UidMap>& gid_maps() const override { return m_gid_maps; }
+    const std::vector<IdMap>& gid_maps() const override { return m_gid_maps; }
 
     void fork(const std::function<void()>& func) override {
         clone_args cargs{
@@ -91,8 +91,8 @@ class NamespaceSandbox final : public Sandbox {
     }
 
  private:
-    std::vector<UidMap> m_uid_maps{};
-    std::vector<UidMap> m_gid_maps{};
+    std::vector<IdMap> m_uid_maps{};
+    std::vector<IdMap> m_gid_maps{};
 };
 
 std::unique_ptr<Sandbox> default_sandbox() {

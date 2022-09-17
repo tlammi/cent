@@ -14,24 +14,26 @@ namespace cent::drv {
  */
 class Sandbox {
  public:
-    /// Map UID from sandbox to outside of the sandbox
-    struct UidMap {
-        uint64_t in;     ///< First UID in container to map
-        uint64_t out;    ///< First UID outside of the container to map
-        uint64_t count;  ///< Number of UIDs to map
+    /// Map UID/GID from sandbox to outside of the sandbox
+    struct IdMap {
+        uint64_t in;     ///< First UID/GID in container to map
+        uint64_t out;    ///< First UID/GID outside of the container to map
+        uint64_t count;  ///< Number of UIDs/GIDs to map
     };
 
     virtual ~Sandbox() {}
 
     /// Set UID maps to apply on the following calls to fork()
-    virtual void set_uid_maps(const std::vector<UidMap>& map) = 0;
+    virtual void set_uid_maps(const std::vector<IdMap>& map) = 0;
 
     /// Get the current UID maps
-    virtual const std::vector<UidMap>& uid_maps() const = 0;
+    virtual const std::vector<IdMap>& uid_maps() const = 0;
 
-    virtual void set_gid_maps(const std::vector<UidMap>& map) = 0;
+    /// Set GID maps to apply on the following calls to fork()
+    virtual void set_gid_maps(const std::vector<IdMap>& map) = 0;
 
-    virtual const std::vector<UidMap>& gid_maps() const = 0;
+    /// Get the current GID maps
+    virtual const std::vector<IdMap>& gid_maps() const = 0;
 
     /**
      * Run the given callable in a sandboxed environment.
