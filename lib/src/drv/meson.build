@@ -1,1 +1,7 @@
-SRCS += files('curl_http_session.cpp', 'linux_file_system.cpp', 'default_context.cpp', 'namespace_sandbox.cpp')
+SRCS += files(
+    'curl_http_session.cpp',
+    'linux_file_system.cpp',
+    'default_context.cpp',
+    'namespace_sandbox.cpp',
+    'libarchive_unpacker.cpp'
+)

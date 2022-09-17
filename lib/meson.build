@@ -15,6 +15,10 @@ cpr_opts.add_cmake_defines({
 cpr_proj = cmake.subproject('cpr', options: cpr_opts)
 DEPS += cpr_proj.get_variable('cpr_dep')
 
+
+libarchive_proj = cmake.subproject('libarchive')
+DEPS += libarchive_proj.get_variable('archive_dep')
+
 subdir('src')
 
 LIBCENT = library('cent', SRCS, include_directories: [private_inc, PUBLIC_INCLUDE], dependencies: DEPS)
