@@ -1,31 +1,13 @@
 #!/usr/bin/env python3
 
-import glob
-import os
-import sys
 import re
 
-SRC_DIRS = [
-    "../bin",
-    "../lib",
-    "../include",
-]
+import util
+
 
 RE_SINGLE_LINE_COMMENT = re.compile(r"^\s*//.*?$", re.MULTILINE)
 RE_COMMENT = re.compile(r"^\s*/\*.*?\*/", re.MULTILINE | re.DOTALL)
 
-def src_files():
-    thisdir = os.path.dirname(sys.argv[0])   
-
-    src_dirs = [os.path.join(thisdir, d) for d in SRC_DIRS]
-
-    srcs = []
-    for d in src_dirs:
-        raw_srcs = glob.glob("./**/*.cpp", root_dir=d, recursive=True) \
-                + glob.glob("./**/*.hpp", root_dir=d, recursive=True)
-        srcs.extend([os.path.join(d, s) for s in raw_srcs])
-
-    return [os.path.normpath(s) for s in srcs]
 
 def read(srcs: list):
     data = ""
@@ -44,7 +26,7 @@ def remove_comments(data: str):
 
 
 def main():
-    data = read(src_files())
+    data = read(util.src_files())
     data = remove_one_line_comments(data)
     data = remove_comments(data)
     lines = [l for l in data.split("\n") if len(l.strip()) > 0]
