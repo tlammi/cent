@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
+/* Copyright (C) 2022 Toni Lammi */
 #include "cent/storage/images.hpp"
 
 #include "cent/raise.hpp"
