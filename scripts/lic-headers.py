@@ -6,7 +6,8 @@ import hashlib
 
 import util
 
-SPDX_HEADER = "/* SPDX-License-Identifier:  GPL-3.0-or-later */".strip()
+SPDX_HEADER_FIELD = "SPDX-License-Identifier"
+SPDX_HEADER = f"/* {SPDX_HEADER_FIELD}:  GPL-3.0-or-later */".strip()
 
 EXPECTED_LICENSE_DIGEST = "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
 
@@ -51,7 +52,12 @@ def inject(srcs: list):
         if line.strip() != SPDX_HEADER:
             with open(s, "r") as f:
                 lines = f.readlines()
-            lines = [f"{SPDX_HEADER}\n"] + lines
+            if SPDX_HEADER_FIELD not in line:
+                # No SPDX header ->  Prepend
+                lines = [f"{SPDX_HEADER}\n"] + lines
+            else:
+                # SPDX header present -> Replace
+                lines = [f"{SPDX_HEADER}\n"] + lines[1:]
             with open(s, "w") as f:
                 f.writelines(lines)
 
