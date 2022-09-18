@@ -117,8 +117,8 @@ class Cent::CentImpl {
 
         auto sandbox = m_drivers->sandbox();
         using IdMap = drv::Sandbox::IdMap;
-        sandbox->set_uid_maps({IdMap{0, 1000, 1}, IdMap{1, 10000, 65564}});
-        sandbox->set_gid_maps({IdMap{0, 1000, 1}, IdMap{1, 10000, 65564}});
+        sandbox->set_uid_maps(m_drivers->context()->uid_maps());
+        sandbox->set_gid_maps(m_drivers->context()->gid_maps());
         logs::debug("Walking through layers");
         std::vector<stdfs::path> extract_paths{};
         for (const auto& layer : manifest.layers()) {

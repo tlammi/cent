@@ -3,6 +3,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "cent/concepts.hpp"
 
@@ -33,4 +34,10 @@ requires(concepts::implicit_const_iterable<Container>&&
     }
     return out;
 }
+
+std::pair<std::string_view, std::string_view> split_left(
+    std::string_view str, std::string_view token);
+
+std::vector<std::string_view> split(std::string_view str,
+                                    std::string_view token);
 }  // namespace cent

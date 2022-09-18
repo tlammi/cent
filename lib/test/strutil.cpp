@@ -2,6 +2,7 @@
 /* Copyright (C) 2022 Toni Lammi */
 #include "cent/strutil.hpp"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 TEST(Join, Empty) {
@@ -69,4 +70,17 @@ TEST(SplitLeft, Match) {
     auto [l, r] = cent::split_left("foobarbaz", "foobarbaz");
     ASSERT_EQ(l, "");
     ASSERT_EQ(r, "");
+}
+
+TEST(Split, Simple) {
+    auto res = cent::split("foo:bar:baz", ":");
+    ASSERT_EQ(res.size(), 3);
+
+    ASSERT_THAT(res, testing::ElementsAre("foo", "bar", "baz"));
+}
+
+TEST(Split, No) {
+    auto res = cent::split("foobarbaz", "aaaa");
+    ASSERT_EQ(res.size(), 1);
+    ASSERT_EQ(res[0], "foobarbaz");
 }
