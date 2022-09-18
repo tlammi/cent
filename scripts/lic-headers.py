@@ -1,10 +1,30 @@
 #!/usr/bin/env python3
 
 import sys
+import os
+import hashlib
 
 import util
 
 SPDX_HEADER = "/* SPDX-License-Identifier:  GPL-3.0-or-later */".strip()
+
+EXPECTED_LICENSE_DIGEST = "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+
+def license_file_digest():
+    thisdir = os.path.dirname(sys.argv[0])
+    lic_file = os.path.join(thisdir, "../LICENSE")
+    with open(lic_file, "rb") as f:
+        digest = hashlib.sha256(f.read(), usedforsecurity=False)
+    return digest.hexdigest()
+
+
+def digest_failure_msg(got: str):
+    return f"""
+LICENSE file digest changed. Check that SPDX identifier is up to date.
+Cached digest: '{EXPECTED_LICENSE_DIGEST}'.
+Got: '{got}'.
+""".strip()
+
 
 def first_line(path: str):
     with open(path, "r") as f:
@@ -43,6 +63,10 @@ def main():
             raise ValueError(
                     f"Usage: {sys.argv[0]} 'commmand' where command is 'check' or 'inject'")
         srcs = util.src_files()
+
+        digest = license_file_digest()
+        if digest != EXPECTED_LICENSE_DIGEST:
+            raise ValueError(digest_failure_msg(digest))
 
         if sys.argv[1] == "check":
             sys.exit(check(srcs))
