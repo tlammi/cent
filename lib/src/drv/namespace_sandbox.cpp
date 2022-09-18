@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier:  GPL-3.0-or-later */
 #include <linux/sched.h>
 #include <sched.h>
 #include <signal.h>

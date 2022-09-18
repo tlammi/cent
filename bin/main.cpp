@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier:  GPL-3.0-or-later */
 
 #include <CLI/App.hpp>
 #include <CLI/Config.hpp>

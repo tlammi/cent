@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier:  GPL-3.0-or-later */
 #include "cent/http_client.hpp"
 
 #include <string>
