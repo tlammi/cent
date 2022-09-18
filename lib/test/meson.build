@@ -15,6 +15,7 @@ test_manifests = executable('test_manifests', 'manifests.cpp', kwargs: test_kwar
 test_storage_images = executable('test_storage_images', 'storage_images.cpp', kwargs: test_kwargs)
 test_defer = executable('test_defer', 'defer.cpp', kwargs: test_kwargs)
 test_cast = executable('test_cast', 'cast.cpp', kwargs: test_kwargs)
+test_strutil = executable('test_strutil', 'strutil.cpp', kwargs: test_kwargs)
 
 test('Reference', test_reference)
 test('HTTP Header', test_http_header)
@@ -23,3 +24,4 @@ test('Manifests', test_manifests)
 test('Storage Images', test_storage_images)
 test('Defer', test_defer)
 test('Cast', test_cast)
+test('String Utils', test_strutil)
