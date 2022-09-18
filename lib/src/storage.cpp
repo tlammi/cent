@@ -1,6 +1,5 @@
 #include "cent/storage.hpp"
 
-#include "cent/lock_file.hpp"
 #include "cent/storage/images.hpp"
 
 namespace cent {
@@ -34,62 +33,57 @@ Storage::Storage(drv::FileSystem* fs, const stdfs::path& root)
     m_fs->mkdir(layerdir(m_root), true);
     m_fs->mkdir(configdir(m_root), true);
     m_fs->mkdir(manifestdir(m_root), true);
+    m_lk = LockFile{m_fs, lockfile(m_root)};
 }
 
 bool Storage::layer_exists(DigestView digest) const {
     auto path = layerpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->exists(path);
 }
 
 bool Storage::config_exists(DigestView digest) const {
     auto path = configpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->exists(path);
 }
 
 bool Storage::manifest_exists(DigestView digest) const {
     auto path = manifestpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->exists(path);
 }
 std::unique_ptr<std::iostream> Storage::write_layer(DigestView digest) {
     auto path = layerpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::out | std::ios_base::binary);
+}
+
+stdfs::path Storage::layer_path(DigestView digest) {
+    return layerpath(m_root, digest);
 }
 
 std::unique_ptr<std::iostream> Storage::read_layer(DigestView digest) {
     auto path = layerpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::in | std::ios_base::binary);
 }
 
 std::unique_ptr<std::iostream> Storage::write_config(DigestView digest) {
     auto path = configpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::out);
 }
 
 std::unique_ptr<std::iostream> Storage::read_config(DigestView digest) {
     auto path = configpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::in);
 }
 std::unique_ptr<std::iostream> Storage::read_manifest(DigestView digest) {
     auto path = manifestpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::in);
 }
 std::unique_ptr<std::iostream> Storage::write_manifest(DigestView digest) {
     auto path = manifestpath(m_root, digest);
-    LockFile lk{m_fs, lockfile(m_root)};
     return m_fs->open_file(path, std::ios_base::out);
 }
 
 Digest Storage::lookup_manifest(const Reference& image) {
     auto path = imagedb_file(m_root);
-    LockFile lk{m_fs, lockfile(m_root)};
     auto data =
         nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
     storage::Images images{data};
@@ -99,7 +93,6 @@ Digest Storage::lookup_manifest(const Reference& image) {
 
 void Storage::store_image_name(DigestView manifest, const Reference& image) {
     auto path = imagedb_file(m_root);
-    LockFile lk{m_fs, lockfile(m_root)};
     nlohmann::json data = nlohmann::json::array();
     if (m_fs->exists(path))
         data = nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
@@ -116,7 +109,6 @@ void Storage::store_image_name(DigestView manifest, const Reference& image) {
 
 std::vector<Reference> Storage::list_images() const {
     auto path = imagedb_file(m_root);
-    LockFile lk{m_fs, lockfile(m_root)};
     nlohmann::json data = nlohmann::json::array();
     if (m_fs->exists(path))
         data = nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));

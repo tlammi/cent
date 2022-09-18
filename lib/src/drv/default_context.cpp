@@ -11,6 +11,12 @@ class DefaultContext final : public Context {
         stdfs::path path{home};
         return path / ".cent/storage";
     }
+    stdfs::path workspace_path() override {
+        auto* home = std::getenv("HOME");
+        if (!home) raise("No HOME");
+        stdfs::path path{home};
+        return path / ".cent/workspace";
+    }
 };
 std::unique_ptr<Context> default_context() {
     return std::make_unique<DefaultContext>();

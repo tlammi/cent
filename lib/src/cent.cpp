@@ -9,6 +9,7 @@
 #include "cent/reference.hpp"
 #include "cent/registry_client.hpp"
 #include "cent/storage.hpp"
+#include "cent/workspace.hpp"
 
 namespace cent {
 
@@ -94,9 +95,41 @@ class Cent::CentImpl {
     }
 
     Result image_list() {
-        Storage storage{m_drivers->file_system(), "/home/tlammi/.cent/storage"};
+        Storage storage{m_drivers->file_system(),
+                        m_drivers->context()->storage_path()};
         for (const auto& ref : storage.list_images()) { logs::print(ref); }
         return {0, ""};
+    }
+
+    Result create(std::string_view image) {
+        Storage storage{m_drivers->file_system(),
+                        m_drivers->context()->storage_path()};
+        Workspace wspace{m_drivers->file_system(),
+                         m_drivers->context()->workspace_path()};
+        logs::trace("Getting manifest digest");
+        auto manifest_digest = storage.lookup_manifest(std::string{image});
+        logs::debug("Found manifest digest: ", manifest_digest);
+        Manifest manifest{
+            nlohmann::json::parse(*storage.read_manifest(manifest_digest))};
+        logs::debug("Parsed manifest: ", manifest);
+
+        auto sandbox = m_drivers->sandbox();
+        using IdMap = drv::Sandbox::IdMap;
+        sandbox->set_uid_maps({IdMap{0, 1000, 1}, IdMap{1, 10000, 65564}});
+        sandbox->set_gid_maps({IdMap{0, 1000, 1}, IdMap{1, 10000, 65564}});
+        logs::debug("Walking through layers");
+        for (const auto& layer : manifest.layers()) {
+            if (!wspace.layer_exists(layer.digest)) {
+                logs::trace("layer '", layer.digest,
+                            "' does not exist. Extracting");
+                auto src = storage.layer_path(layer.digest);
+                auto dst = wspace.create_layer(layer.digest);
+                logs::trace("forking to a sandbox");
+                sandbox->fork(
+                    [&]() { m_drivers->unpacker()->unpack(src, dst); });
+            }
+        }
+        return Result{0, ""};
     }
 
  private:
@@ -108,5 +141,6 @@ Cent::~Cent() {}
 
 Result Cent::pull(std::string_view image) { return m_impl->pull(image); }
 Result Cent::image_list() { return m_impl->image_list(); }
+Result Cent::create(std::string_view image) { return m_impl->create(image); }
 
 }  // namespace cent

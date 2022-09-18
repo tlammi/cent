@@ -3,6 +3,7 @@
 
 #include "cent/defer.hpp"
 #include "cent/drv/unpacker.hpp"
+#include "cent/logs.hpp"
 #include "cent/raise.hpp"
 
 namespace cent::drv {
@@ -50,20 +51,18 @@ class LibarchiveUnpacker final : public Unpacker {
 
         static constexpr int secure_flags =
             /*  ARCHIVE_EXTRACT_SECURE_NODOTDOT | */
-            ARCHIVE_EXTRACT_SECURE_SYMLINKS |  // Do not extract when resulting
-                                               // symlink would relocate the
-                                               // file
-            ARCHIVE_EXTRACT_SECURE_NOABSOLUTEPATHS;  // Fail if trying to
-                                                     // extract an absolute path
+            ARCHIVE_EXTRACT_SECURE_SYMLINKS;  // Do not extract when resulting
+                                              // symlink would relocate the
+                                              // file
 
         static constexpr int attribute_flags =
             ARCHIVE_EXTRACT_ACL | ARCHIVE_EXTRACT_FFLAGS |
             ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_XATTR |
             ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_OWNER;
         static constexpr int optimization_flags =
-            ARCHIVE_EXTRACT_UNLINK |  // faster extract, might break existing
-                                      // hardlinks
-            ARCHIVE_EXTRACT_SPARSE;   // Try to keep sparse files sparse
+            // ARCHIVE_EXTRACT_UNLINK |  // faster extract, might break existing
+            //  hardlinks
+            ARCHIVE_EXTRACT_SPARSE;  // Try to keep sparse files sparse
 
         static constexpr int flags =
             secure_flags | attribute_flags | optimization_flags;
@@ -71,17 +70,28 @@ class LibarchiveUnpacker final : public Unpacker {
         CALL_AND_CHECK(archive_write_disk_set_standard_lookup, out);
         CALL_AND_CHECK(archive_write_disk_set_options, out, flags);
 
+        stdfs::path orig_path = stdfs::current_path();
+        Defer restore_path{[&] {
+            logs::debug("Restoring working directory");
+            stdfs::current_path(orig_path);
+        }};
+
+        logs::debug("Extracting from ", src, " to ", dst);
+        logs::debug("Changing current directory to ", dst);
+        stdfs::current_path(dst);
+
         while (true) {
             archive_entry* e{};
             int r = CALL_AND_CHECK(archive_read_next_header, a, &e);
             if (r == ARCHIVE_EOF) break;
             stdfs::path p{archive_entry_pathname(e)};
-            p = dst / p;
+            logs::trace("Extracting ", p, " to ", dst / p);
             archive_entry_set_pathname(e, p.c_str());
             CALL_AND_CHECK(archive_write_header, out, e);
             if (archive_entry_size(e) > 0) { copy_data(a, out); }
             CALL_AND_CHECK(archive_write_finish_entry, out);
         }
+        stdfs::current_path(orig_path);
     }
 };
 std::unique_ptr<Unpacker> default_unpacker() {
