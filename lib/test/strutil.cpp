@@ -22,3 +22,51 @@ TEST(Join, One) {
     auto res = cent::join(v, "asdfasdf");
     ASSERT_EQ(res, "foo");
 }
+
+TEST(SplitLeft, Split) {
+    auto [l, r] = cent::split_left("foo:bar", ":");
+    ASSERT_EQ(l, "foo");
+    ASSERT_EQ(r, "bar");
+}
+
+TEST(SplitLeft, Multiple) {
+    auto [l, r] = cent::split_left("foo:bar:baz", ":");
+    ASSERT_EQ(l, "foo");
+    ASSERT_EQ(r, "bar:baz");
+}
+
+TEST(SplitLeft, No) {
+    auto [l, r] = cent::split_left("asdf", "foobarbaz");
+    ASSERT_EQ(l, "asdf");
+    ASSERT_EQ(r, "");
+}
+
+TEST(SplitLeft, MultipleChars) {
+    auto [l, r] = cent::split_left("foobarbaz", "bar");
+    ASSERT_EQ(l, "foo");
+    ASSERT_EQ(r, "baz");
+}
+
+TEST(SplitLeft, Begin) {
+    auto [l, r] = cent::split_left("foobarbaz", "foo");
+    ASSERT_EQ(l, "");
+    ASSERT_EQ(r, "barbaz");
+}
+
+TEST(SplitLeft, End) {
+    auto [l, r] = cent::split_left("foobarbaz", "baz");
+    ASSERT_EQ(l, "foobar");
+    ASSERT_EQ(r, "");
+}
+
+TEST(SplitLeft, Longer) {
+    auto [l, r] = cent::split_left("foobarbaz", "foobarbazz");
+    ASSERT_EQ(l, "foobarbaz");
+    ASSERT_EQ(r, "");
+}
+
+TEST(SplitLeft, Match) {
+    auto [l, r] = cent::split_left("foobarbaz", "foobarbaz");
+    ASSERT_EQ(l, "");
+    ASSERT_EQ(r, "");
+}
