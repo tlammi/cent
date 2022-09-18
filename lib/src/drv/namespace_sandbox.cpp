@@ -51,7 +51,7 @@ class NamespaceSandbox final : public Sandbox {
 
     void fork(const std::function<void()>& func) override {
         clone_args cargs{
-            .flags = CLONE_NEWUSER,
+            .flags = CLONE_NEWUSER | CLONE_NEWNS,
             .pidfd = 0,
             .child_tid = 0,
             .parent_tid = 0,

@@ -22,6 +22,7 @@ class Workspace {
      */
     stdfs::path create_layer(DigestView digest);
 
+    stdfs::path layer_path(DigestView digest);
     /**
      * Check if the given layer exists in the workspace
      *

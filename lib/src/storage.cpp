@@ -17,16 +17,25 @@ stdfs::path imagedb_file(const stdfs::path& root) {
     return root / "images.json";
 }
 
-stdfs::path layerpath(const stdfs::path& root, DigestView digest) {
-    return layerdir(root) / digest.str();
+stdfs::path layerpath(drv::FileSystem* fs, const stdfs::path& root,
+                      DigestView digest) {
+    auto p = layerdir(root) / digest.algo();
+    fs->mkdir(p, true);
+    return p / digest.value();
 }
 
-stdfs::path configpath(const stdfs::path& root, DigestView digest) {
-    return configdir(root) / digest.str();
+stdfs::path configpath(drv::FileSystem* fs, const stdfs::path& root,
+                       DigestView digest) {
+    auto p = configdir(root) / digest.algo();
+    fs->mkdir(p, true);
+    return p / digest.value();
 }
 
-stdfs::path manifestpath(const stdfs::path& root, DigestView digest) {
-    return manifestdir(root) / digest.str();
+stdfs::path manifestpath(drv::FileSystem* fs, const stdfs::path& root,
+                         DigestView digest) {
+    auto p = manifestdir(root) / digest.algo();
+    fs->mkdir(p, true);
+    return p / digest.value();
 }
 }  // namespace
 
@@ -39,48 +48,48 @@ Storage::Storage(drv::FileSystem* fs, const stdfs::path& root)
 }
 
 bool Storage::layer_exists(DigestView digest) const {
-    auto path = layerpath(m_root, digest);
+    auto path = layerpath(m_fs, m_root, digest);
     return m_fs->exists(path);
 }
 
 bool Storage::config_exists(DigestView digest) const {
-    auto path = configpath(m_root, digest);
+    auto path = configpath(m_fs, m_root, digest);
     return m_fs->exists(path);
 }
 
 bool Storage::manifest_exists(DigestView digest) const {
-    auto path = manifestpath(m_root, digest);
+    auto path = manifestpath(m_fs, m_root, digest);
     return m_fs->exists(path);
 }
 std::unique_ptr<std::iostream> Storage::write_layer(DigestView digest) {
-    auto path = layerpath(m_root, digest);
+    auto path = layerpath(m_fs, m_root, digest);
     return m_fs->open_file(path, std::ios_base::out | std::ios_base::binary);
 }
 
 stdfs::path Storage::layer_path(DigestView digest) {
-    return layerpath(m_root, digest);
+    return layerpath(m_fs, m_root, digest);
 }
 
 std::unique_ptr<std::iostream> Storage::read_layer(DigestView digest) {
-    auto path = layerpath(m_root, digest);
+    auto path = layerpath(m_fs, m_root, digest);
     return m_fs->open_file(path, std::ios_base::in | std::ios_base::binary);
 }
 
 std::unique_ptr<std::iostream> Storage::write_config(DigestView digest) {
-    auto path = configpath(m_root, digest);
+    auto path = configpath(m_fs, m_root, digest);
     return m_fs->open_file(path, std::ios_base::out);
 }
 
 std::unique_ptr<std::iostream> Storage::read_config(DigestView digest) {
-    auto path = configpath(m_root, digest);
+    auto path = configpath(m_fs, m_root, digest);
     return m_fs->open_file(path, std::ios_base::in);
 }
 std::unique_ptr<std::iostream> Storage::read_manifest(DigestView digest) {
-    auto path = manifestpath(m_root, digest);
+    auto path = manifestpath(m_fs, m_root, digest);
     return m_fs->open_file(path, std::ios_base::in);
 }
 std::unique_ptr<std::iostream> Storage::write_manifest(DigestView digest) {
-    auto path = manifestpath(m_root, digest);
+    auto path = manifestpath(m_fs, m_root, digest);
     return m_fs->open_file(path, std::ios_base::out);
 }
 

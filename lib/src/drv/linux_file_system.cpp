@@ -1,12 +1,17 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
 /* Copyright (C) 2022 Toni Lammi */
+#include <errno.h>
+#include <string.h>
 #include <sys/file.h>
+#include <sys/mount.h>
 #include <unistd.h>
 
 #include <fstream>
 
 #include "cent/drv/file_system.hpp"
+#include "cent/logs.hpp"
 #include "cent/raise.hpp"
+#include "cent/strutil.hpp"
 
 namespace cent::drv {
 
@@ -41,6 +46,30 @@ class LinuxFileSystemApi final : public FileSystem {
     }
 
     void unlock_file(int fd) override { close(fd); }
+
+    void union_mount(const std::vector<stdfs::path>& paths,
+                     const stdfs::path& dst, bool readonly) override {
+        if (paths.empty()) raise("No paths to mount");
+        stdfs::path upper = stdfs::canonical(dst / "../upper");
+        stdfs::path work = stdfs::canonical(dst / "../work");
+        std::string options{"lowerdir="};
+        options += join(paths, ":");
+        if (readonly) {
+            options += ":";
+            options += upper;
+        } else {
+            options += ",upperdir=";
+            options += upper;
+            options += ",workdir=";
+            options += work;
+        }
+        mkdir(upper, true);
+        mkdir(work, true);
+        mkdir(dst, true);
+        logs::debug("using options: ", options);
+        int res = mount("overlay", dst.c_str(), "overlay", 0, options.c_str());
+        if (res) raise(strerror(errno));
+    }
 };
 
 std::unique_ptr<FileSystem> default_file_system() {

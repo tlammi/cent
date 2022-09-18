@@ -120,6 +120,7 @@ class Cent::CentImpl {
         sandbox->set_uid_maps({IdMap{0, 1000, 1}, IdMap{1, 10000, 65564}});
         sandbox->set_gid_maps({IdMap{0, 1000, 1}, IdMap{1, 10000, 65564}});
         logs::debug("Walking through layers");
+        std::vector<stdfs::path> extract_paths{};
         for (const auto& layer : manifest.layers()) {
             if (!wspace.layer_exists(layer.digest)) {
                 logs::trace("layer '", layer.digest,
@@ -130,7 +131,12 @@ class Cent::CentImpl {
                 sandbox->fork(
                     [&]() { m_drivers->unpacker()->unpack(src, dst); });
             }
+            extract_paths.push_back(wspace.layer_path(layer.digest));
         }
+        sandbox->fork([&] {
+            m_drivers->file_system()->union_mount(extract_paths, "/tmp/asdf",
+                                                  true);
+        });
         return Result{0, ""};
     }
 
