@@ -1,5 +1,5 @@
 
-SRCS = SRCS + files(
+SRCS += files(
     'cent.cpp',
     'http_client.cpp',
     'logs.cpp',
@@ -15,5 +15,5 @@ SRCS = SRCS + files(
 )
 
 subdir('drv')
-
+subdir('runtime')
 subdir('storage')
