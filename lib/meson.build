@@ -4,20 +4,25 @@ private_inc = include_directories('include')
 SRCS = []
 DEPS = []
 
-nlohmann_proj = cmake.subproject('nlohmann_json')
-DEPS += nlohmann_proj.get_variable('nlohmann_json_dep')
+DEP_ARGS = [
+  ['nlohmann_json', 'cmake', 'nlohmann_json', 'nlohmann_json_dep', {}],
+  ['libarchive', 'cmake', 'libarchive', 'archive_dep', {}],
+  ['cpr', 'cmake', 'cpr', 'cpr_dep', {'CPR_USE_SYSTEM_CURL': true}]
+]
 
-# TODO: Flag to select this
-cpr_opts = cmake.subproject_options()
-cpr_opts.add_cmake_defines({
-    'CPR_USE_SYSTEM_CURL': true
-})
-cpr_proj = cmake.subproject('cpr', options: cpr_opts)
-DEPS += cpr_proj.get_variable('cpr_dep')
+foreach arg: DEP_ARGS
+  dep = dependency(arg[0], required: false)
+  if not dep.found()
+    if arg[1] == 'cmake'
+      opts = cmake.subproject_options()
+      opts.add_cmake_defines(arg[4])
+      proj = cmake.subproject(arg[2], options: opts)
+      dep = proj.get_variable(arg[3])
+    endif
+  endif
+  DEPS += [dep]
+endforeach
 
-
-libarchive_proj = cmake.subproject('libarchive')
-DEPS += libarchive_proj.get_variable('archive_dep')
 
 subdir('src')
 

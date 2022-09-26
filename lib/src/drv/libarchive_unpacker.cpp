@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
 /* Copyright (C) 2022 Toni Lammi */
 #include <archive.h>
-#include <libarchive/archive_entry.h>
+#include <archive_entry.h>
 
 #include "cent/defer.hpp"
 #include "cent/drv/unpacker.hpp"
