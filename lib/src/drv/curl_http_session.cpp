@@ -36,9 +36,7 @@ class CurlHttpSession final : public HttpSession {
         m_headers[std::string(field)] = std::string(value);
     }
 
-    virtual std::string_view get_body() override {
-        return m_body.rdbuf()->view();
-    }
+    std::string_view get_body() override { return m_body.rdbuf()->view(); }
 
     int get(std::string_view url) override {
         m_body = std::stringstream();
