@@ -60,8 +60,8 @@ std::vector<IdMap> id_maps(const char* file) {
 }  // namespace
 
 Context::Context(const Config& conf)
-    : workspace_path{conf.workspace_path},
-      storage_path{conf.storage_path},
+    : storage_path{conf.storage_path},
+      workspace_path{conf.workspace_path},
       uid_maps{id_maps("/etc/subuid")},
       gid_maps{id_maps("/etc/subgid")} {}
 
