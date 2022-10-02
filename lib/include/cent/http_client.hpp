@@ -15,7 +15,7 @@ namespace cent {
  */
 class HttpClient final : public drv::HttpSession {
  public:
-    HttpClient(drv::Drivers* drivers);
+    HttpClient();
 
     void capture_header_field(std::string_view field) override;
 
@@ -28,7 +28,6 @@ class HttpClient final : public drv::HttpSession {
     int get(std::string_view url) override;
 
  private:
-    drv::Drivers* m_drivers;
     std::unique_ptr<drv::HttpSession> m_sess;
 };
 }  // namespace cent

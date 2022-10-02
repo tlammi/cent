@@ -25,8 +25,6 @@ class HttpSession {
     virtual int get(std::string_view url) = 0;
 };
 
-[[deprecated]] std::unique_ptr<HttpSession> default_http_session();
-
 using HttpSessionFunc = std::function<std::unique_ptr<HttpSession>()>;
 void register_http_session(std::string name, const HttpSessionFunc& func);
 std::vector<std::string_view> list_http_sessions();

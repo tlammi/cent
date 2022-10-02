@@ -16,7 +16,6 @@ namespace cent::drv {
 class [[deprecated]] Drivers {
  public:
     virtual ~Drivers() {}
-    virtual std::unique_ptr<HttpSession> http_session() = 0;
     virtual Context* context() = 0;
 
     virtual std::unique_ptr<Sandbox> sandbox() = 0;

@@ -38,7 +38,7 @@ class Cent::CentImpl {
     Result pull(std::string_view image_ref) {
         Storage storage{m_drivers->context()->storage_path()};
         Reference image{std::string(image_ref)};
-        HttpClient http_client{m_drivers};
+        HttpClient http_client{};
         RegistryClient client{&http_client};
         std::stringstream ss;
         auto manifest_list = client.manifest_list(image);

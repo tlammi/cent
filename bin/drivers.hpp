@@ -6,10 +6,6 @@
 
 class Drivers final : public cent::drv::Drivers {
  public:
-    std::unique_ptr<cent::drv::HttpSession> http_session() override {
-        return cent::drv::default_http_session();
-    }
-
     cent::drv::Context* context() override { return m_ctx.get(); }
 
     std::unique_ptr<cent::drv::Sandbox> sandbox() override {
