@@ -2,6 +2,7 @@
 /* Copyright (C) 2022 Toni Lammi */
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string_view>
 
@@ -24,6 +25,10 @@ class HttpSession {
     virtual int get(std::string_view url) = 0;
 };
 
-std::unique_ptr<HttpSession> default_http_session();
+[[deprecated]] std::unique_ptr<HttpSession> default_http_session();
 
-}  // namespace cent
+using HttpSessionFunc = std::function<std::unique_ptr<HttpSession>()>;
+void register_http_session(std::string name, const HttpSessionFunc& func);
+std::vector<std::string_view> list_http_sessions();
+
+}  // namespace cent::drv

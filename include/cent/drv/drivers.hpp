@@ -13,7 +13,7 @@ namespace cent::drv {
 /**
  * Wrapper class for passing all drivers to cent::Cent one time
  */
-class Drivers {
+class [[deprecated]] Drivers {
  public:
     virtual ~Drivers() {}
     virtual std::unique_ptr<HttpSession> http_session() = 0;

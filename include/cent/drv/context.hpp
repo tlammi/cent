@@ -30,5 +30,9 @@ class Context {
     virtual std::vector<IdMap> gid_maps() = 0;
 };
 
-std::unique_ptr<Context> default_context();
+[[deprecated]] std::unique_ptr<Context> default_context();
+
+void register_context(std::string name, Context* ctx);
+std::vector<std::string_view> list_contexts();
+
 }  // namespace cent::drv

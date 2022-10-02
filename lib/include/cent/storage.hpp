@@ -13,7 +13,7 @@ namespace cent {
 
 class Storage {
  public:
-    Storage(drv::FileSystem* fs, const stdfs::path& root);
+    explicit Storage(const stdfs::path& root);
 
     /**
      * Check if a layer with the given digest exists
@@ -62,7 +62,6 @@ class Storage {
 
  private:
     LockFile m_lk{};
-    drv::FileSystem* m_fs;
     stdfs::path m_root;
 };
 }  // namespace cent

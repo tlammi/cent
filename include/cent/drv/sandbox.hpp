@@ -49,5 +49,10 @@ class Sandbox {
     virtual void fork(const std::function<void()>& func) = 0;
 };
 
-std::unique_ptr<Sandbox> default_sandbox();
+[[deprected]] std::unique_ptr<Sandbox> default_sandbox();
+
+using SandboxFunc = std::function<std::unique_ptr<Sandbox>()>;
+void register_sandbox(std::string name, const SandboxFunc& func);
+std::vector<std::string_view> list_sandboxes();
+
 }  // namespace cent::drv

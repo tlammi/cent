@@ -35,8 +35,7 @@ class Cent::CentImpl {
     CentImpl(drv::Drivers* drivers) : m_drivers{drivers} {}
 
     Result pull(std::string_view image_ref) {
-        Storage storage{m_drivers->file_system(),
-                        m_drivers->context()->storage_path()};
+        Storage storage{m_drivers->context()->storage_path()};
         Reference image{std::string(image_ref)};
         HttpClient http_client{m_drivers};
         RegistryClient client{&http_client};
@@ -98,17 +97,14 @@ class Cent::CentImpl {
     }
 
     Result image_list() {
-        Storage storage{m_drivers->file_system(),
-                        m_drivers->context()->storage_path()};
+        Storage storage{m_drivers->context()->storage_path()};
         for (const auto& ref : storage.list_images()) { logs::print(ref); }
         return {0, ""};
     }
 
     Result create(std::string_view image) {
-        Storage storage{m_drivers->file_system(),
-                        m_drivers->context()->storage_path()};
-        Workspace wspace{m_drivers->file_system(),
-                         m_drivers->context()->workspace_path()};
+        Storage storage{m_drivers->context()->storage_path()};
+        Workspace wspace{m_drivers->context()->workspace_path()};
         logs::trace("Getting manifest digest");
         auto manifest_digest = storage.lookup_manifest(std::string{image});
         logs::debug("Found manifest digest: ", manifest_digest);

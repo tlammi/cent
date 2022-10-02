@@ -2,6 +2,7 @@
 /* Copyright (C) 2022 Toni Lammi */
 #include "cent/storage.hpp"
 
+#include "cent/drv/file_system_impl.hpp"
 #include "cent/storage/images.hpp"
 
 namespace cent {
@@ -17,86 +18,83 @@ stdfs::path imagedb_file(const stdfs::path& root) {
     return root / "images.json";
 }
 
-stdfs::path layerpath(drv::FileSystem* fs, const stdfs::path& root,
-                      DigestView digest) {
+stdfs::path layerpath(const stdfs::path& root, DigestView digest) {
     auto p = layerdir(root) / digest.algo();
-    fs->mkdir(p, true);
+    drv::fs().mkdir(p, true);
     return p / digest.value();
 }
 
-stdfs::path configpath(drv::FileSystem* fs, const stdfs::path& root,
-                       DigestView digest) {
+stdfs::path configpath(const stdfs::path& root, DigestView digest) {
     auto p = configdir(root) / digest.algo();
-    fs->mkdir(p, true);
+    drv::fs().mkdir(p, true);
     return p / digest.value();
 }
 
-stdfs::path manifestpath(drv::FileSystem* fs, const stdfs::path& root,
-                         DigestView digest) {
+stdfs::path manifestpath(const stdfs::path& root, DigestView digest) {
     auto p = manifestdir(root) / digest.algo();
-    fs->mkdir(p, true);
+    drv::fs().mkdir(p, true);
     return p / digest.value();
 }
 }  // namespace
 
-Storage::Storage(drv::FileSystem* fs, const stdfs::path& root)
-    : m_fs{fs}, m_root{root} {
-    m_fs->mkdir(layerdir(m_root), true);
-    m_fs->mkdir(configdir(m_root), true);
-    m_fs->mkdir(manifestdir(m_root), true);
-    m_lk = LockFile{m_fs, lockfile(m_root)};
+Storage::Storage(const stdfs::path& root) : m_root{root} {
+    drv::fs().mkdir(layerdir(m_root), true);
+    drv::fs().mkdir(configdir(m_root), true);
+    drv::fs().mkdir(manifestdir(m_root), true);
+    m_lk = LockFile{lockfile(m_root)};
 }
 
 bool Storage::layer_exists(DigestView digest) const {
-    auto path = layerpath(m_fs, m_root, digest);
-    return m_fs->exists(path);
+    auto path = layerpath(m_root, digest);
+    return drv::fs().exists(path);
 }
 
 bool Storage::config_exists(DigestView digest) const {
-    auto path = configpath(m_fs, m_root, digest);
-    return m_fs->exists(path);
+    auto path = configpath(m_root, digest);
+    return drv::fs().exists(path);
 }
 
 bool Storage::manifest_exists(DigestView digest) const {
-    auto path = manifestpath(m_fs, m_root, digest);
-    return m_fs->exists(path);
+    auto path = manifestpath(m_root, digest);
+    return drv::fs().exists(path);
 }
 std::unique_ptr<std::iostream> Storage::write_layer(DigestView digest) {
-    auto path = layerpath(m_fs, m_root, digest);
-    return m_fs->open_file(path, std::ios_base::out | std::ios_base::binary);
+    auto path = layerpath(m_root, digest);
+    return drv::fs().open_file(path,
+                               std::ios_base::out | std::ios_base::binary);
 }
 
 stdfs::path Storage::layer_path(DigestView digest) {
-    return layerpath(m_fs, m_root, digest);
+    return layerpath(m_root, digest);
 }
 
 std::unique_ptr<std::iostream> Storage::read_layer(DigestView digest) {
-    auto path = layerpath(m_fs, m_root, digest);
-    return m_fs->open_file(path, std::ios_base::in | std::ios_base::binary);
+    auto path = layerpath(m_root, digest);
+    return drv::fs().open_file(path, std::ios_base::in | std::ios_base::binary);
 }
 
 std::unique_ptr<std::iostream> Storage::write_config(DigestView digest) {
-    auto path = configpath(m_fs, m_root, digest);
-    return m_fs->open_file(path, std::ios_base::out);
+    auto path = configpath(m_root, digest);
+    return drv::fs().open_file(path, std::ios_base::out);
 }
 
 std::unique_ptr<std::iostream> Storage::read_config(DigestView digest) {
-    auto path = configpath(m_fs, m_root, digest);
-    return m_fs->open_file(path, std::ios_base::in);
+    auto path = configpath(m_root, digest);
+    return drv::fs().open_file(path, std::ios_base::in);
 }
 std::unique_ptr<std::iostream> Storage::read_manifest(DigestView digest) {
-    auto path = manifestpath(m_fs, m_root, digest);
-    return m_fs->open_file(path, std::ios_base::in);
+    auto path = manifestpath(m_root, digest);
+    return drv::fs().open_file(path, std::ios_base::in);
 }
 std::unique_ptr<std::iostream> Storage::write_manifest(DigestView digest) {
-    auto path = manifestpath(m_fs, m_root, digest);
-    return m_fs->open_file(path, std::ios_base::out);
+    auto path = manifestpath(m_root, digest);
+    return drv::fs().open_file(path, std::ios_base::out);
 }
 
 Digest Storage::lookup_manifest(const Reference& image) {
     auto path = imagedb_file(m_root);
     auto data =
-        nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
+        nlohmann::json::parse(*drv::fs().open_file(path, std::ios_base::in));
     storage::Images images{data};
     auto& entry = images[image];
     return entry.manifest_digest;
@@ -105,8 +103,9 @@ Digest Storage::lookup_manifest(const Reference& image) {
 void Storage::store_image_name(DigestView manifest, const Reference& image) {
     auto path = imagedb_file(m_root);
     nlohmann::json data = nlohmann::json::array();
-    if (m_fs->exists(path))
-        data = nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
+    if (drv::fs().exists(path))
+        data = nlohmann::json::parse(
+            *drv::fs().open_file(path, std::ios_base::in));
 
     storage::Images images{data};
     auto& entry = images[manifest];
@@ -114,15 +113,16 @@ void Storage::store_image_name(DigestView manifest, const Reference& image) {
         if (i.str() == image.str()) return;
     }
     entry.image_names.push_back(image);
-    auto file = m_fs->open_file(path, std::ios_base::out);
+    auto file = drv::fs().open_file(path, std::ios_base::out);
     (*file) << images.json().dump();
 }
 
 std::vector<Reference> Storage::list_images() const {
     auto path = imagedb_file(m_root);
     nlohmann::json data = nlohmann::json::array();
-    if (m_fs->exists(path))
-        data = nlohmann::json::parse(*m_fs->open_file(path, std::ios_base::in));
+    if (drv::fs().exists(path))
+        data = nlohmann::json::parse(
+            *drv::fs().open_file(path, std::ios_base::in));
 
     storage::Images images{data};
     const auto& entries = images.entries();

@@ -9,7 +9,7 @@ namespace cent {
 
 class Workspace {
  public:
-    Workspace(drv::FileSystem* fs, const stdfs::path& root);
+    Workspace(const stdfs::path& root);
 
     /**
      * Creates a directory for extrating a layer fs.
@@ -32,7 +32,6 @@ class Workspace {
     bool layer_exists(DigestView digest);
 
  private:
-    drv::FileSystem* m_fs;
     stdfs::path m_root;
 };
 }  // namespace cent
