@@ -10,8 +10,6 @@ class Drivers final : public cent::drv::Drivers {
         return cent::drv::default_http_session();
     }
 
-    cent::drv::FileSystem* file_system() override { return m_fs.get(); }
-
     cent::drv::Context* context() override { return m_ctx.get(); }
 
     std::unique_ptr<cent::drv::Sandbox> sandbox() override {
@@ -21,8 +19,6 @@ class Drivers final : public cent::drv::Drivers {
     cent::drv::Unpacker* unpacker() override { return m_unpacker.get(); }
 
  private:
-    std::unique_ptr<cent::drv::FileSystem> m_fs{
-        cent::drv::default_file_system()};
     std::unique_ptr<cent::drv::Context> m_ctx{cent::drv::default_context()};
     std::unique_ptr<cent::drv::Unpacker> m_unpacker{
         cent::drv::default_unpacker()};

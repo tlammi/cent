@@ -1,5 +1,6 @@
 #include "cent/runtime/bundle.hpp"
 
+#include "cent/drv/file_system_impl.hpp"
 #include "cent/logs.hpp"
 #include "cent/runtime/config.hpp"
 
@@ -7,13 +8,13 @@ namespace cent::runtime {
 
 Bundle::Bundle(drv::Drivers* drivers, stdfs::path dir)
     : m_drv{drivers}, m_path{std::move(dir)} {
-    auto* fs = m_drv->file_system();
     logs::debug("creating bundle: ", root());
-    fs->mkdir(root(), true);
-    fs->mkdir(path() / "upper", true);
-    fs->mkdir(path() / "work", true);
-    if (!fs->exists(config_file())) {
-        (*fs->open_file(config_file(), std::ios_base::out)) << Config{}.json();
+    drv::fs().mkdir(root(), true);
+    drv::fs().mkdir(path() / "upper", true);
+    drv::fs().mkdir(path() / "work", true);
+    if (!drv::fs().exists(config_file())) {
+        (*drv::fs().open_file(config_file(), std::ios_base::out))
+            << Config{}.json();
     }
 }
 

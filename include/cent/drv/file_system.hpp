@@ -74,8 +74,6 @@ class FileSystem {
                              const stdfs::path& dst, bool readonly) = 0;
 };
 
-[[deprecated]] std::unique_ptr<FileSystem> default_file_system();
-
 void register_file_system(std::string name, FileSystem* fs);
 std::vector<std::string_view> list_file_systems();
 

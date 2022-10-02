@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "cent/drv/file_system_impl.hpp"
 #include "cent/http_client.hpp"
 #include "cent/logs.hpp"
 #include "cent/reference.hpp"
@@ -132,8 +133,7 @@ class Cent::CentImpl {
         }
         sandbox->fork([&] {
             runtime::Bundle bundle{m_drivers, "/tmp/asdf"};
-            m_drivers->file_system()->union_mount(extract_paths, bundle.root(),
-                                                  true);
+            drv::fs().union_mount(extract_paths, bundle.root(), true);
         });
         return Result{0, ""};
     }
