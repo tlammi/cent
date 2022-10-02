@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-#include "cent/drv/drivers.hpp"
+#include "cent/config.hpp"
 #include "cent/log_level.hpp"
 #include "cent/result.hpp"
 
@@ -16,7 +16,7 @@ extern std::reference_wrapper<std::ostream> OUT_STREAM;
 
 class Cent {
  public:
-    Cent(drv::Drivers* drivers);
+    Cent(Config conf = {});
     ~Cent();
 
     Result pull(std::string_view image);

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "cent/context.hpp"
 #include "cent/drv/file_system_impl.hpp"
 #include "cent/drv/sandbox_impl.hpp"
 #include "cent/drv/unpacker_impl.hpp"
@@ -35,10 +36,10 @@ std::reference_wrapper<std::ostream> OUT_STREAM{std::cout};
 
 class Cent::CentImpl {
  public:
-    CentImpl(drv::Drivers* drivers) : m_drivers{drivers} {}
+    CentImpl(Config config) : m_ctx{std::move(config)} {}
 
     Result pull(std::string_view image_ref) {
-        Storage storage{m_drivers->context()->storage_path()};
+        Storage storage{m_ctx.storage_path};
         Reference image{std::string(image_ref)};
         HttpClient http_client{};
         RegistryClient client{&http_client};
@@ -100,14 +101,14 @@ class Cent::CentImpl {
     }
 
     Result image_list() {
-        Storage storage{m_drivers->context()->storage_path()};
+        Storage storage{m_ctx.storage_path};
         for (const auto& ref : storage.list_images()) { logs::print(ref); }
         return {0, ""};
     }
 
     Result create(std::string_view image) {
-        Storage storage{m_drivers->context()->storage_path()};
-        Workspace wspace{m_drivers->context()->workspace_path()};
+        Storage storage{m_ctx.storage_path};
+        Workspace wspace{m_ctx.workspace_path};
         logs::trace("Getting manifest digest");
         auto manifest_digest = storage.lookup_manifest(std::string{image});
         logs::debug("Found manifest digest: ", manifest_digest);
@@ -116,9 +117,8 @@ class Cent::CentImpl {
         logs::debug("Parsed manifest: ", manifest);
 
         auto sandbox = drv::sandbox();
-        using IdMap = drv::Sandbox::IdMap;
-        sandbox->set_uid_maps(m_drivers->context()->uid_maps());
-        sandbox->set_gid_maps(m_drivers->context()->gid_maps());
+        sandbox->set_uid_maps(m_ctx.uid_maps);
+        sandbox->set_gid_maps(m_ctx.gid_maps);
         logs::debug("Walking through layers");
         std::vector<stdfs::path> extract_paths{};
         for (const auto& layer : manifest.layers()) {
@@ -133,17 +133,17 @@ class Cent::CentImpl {
             extract_paths.push_back(wspace.layer_path(layer.digest));
         }
         sandbox->fork([&] {
-            runtime::Bundle bundle{m_drivers, "/tmp/asdf"};
+            runtime::Bundle bundle{"/tmp/asdf"};
             drv::fs().union_mount(extract_paths, bundle.root(), true);
         });
         return Result{0, ""};
     }
 
  private:
-    drv::Drivers* m_drivers;
+    Context m_ctx;
 };
 
-Cent::Cent(drv::Drivers* drivers) : m_impl{new CentImpl(drivers)} {}
+Cent::Cent(Config config) : m_impl{new CentImpl(std::move(config))} {}
 Cent::~Cent() {}
 
 Result Cent::pull(std::string_view image) { return m_impl->pull(image); }

@@ -6,8 +6,7 @@
 
 namespace cent::runtime {
 
-Bundle::Bundle(drv::Drivers* drivers, stdfs::path dir)
-    : m_drv{drivers}, m_path{std::move(dir)} {
+Bundle::Bundle(stdfs::path dir) : m_path{std::move(dir)} {
     logs::debug("creating bundle: ", root());
     drv::fs().mkdir(root(), true);
     drv::fs().mkdir(path() / "upper", true);

@@ -7,12 +7,10 @@
 #include <iostream>
 
 #include "cent.hpp"
-#include "drivers.hpp"
 
 int main(int argc, char** argv) {
     CLI::App app{"Container Engine"};
-    Drivers d{};
-    cent::Cent c{&d};
+    cent::Cent c{};
     app.require_subcommand();
     CLI::App* pull_cmd = app.add_subcommand("pull", "Pull an image");
     std::string image;
@@ -31,7 +29,8 @@ int main(int argc, char** argv) {
     create_cmd->add_option("image", image);
     create_cmd->final_callback([&]() { c.create(image); });
 
-    cent::LOG_LEVEL = cent::LogLevel::Trace;
+    // cent::LOG_LEVEL = cent::LogLevel::Trace;
+    cent::LOG_LEVEL = cent::LogLevel::Debug;
     CLI11_PARSE(app, argc, argv);
 
     /*

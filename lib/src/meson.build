@@ -11,7 +11,8 @@ SRCS += files(
     'storage.cpp',
     'lock_file.cpp',
     'workspace.cpp',
-    'strutil.cpp'
+    'strutil.cpp',
+    'context.cpp',
 )
 
 subdir('drv')

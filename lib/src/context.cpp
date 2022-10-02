@@ -1,19 +1,13 @@
-/* SPDX-License-Identifier:  GPL-3.0-or-later */
-/* Copyright (C) 2022 Toni Lammi */
-#include <pwd.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include "cent/context.hpp"
 
-#include "cent/drv/context.hpp"
-#include "cent/logs.hpp"
+#include <pwd.h>
+
+#include "cent/drv/file_system_impl.hpp"
 #include "cent/raise.hpp"
 #include "cent/strutil.hpp"
 
-// TODO: Use other drivers for accessing files
-#include <fstream>
-#include <sstream>
+namespace cent {
 
-namespace cent::drv {
 namespace {
 
 struct SubId {
@@ -49,8 +43,8 @@ SubId parse_subid(std::string_view line) {
 }
 
 std::vector<IdMap> id_maps(const char* file) {
-    std::ifstream subuid{file};
-    std::string data{std::istreambuf_iterator<char>(subuid),
+    auto subuid = drv::fs().open_file(file, std::ios_base::in);
+    std::string data{std::istreambuf_iterator<char>(*subuid),
                      std::istreambuf_iterator<char>()};
     auto lines = split(data, "\n");
     auto myuid = getuid();
@@ -65,25 +59,10 @@ std::vector<IdMap> id_maps(const char* file) {
 
 }  // namespace
 
-class DefaultContext final : public Context {
- public:
-    stdfs::path storage_path() override {
-        auto* home = std::getenv("HOME");
-        if (!home) raise("foo");
-        stdfs::path path{home};
-        return path / ".cent/storage";
-    }
-    stdfs::path workspace_path() override {
-        auto* home = std::getenv("HOME");
-        if (!home) raise("No HOME");
-        stdfs::path path{home};
-        return path / ".cent/workspace";
-    }
+Context::Context(const Config& conf)
+    : workspace_path{conf.workspace_path},
+      storage_path{conf.storage_path},
+      uid_maps{id_maps("/etc/subuid")},
+      gid_maps{id_maps("/etc/subgid")} {}
 
-    std::vector<IdMap> uid_maps() override { return id_maps("/etc/subuid"); }
-    std::vector<IdMap> gid_maps() override { return id_maps("/etc/subgid"); }
-};
-std::unique_ptr<Context> default_context() {
-    return std::make_unique<DefaultContext>();
-}
-}  // namespace cent::drv
+}  // namespace cent
