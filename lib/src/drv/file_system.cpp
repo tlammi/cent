@@ -24,10 +24,7 @@ void register_file_system(std::string name, FileSystem* fs) {
 }
 
 std::vector<std::string_view> list_file_systems() {
-    std::vector<std::string_view> list{};
-    list.reserve(fs_container().size());
-    for (const auto& [k, _] : fs_container()) { list.push_back(k); }
-    return list;
+    return container_names(fs_container());
 }
 
 void set_file_system(std::string_view name) {

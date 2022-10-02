@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "cent/drv/file_system_impl.hpp"
+#include "cent/drv/sandbox_impl.hpp"
 #include "cent/http_client.hpp"
 #include "cent/logs.hpp"
 #include "cent/reference.hpp"
@@ -113,7 +114,7 @@ class Cent::CentImpl {
             nlohmann::json::parse(*storage.read_manifest(manifest_digest))};
         logs::debug("Parsed manifest: ", manifest);
 
-        auto sandbox = m_drivers->sandbox();
+        auto sandbox = drv::sandbox();
         using IdMap = drv::Sandbox::IdMap;
         sandbox->set_uid_maps(m_drivers->context()->uid_maps());
         sandbox->set_gid_maps(m_drivers->context()->gid_maps());

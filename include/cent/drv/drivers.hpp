@@ -18,8 +18,6 @@ class [[deprecated]] Drivers {
     virtual ~Drivers() {}
     virtual Context* context() = 0;
 
-    virtual std::unique_ptr<Sandbox> sandbox() = 0;
-
     virtual Unpacker* unpacker() = 0;
 };
 

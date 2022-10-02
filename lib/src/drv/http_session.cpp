@@ -24,10 +24,7 @@ void register_http_session(std::string name, const HttpSessionFunc& func) {
     http_container()[std::move(name)] = func;
 }
 std::vector<std::string_view> list_http_sessions() {
-    std::vector<std::string_view> out{};
-    out.reserve(http_container().size());
-    for (const auto& [k, _] : http_container()) { out.push_back(k); }
-    return out;
+    return container_names(http_container());
 }
 
 void set_http_session(std::string_view name) {

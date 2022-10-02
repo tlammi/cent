@@ -8,10 +8,6 @@ class Drivers final : public cent::drv::Drivers {
  public:
     cent::drv::Context* context() override { return m_ctx.get(); }
 
-    std::unique_ptr<cent::drv::Sandbox> sandbox() override {
-        return cent::drv::default_sandbox();
-    }
-
     cent::drv::Unpacker* unpacker() override { return m_unpacker.get(); }
 
  private:

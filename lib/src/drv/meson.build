@@ -6,4 +6,5 @@ SRCS += files(
     'libarchive_unpacker.cpp',
     'file_system.cpp',
     'http_session.cpp',
+    'sandbox.cpp',
 )
