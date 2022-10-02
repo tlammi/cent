@@ -9,17 +9,6 @@ Unpacker* g_unpacker = nullptr;
 
 auto& unpacker_container() { return g_container<Unpacker*>; }
 
-struct Init {
- public:
-    Init() {
-        unpacker_container()["default"] = unpacker.get();
-        g_unpacker = unpacker.get();
-    }
-
- private:
-    std::unique_ptr<Unpacker> unpacker = default_unpacker();
-};
-
 }  // namespace
 
 void register_unpacker(std::string name, Unpacker* unpacker) {

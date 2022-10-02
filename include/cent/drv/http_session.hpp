@@ -6,12 +6,12 @@
 #include <memory>
 #include <string_view>
 
+#include "cent/drv/driver.hpp"
+
 namespace cent::drv {
 
-class HttpSession {
+class HttpSession : public Driver {
  public:
-    virtual ~HttpSession() {}
-
     virtual void capture_header_field(std::string_view field) = 0;
 
     virtual std::string& header_field(std::string_view field) = 0;

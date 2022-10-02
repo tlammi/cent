@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cent/def.hpp"
+#include "cent/drv/driver.hpp"
 #include "cent/result.hpp"
 
 namespace cent::drv {
@@ -16,10 +17,8 @@ namespace cent::drv {
 /**
  * Interface for libcent to access the file system
  */
-class FileSystem {
+class FileSystem : public Driver {
  public:
-    virtual ~FileSystem() {}
-
     /**
      * Make a directory
      *

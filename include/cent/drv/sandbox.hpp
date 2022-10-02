@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "cent/drv/driver.hpp"
 #include "cent/types.hpp"
 
 namespace cent::drv {
@@ -16,12 +17,10 @@ namespace cent::drv {
  *
  * Sandbox is typically a set of namespaces with related settings.
  */
-class Sandbox {
+class Sandbox : public Driver {
  public:
     // TODO: Remove
     using IdMap = ::cent::IdMap;
-
-    virtual ~Sandbox() {}
 
     /// Set UID maps to apply on the following calls to fork()
     virtual void set_uid_maps(std::vector<IdMap> map) = 0;

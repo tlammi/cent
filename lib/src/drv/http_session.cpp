@@ -9,17 +9,8 @@ HttpSessionFunc g_http{};
 
 auto& http_container() { return g_container<HttpSessionFunc>; }
 
-struct Global {
-    Global() {
-        auto lambda = []() { return default_http_session(); };
-        http_container()["default"] = lambda;
-        g_http = lambda;
-    }
-};
-
-Global global{};
-
 }  // namespace
+
 void register_http_session(std::string name, const HttpSessionFunc& func) {
     http_container()[std::move(name)] = func;
 }

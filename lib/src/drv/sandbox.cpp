@@ -8,15 +8,6 @@ SandboxFunc g_sandbox{};
 
 auto& sb_container() { return g_container<SandboxFunc>; }
 
-struct Init {
-    Init() {
-        sb_container()["default"] = default_sandbox;
-        g_sandbox = default_sandbox;
-    }
-};
-
-Init init{};
-
 }  // namespace
 void register_sandbox(std::string name, const SandboxFunc& func) {
     sb_container()[std::move(name)] = func;

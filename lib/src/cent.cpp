@@ -8,7 +8,9 @@
 
 #include "cent/context.hpp"
 #include "cent/drv/file_system_impl.hpp"
+#include "cent/drv/http_session_impl.hpp"
 #include "cent/drv/sandbox_impl.hpp"
+#include "cent/drv/setup.hpp"
 #include "cent/drv/unpacker_impl.hpp"
 #include "cent/http_client.hpp"
 #include "cent/logs.hpp"
@@ -19,6 +21,13 @@
 #include "cent/workspace.hpp"
 
 namespace cent {
+namespace {
+// Set drivers based on config and passes the config forward
+Config setup_drivers(Config&& conf) {
+    drv::setup(conf.drivers);
+    return conf;
+}
+}  // namespace
 
 LogLevel LOG_LEVEL{LogLevel::Info};
 
@@ -36,7 +45,7 @@ std::reference_wrapper<std::ostream> OUT_STREAM{std::cout};
 
 class Cent::CentImpl {
  public:
-    CentImpl(Config config) : m_ctx{std::move(config)} {}
+    CentImpl(Config config) : m_ctx{setup_drivers(std::move(config))} {}
 
     Result pull(std::string_view image_ref) {
         Storage storage{m_ctx.storage_path};

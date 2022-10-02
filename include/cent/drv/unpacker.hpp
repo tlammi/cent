@@ -6,16 +6,15 @@
 #include <vector>
 
 #include "cent/def.hpp"
+#include "cent/drv/driver.hpp"
 
 namespace cent::drv {
 
 /**
  * Class capable of extracting various packages, like .tar.gz
  */
-class Unpacker {
+class Unpacker : public Driver {
  public:
-    virtual ~Unpacker() {}
-
     virtual void unpack(const stdfs::path& src, const stdfs::path& dst) = 0;
 };
 

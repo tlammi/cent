@@ -8,16 +8,6 @@ namespace {
 FileSystem* g_fs = nullptr;  // NOLINT
 
 auto& fs_container() { return g_container<FileSystem*>; }
-
-struct Global {
-    Global() {
-        fs_container()["default"] = default_fs.get();
-        g_fs = default_fs.get();
-    }
-    std::unique_ptr<FileSystem> default_fs{default_file_system()};
-};
-
-Global global{};
 }  // namespace
 void register_file_system(std::string name, FileSystem* fs) {
     fs_container()[std::move(name)] = fs;
