@@ -17,8 +17,6 @@ class [[deprecated]] Drivers {
  public:
     virtual ~Drivers() {}
     virtual Context* context() = 0;
-
-    virtual Unpacker* unpacker() = 0;
 };
 
 }  // namespace cent::drv

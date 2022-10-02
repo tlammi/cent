@@ -8,6 +8,7 @@
 
 #include "cent/drv/file_system_impl.hpp"
 #include "cent/drv/sandbox_impl.hpp"
+#include "cent/drv/unpacker_impl.hpp"
 #include "cent/http_client.hpp"
 #include "cent/logs.hpp"
 #include "cent/reference.hpp"
@@ -127,8 +128,7 @@ class Cent::CentImpl {
                 auto src = storage.layer_path(layer.digest);
                 auto dst = wspace.create_layer(layer.digest);
                 logs::trace("forking to a sandbox");
-                sandbox->fork(
-                    [&]() { m_drivers->unpacker()->unpack(src, dst); });
+                sandbox->fork([&]() { drv::unpacker().unpack(src, dst); });
             }
             extract_paths.push_back(wspace.layer_path(layer.digest));
         }

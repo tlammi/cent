@@ -19,8 +19,6 @@ class Unpacker {
     virtual void unpack(const stdfs::path& src, const stdfs::path& dst) = 0;
 };
 
-[[deprected]] std::unique_ptr<Unpacker> default_unpacker();
-
 void register_unpacker(std::string name, Unpacker* unpacker);
 std::vector<std::string_view> list_unpackers();
 
