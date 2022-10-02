@@ -36,6 +36,7 @@ class Bundle {
     const stdfs::path& path() const noexcept;
 
  private:
+    drv::Drivers* m_drv;
     stdfs::path m_path;
 };
 }  // namespace cent::runtime

@@ -11,5 +11,6 @@ class Config {
     nlohmann::json json() const;
 
  private:
+    nlohmann::json m_json;
 };
 }  // namespace cent::runtime

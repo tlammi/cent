@@ -10,6 +10,7 @@
 #include "cent/logs.hpp"
 #include "cent/reference.hpp"
 #include "cent/registry_client.hpp"
+#include "cent/runtime/bundle.hpp"
 #include "cent/storage.hpp"
 #include "cent/workspace.hpp"
 
@@ -134,7 +135,8 @@ class Cent::CentImpl {
             extract_paths.push_back(wspace.layer_path(layer.digest));
         }
         sandbox->fork([&] {
-            m_drivers->file_system()->union_mount(extract_paths, "/tmp/asdf",
+            runtime::Bundle bundle{m_drivers, "/tmp/asdf"};
+            m_drivers->file_system()->union_mount(extract_paths, bundle.root(),
                                                   true);
         });
         return Result{0, ""};
