@@ -142,8 +142,7 @@ class Cent::CentImpl {
             extract_paths.push_back(wspace.layer_path(layer.digest));
         }
         sandbox->fork([&] {
-            runtime::Bundle bundle{"/tmp/asdf"};
-            drv::fs().union_mount(extract_paths, bundle.root(), true);
+            runtime::Bundle bundle{"/tmp/asdf", extract_paths};
         });
         return Result{0, ""};
     }

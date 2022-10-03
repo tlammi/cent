@@ -47,25 +47,19 @@ class LinuxFileSystemApi final : public FileSystem {
 
     void unlock_file(int fd) override { close(fd); }
 
-    void union_mount(const std::vector<stdfs::path>& paths,
-                     const stdfs::path& dst, bool readonly) override {
-        if (paths.empty()) raise("No paths to mount");
-        stdfs::path upper = stdfs::canonical(dst / "../upper");
-        stdfs::path work = stdfs::canonical(dst / "../work");
+    void overlayfs_mount(const std::vector<stdfs::path>& paths,
+                         const stdfs::path& upper, const stdfs::path& work,
+                         const stdfs::path& dst) final {
         std::string options{"lowerdir="};
         options += join(paths, ":");
-        if (readonly) {
-            options += ":";
-            options += upper;
-        } else {
+        if (!upper.empty()) {
             options += ",upperdir=";
             options += upper;
+        }
+        if (!work.empty()) {
             options += ",workdir=";
             options += work;
         }
-        mkdir(upper, true);
-        mkdir(work, true);
-        mkdir(dst, true);
         logs::debug("using options: ", options);
         int res = mount("overlay", dst.c_str(), "overlay", 0, options.c_str());
         if (res) raise(strerror(errno));

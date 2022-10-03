@@ -56,21 +56,18 @@ class FileSystem : public Driver {
     virtual void unlock_file(int fd) = 0;
 
     /**
-     * Peform a union mount
-     *
-     * Mounts the given paths as read-only layers of an unioning file system
-     * under \a dst. \a readonly tells if the view mounted in \a dst should be
-     * read-only or read-write.
-     *
-     * This method may create directories next to the target directory
+     * Peform an overlay mount
      *
      * \param paths Read-only layers to mount
+     * \param upper Upper dir for the mount. "" to skip
+     * \param work Work dir for the mount. "" to skp
      * \param dst Destination path where to mount
-     * \param readonly Tell if the resulting mount should be read-only
      *
      */
-    virtual void union_mount(const std::vector<stdfs::path>& paths,
-                             const stdfs::path& dst, bool readonly) = 0;
+    virtual void overlayfs_mount(const std::vector<stdfs::path>& lowers,
+                                 const stdfs::path& upper,
+                                 const stdfs::path& work,
+                                 const stdfs::path& dst) = 0;
 };
 
 void register_file_system(std::string name, FileSystem* fs);

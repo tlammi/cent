@@ -14,11 +14,16 @@ namespace cent::runtime {
 class Bundle {
  public:
     /**
-     * Initialize a bundle in the given patn
+     * Initialize a bundle in the given path
      *
-     * The directory is created if it does not exist
+     * If a bundle already exists it is overwritten
      */
-    Bundle(stdfs::path dir);
+    Bundle(stdfs::path dir, const std::vector<stdfs::path>& layers);
+
+    /**
+     * Get a reference to an existing bundle
+     */
+    explicit Bundle(stdfs::path dir);
 
     /// Path to root file system
     stdfs::path root() const;
