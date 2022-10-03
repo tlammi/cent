@@ -40,6 +40,15 @@ class FileSystem : public Driver {
     virtual bool exists(const stdfs::path& path) = 0;
 
     /**
+     * Find a given program from the filesystem
+     *
+     * \param program Program name to search
+     *
+     * \return Absolute path to match, or "" if not found.
+     */
+    virtual stdfs::path find_program(std::string_view program) = 0;
+
+    /**
      * Lock a file and create one if it does not exist
      *
      * \param path Path to lock file to aqcuire

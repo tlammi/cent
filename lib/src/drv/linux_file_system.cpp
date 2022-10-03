@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/file.h>
 #include <sys/mount.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <fstream>
@@ -14,6 +15,31 @@
 #include "cent/strutil.hpp"
 
 namespace cent::drv {
+namespace {
+
+bool check_user_exec(const struct stat& st, uid_t myuid, stdfs::perms perms) {
+    return (myuid == st.st_uid) &&
+           ((perms & stdfs::perms::owner_exec) != stdfs::perms::none);
+}
+
+bool check_group_exec(const struct stat& st, gid_t mygid, stdfs::perms perms) {
+    return (mygid == st.st_gid) &&
+           ((perms & stdfs::perms::group_exec) != stdfs::perms::none);
+}
+
+bool check_other_exec(stdfs::perms perms) {
+    return (perms & stdfs::perms::others_exec) != stdfs::perms::none;
+}
+
+bool can_exec(const stdfs::path& p, stdfs::perms perms) {
+    struct stat st {};
+    int res = stat(p.c_str(), &st);
+    if (res) raise("stat: ", res);
+    return check_user_exec(st, geteuid(), perms) ||
+           check_group_exec(st, getegid(), perms) || check_other_exec(perms);
+}
+
+}  // namespace
 
 class LinuxFileSystemApi final : public FileSystem {
  public:
@@ -36,6 +62,22 @@ class LinuxFileSystemApi final : public FileSystem {
 
     bool exists(const stdfs::path& path) override {
         return stdfs::exists(path);
+    }
+
+    stdfs::path find_program(std::string_view program) override {
+        std::string_view env_path = std::getenv("PATH");
+        auto path_parts = split(env_path, ":");
+        for (const auto part : path_parts) {
+            stdfs::path path{part};
+            for (const auto& entry : stdfs::directory_iterator(path)) {
+                if (entry.path().filename() == program) {
+                    if (can_exec(entry.path(), entry.status().permissions())) {
+                        return entry.path();
+                    }
+                }
+            }
+        }
+        return stdfs::path();
     }
 
     int lock_file(const stdfs::path& path) override {
