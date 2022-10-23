@@ -10,6 +10,7 @@
 #include <fstream>
 
 #include "cent/drv/file_system.hpp"
+#include "cent/drv/process.hpp"
 #include "cent/logs.hpp"
 #include "cent/raise.hpp"
 #include "cent/strutil.hpp"
@@ -78,6 +79,21 @@ class LinuxFileSystemApi final : public FileSystem {
             }
         }
         return stdfs::path();
+    }
+    int run_program(const stdfs::path& cmd,
+                    const std::vector<std::string_view>& args,
+                    const std::vector<std::string_view>& env, std::string* out,
+                    std::string* err, const std::string* in) override {
+        Process p{};
+        std::string cmdstr = cmd.string();
+        std::vector<std::string_view> allargs{cmdstr};
+        allargs.insert(allargs.end(), args.begin(), args.end());
+        p.args(allargs);
+        p.env(env);
+        if (out) p.out(*out);
+        if (err) p.err(*err);
+        if (in) p.in(in);
+        return p.run();
     }
 
     int lock_file(const stdfs::path& path) override {

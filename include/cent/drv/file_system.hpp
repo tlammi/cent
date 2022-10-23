@@ -49,6 +49,26 @@ class FileSystem : public Driver {
     virtual stdfs::path find_program(std::string_view program) = 0;
 
     /**
+     * Run a given program with the given settings
+     *
+     * \param cmd Path to the executable
+     * \param args List of arguments to pass to the callable
+     * \param env List of environment variables in format variable=value to pass
+     * to the executable
+     * \param out Where to store stdout. Nullptr if ignored
+     * \param err Where to store stderr. Nullptr if ignored
+     * \param in Stdin to pass to the command. Nullptr means that nothing is
+     * piped. "" means that pipe is opened but immediately closed.
+     *
+     * \return Executable return value
+     */
+    virtual int run_program(const stdfs::path& cmd,
+                            const std::vector<std::string_view>& args,
+                            const std::vector<std::string_view>& env,
+                            std::string* out, std::string* err,
+                            const std::string* in) = 0;
+
+    /**
      * Lock a file and create one if it does not exist
      *
      * \param path Path to lock file to aqcuire

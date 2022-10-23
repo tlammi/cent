@@ -8,4 +8,5 @@ SRCS += files(
     'sandbox.cpp',
     'unpacker.cpp',
     'setup.cpp',
+    'process.cpp',
 )
