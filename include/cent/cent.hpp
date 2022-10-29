@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "cent/config.hpp"
+#include "cent/fs/driver.hpp"
 #include "cent/log_level.hpp"
 #include "cent/result.hpp"
 
@@ -27,4 +28,6 @@ class Cent {
     class CentImpl;
     std::unique_ptr<CentImpl> m_impl;
 };
+
+void init_defaults();
 }  // namespace cent

@@ -11,3 +11,4 @@ subdir('lib')
 libcent_dep = declare_dependency(include_directories: PUBLIC_INCLUDE, link_with: LIBCENT)
 
 subdir('bin')
+subdir('test')
