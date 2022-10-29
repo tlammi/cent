@@ -34,6 +34,18 @@ class Driver : public ::cent::Driver {
     virtual bool exists(const stdfs::path& path) = 0;
 
     /**
+     * Remove files/directories like "rm" util
+     *
+     * \param path what to delete
+     * \param recurse Like "-r" flag for "rm" command
+     * \param force Like "-f" flag for "rm" command
+     *
+     * \return std::error_code describing the result
+     */
+    virtual std::error_code rm(const stdfs::path& path, bool recurse,
+                               bool force) = 0;
+
+    /**
      * Find a given program from the filesystem
      *
      * \param program Program name to search

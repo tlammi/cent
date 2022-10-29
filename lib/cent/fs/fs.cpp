@@ -27,6 +27,9 @@ std::unique_ptr<std::iostream> open_file(const stdfs::path& path,
 }
 
 bool exists(const stdfs::path& path) { return g_drv->exists(path); }
+std::error_code rm(const stdfs::path& path, bool recurse, bool force) {
+    return g_drv->rm(path, recurse, force);
+}
 
 stdfs::path find_program(std::string_view program) {
     return g_drv->find_program(program);

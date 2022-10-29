@@ -1,5 +1,5 @@
 
-.PHONY: compile run
+.PHONY: compile run test
 
 compile: build
 	cd build && meson compile

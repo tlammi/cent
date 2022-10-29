@@ -12,6 +12,8 @@ std::unique_ptr<std::iostream> open_file(
 
 bool exists(const stdfs::path& path);
 
+std::error_code rm(const stdfs::path& path, bool recurse, bool force);
+
 stdfs::path find_program(std::string_view program);
 
 int run_program(const stdfs::path& cmd,

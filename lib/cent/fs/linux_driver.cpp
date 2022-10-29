@@ -66,6 +66,18 @@ class LinuxDriver final : public cent::fs::Driver {
     bool exists(const stdfs::path& path) override {
         return stdfs::exists(path);
     }
+    std::error_code rm(const stdfs::path& path, bool recurse,
+                       bool force) override {
+        std::error_code ec{};
+        if (recurse) {
+            stdfs::remove_all(path, ec);
+            if (force) return {};
+            return ec;
+        }
+        stdfs::remove(path, ec);
+        if (force) return {};
+        return ec;
+    }
 
     stdfs::path find_program(std::string_view program) override {
         std::string_view env_path = std::getenv("PATH");
