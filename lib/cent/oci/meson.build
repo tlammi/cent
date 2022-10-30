@@ -1,0 +1,1 @@
+SRCS += files('reference.cpp')

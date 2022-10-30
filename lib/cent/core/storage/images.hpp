@@ -1,0 +1,40 @@
+/* SPDX-License-Identifier:  GPL-3.0-or-later */
+/* Copyright (C) 2022 Toni Lammi */
+#pragma once
+
+#include <nlohmann/json.hpp>
+#include <vector>
+
+#include "cent/digest.hpp"
+#include "cent/oci.hpp"
+
+namespace cent::storage {
+
+/**
+ * Access storage's image database
+ */
+class Images {
+ public:
+    struct Entry {
+        std::vector<oci::Reference> image_names;
+        Digest manifest_digest;
+    };
+
+    Images(const nlohmann::json& json);
+
+    Entry& at(const oci::Reference& image);
+    Entry& at(DigestView digest);
+    const Entry& at(const oci::Reference& image) const;
+    const Entry& at(DigestView digest) const;
+
+    Entry& operator[](oci::Reference image);
+    Entry& operator[](DigestView image);
+
+    const std::vector<Entry>& entries() const;
+
+    nlohmann::json json() const;
+
+ private:
+    std::vector<Entry> m_entries{};
+};
+}  // namespace cent::storage
