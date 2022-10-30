@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
 /* Copyright (C) 2022 Toni Lammi */
-#include "cent/enum_arr.hpp"
+#include "cent/util/enum_arr.hpp"
 
 #include <gtest/gtest.h>
 
 #include <string_view>
 
-using cent::EnumArr;
+using cent::util::EnumArr;
 
 enum E {
     A,

@@ -9,6 +9,7 @@ TEST_KWARGS = {
 }
 
 subdir('fs')
+subdir('util')
 
 #test_reference = executable('test_reference', 'reference.cpp', kwargs: test_kwargs)
 #test_http_header = executable('test_http_header', 'http_header.cpp', kwargs: test_kwargs)
