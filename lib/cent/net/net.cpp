@@ -17,4 +17,7 @@ std::shared_ptr<Driver> builtin_driver(std::string_view name) {
 void set_driver(std::shared_ptr<Driver> drv) { g_drv = std::move(drv); }
 
 std::unique_ptr<HttpSession> http_session() { return g_drv->http_session(); }
+std::unique_ptr<HttpClient> http_client() {
+    return std::make_unique<HttpClient>();
+}
 }  // namespace cent::net

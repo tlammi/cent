@@ -1,5 +1,5 @@
 
-SRCS += files('curl_driver.cpp', 'net.cpp')
+SRCS += files('curl_driver.cpp', 'net.cpp', 'http_client.cpp')
 
 cpr_dep = dependency('cpr', required: false)
 if not cpr_dep.found()
