@@ -1,3 +1,4 @@
-SRCS += files('cent.cpp', 'strutil.cpp', 'logs.cpp')
+SRCS += files('cent.cpp', 'logs.cpp')
 subdir('fs')
 subdir('net')
+subdir('util')

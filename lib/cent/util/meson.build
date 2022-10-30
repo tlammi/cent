@@ -1,0 +1,2 @@
+
+SRCS += files('strutil.cpp')

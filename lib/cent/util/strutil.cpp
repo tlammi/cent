@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
 /* Copyright (C) 2022 Toni Lammi */
-#include "cent/strutil.hpp"
+#include "strutil.hpp"
 
 #include <tuple>
 
-namespace cent {
+namespace cent::util {
 std::pair<std::string_view, std::string_view> split_left(
     std::string_view str, std::string_view token) {
     auto idx = str.find(token);

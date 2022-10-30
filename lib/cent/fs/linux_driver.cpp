@@ -11,7 +11,7 @@
 
 #include "cent/logs.hpp"
 #include "cent/raise.hpp"
-#include "cent/strutil.hpp"
+#include "cent/util.hpp"
 #include "process.hpp"
 
 namespace cent::fs {
@@ -81,7 +81,7 @@ class LinuxDriver final : public cent::fs::Driver {
 
     stdfs::path find_program(std::string_view program) override {
         std::string_view env_path = std::getenv("PATH");
-        auto path_parts = split(env_path, ":");
+        auto path_parts = util::split(env_path, ":");
         for (const auto part : path_parts) {
             stdfs::path path{part};
             for (const auto& entry : stdfs::directory_iterator(path)) {
@@ -123,7 +123,7 @@ class LinuxDriver final : public cent::fs::Driver {
                          const stdfs::path& upper, const stdfs::path& work,
                          const stdfs::path& dst) final {
         std::string options{"lowerdir="};
-        options += join(paths, ":");
+        options += util::join(paths, ":");
         if (!upper.empty()) {
             options += ",upperdir=";
             options += upper;

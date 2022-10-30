@@ -7,7 +7,7 @@
 
 #include "cent/concepts.hpp"
 
-namespace cent {
+namespace cent::util {
 
 /**
  * Join strings in the given container
@@ -19,9 +19,9 @@ namespace cent {
  * \return String with all the elements concatenated
  */
 template <class Container>
-requires(concepts::implicit_const_iterable<Container>&&
-             concepts::maybe_empty<Container>) std::string
-    join(Container&& container, std::string_view token) {
+    requires(concepts::implicit_const_iterable<Container> &&
+             concepts::maybe_empty<Container>)
+std::string join(Container&& container, std::string_view token) {
     if (container.empty()) return "";
     auto begin = container.begin();
     auto end = container.end();
@@ -40,4 +40,4 @@ std::pair<std::string_view, std::string_view> split_left(
 
 std::vector<std::string_view> split(std::string_view str,
                                     std::string_view token);
-}  // namespace cent
+}  // namespace cent::util
