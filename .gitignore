@@ -1,3 +1,5 @@
 .vscode
 tags
 .session.vim
+subprojects/
+-subprojects/*.wrap
