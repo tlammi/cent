@@ -1,1 +1,1 @@
-SRCS += files('reference.cpp')
+SRCS += files('reference.cpp', 'media_type.cpp')
