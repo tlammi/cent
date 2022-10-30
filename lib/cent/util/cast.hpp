@@ -9,6 +9,12 @@
 
 namespace cent::util {
 
+/**
+ * Safe cast integer to another
+ *
+ * \param i Input
+ * \return Casted value
+ */
 template <class O, class I>
     requires(std::integral<O> && std::integral<I>)
 constexpr O int_cast(I i) {
@@ -20,11 +26,17 @@ constexpr O int_cast(I i) {
     return static_cast<O>(i);
 }
 
+/**
+ * Cast an enum to its underlying type
+ */
 template <class Enum>
 constexpr auto underlying_cast(Enum e) {
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
+/**
+ * Create an enum from an underlying type
+ */
 template <class Enum>
 constexpr Enum underlying_cast(std::underlying_type_t<Enum> v) {
     return static_cast<Enum>(v);
