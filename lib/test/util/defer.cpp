@@ -1,25 +1,27 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
 /* Copyright (C) 2022 Toni Lammi */
-#include "cent/defer.hpp"
+#include "cent/util/defer.hpp"
 
 #include <gtest/gtest.h>
 
 #include <functional>
 
+using cent::util::Defer;
+
 TEST(Defer, Empty) {
-    cent::Defer d{};
+    Defer d{};
     (void)d;
 }
 
 TEST(Defer, Nop) {
-    cent::Defer d{[]() {}};
+    Defer d{[]() {}};
     (void)d;
 }
 
 TEST(Defer, Lambda) {
     int i = 0;
     {
-        cent::Defer d{[&]() { i = 100; }};
+        Defer d{[&]() { i = 100; }};
         ASSERT_EQ(i, 0);
     }
     ASSERT_EQ(i, 100);
@@ -28,7 +30,7 @@ TEST(Defer, Lambda) {
 TEST(Defer, Function) {
     int i = 0;
     {
-        cent::Defer d{std::function{[&]() { i = 100; }}};
+        Defer d{std::function{[&]() { i = 100; }}};
         ASSERT_EQ(i, 0);
     }
     ASSERT_EQ(i, 100);
@@ -38,7 +40,7 @@ TEST(Defer, Ref) {
     int i = 0;
     auto noncopyable = [&, ptr = std::make_unique<int>(100)]() { i = *ptr; };
     {
-        cent::Defer d{noncopyable};
+        Defer d{noncopyable};
         ASSERT_EQ(i, 0);
     }
     ASSERT_EQ(i, 100);
@@ -48,7 +50,7 @@ TEST(Defer, Move) {
     int i = 0;
     auto noncopyable = [&, ptr = std::make_unique<int>(100)]() { i = *ptr; };
     {
-        cent::Defer d{std::move(noncopyable)};
+        Defer d{std::move(noncopyable)};
         ASSERT_EQ(i, 0);
     }
     ASSERT_EQ(i, 100);
