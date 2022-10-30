@@ -3,9 +3,9 @@
 #pragma once
 
 #include "cent/drv/http_session.hpp"
-#include "cent/manifest.hpp"
-#include "cent/manifest_list.hpp"
-#include "cent/reference.hpp"
+#include "cent/oci/manifest.hpp"
+#include "cent/oci/manifest_list.hpp"
+#include "cent/oci/reference.hpp"
 
 namespace cent::oci {
 
