@@ -8,4 +8,6 @@ if not cpr_dep.found()
     proj = cmake.subproject('cpr', options: opts)
     dep = proj.get_variable('cpr_dep')
     DEPS += [dep]
+else
+    DEPS += [cpr_dep]
 endif

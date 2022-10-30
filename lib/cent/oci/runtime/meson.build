@@ -1,0 +1,1 @@
+SRCS += files('bundle.cpp', 'config.cpp')

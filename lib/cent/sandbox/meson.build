@@ -1,0 +1,1 @@
+SRCS += files('namespace_sandbox.cpp', 'sandbox.cpp')
