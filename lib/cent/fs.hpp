@@ -2,6 +2,8 @@
 
 #include <cent/fs/driver.hpp>
 
+#include "cent/fs/lock_file.hpp"
+
 namespace cent::fs {
 
 std::error_code mkdir(const stdfs::path& path, bool parents = false);
@@ -29,4 +31,4 @@ void overlayfs_mount(const std::vector<stdfs::path>& lowers,
                      const stdfs::path& upper, const stdfs::path& work,
                      const stdfs::path& dst);
 
-}
+}  // namespace cent::fs

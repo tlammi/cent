@@ -5,6 +5,8 @@ private_inc = include_directories('.')
 subdir('cent')
 
 LIBCENT = library('cent', SRCS, include_directories: [private_inc, PUBLIC_INCLUDE], dependencies: DEPS)
+
+subdir('test')
 #private_inc = include_directories('include')
 #
 #SRCS = []
