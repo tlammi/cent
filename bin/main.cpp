@@ -6,10 +6,11 @@
 #include <CLI/Formatter.hpp>
 #include <iostream>
 
-#include "cent.hpp"
+#include "cent/cent.hpp"
 
 int main(int argc, char** argv) {
     CLI::App app{"Container Engine"};
+    cent::init_defaults();
     cent::Cent c{};
     app.require_subcommand();
     CLI::App* pull_cmd = app.add_subcommand("pull", "Pull an image");
