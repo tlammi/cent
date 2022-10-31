@@ -125,6 +125,11 @@ class Cent::CentImpl {
         return Result{0, ""};
     }
 
+    void system_reset() {
+        fs::rm(m_ctx.workspace_path, true, true);
+        fs::rm(m_ctx.storage_path, true, true);
+    }
+
  private:
     Context m_ctx;
 };
@@ -136,6 +141,7 @@ Result Cent::pull(std::string_view image) { return m_impl->pull(image); }
 Result Cent::image_list() { return m_impl->image_list(); }
 Result Cent::create(std::string_view image) { return m_impl->create(image); }
 
+void Cent::system_reset() { return m_impl->system_reset(); }
 void init_defaults() {
     fs::set_driver(fs::builtin_driver("linux"));
     net::set_driver(net::builtin_driver("curl"));

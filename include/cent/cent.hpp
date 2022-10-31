@@ -25,6 +25,8 @@ class Cent {
     Result image_list();
     Result create(std::string_view image);
 
+    void system_reset();
+
  private:
     class CentImpl;
     std::unique_ptr<CentImpl> m_impl;
