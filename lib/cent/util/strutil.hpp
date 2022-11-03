@@ -2,13 +2,33 @@
 /* Copyright (C) 2022 Toni Lammi */
 #pragma once
 
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "cent/concepts.hpp"
 
 namespace cent::util {
+namespace detail {
 
+template <class S, class... Rest>
+void do_concat(std::stringstream& ss, S&& s, Rest&&... rest) {
+    ss << std::forward<S>(s);
+    if constexpr (sizeof...(Rest)) {
+        do_concat(ss, std::forward<Rest>(rest)...);
+    }
+}
+
+template <class Token, class Str, class... Strs>
+void do_join(std::stringstream& ss, Token&& token, Str&& str, Strs&&... strs) {
+    ss << std::forward<Str>(str);
+    if constexpr (sizeof...(Strs)) {
+        ss << token;
+        do_join(ss, std::forward<Token>(token), std::forward<Strs>(strs)...);
+    }
+}
+
+}  // namespace detail
 /**
  * Join strings in the given container
  *
@@ -40,4 +60,27 @@ std::pair<std::string_view, std::string_view> split_left(
 
 std::vector<std::string_view> split(std::string_view str,
                                     std::string_view token);
+
+template <class Token, class... StrLike>
+std::string join_inline(Token&& token, StrLike&&... strs) {
+    if constexpr (sizeof...(StrLike) == 0)
+        return "";
+    else {
+        std::stringstream ss{};
+        detail::do_join(ss, std::forward<Token>(token),
+                        std::forward<StrLike>(strs)...);
+        return ss.str();
+    }
+}
+
+template <class... StrLike>
+std::string concat_inline(StrLike&&... strs) {
+    if constexpr (sizeof...(StrLike) == 0) {
+        return "";
+    } else {
+        std::stringstream ss{};
+        detail::do_concat(ss, std::forward<StrLike>(strs)...);
+        return ss.str();
+    }
+}
 }  // namespace cent::util
