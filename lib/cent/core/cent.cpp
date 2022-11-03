@@ -20,6 +20,31 @@
 #include "cent/sandbox.hpp"
 
 namespace cent {
+namespace {
+oci::Manifest get_manifest(oci::RegistryClient& client, oci::Reference& ref) {
+    auto resource = client.get_resource(ref);
+    if (std::holds_alternative<oci::ManifestList>(resource)) {
+        auto& mlist = std::get<oci::ManifestList>(resource);
+        auto entry = mlist.platform_manifest(oci::Platform{"amd64", "linux"});
+        if (!entry) {
+            logs::fatal("Manifest list: ", mlist);
+            raise("No entry: amd64");
+        }
+        logs::trace("Manifest list:", mlist);
+        std::string manifest_img_ref{ref.repo()};
+        manifest_img_ref += "@";
+        manifest_img_ref += entry->digest.str();
+        oci::Reference manifest_image{manifest_img_ref};
+        resource = client.get_resource(manifest_image);
+    }
+    if (!std::holds_alternative<oci::Manifest>(resource)) {
+        raise("Could not find a manifest");
+    }
+    auto& manifest = std::get<oci::Manifest>(resource);
+    logs::trace("Manifest: ", manifest);
+    return manifest;
+}
+}  // namespace
 
 class Cent::CentImpl {
  public:
@@ -30,20 +55,20 @@ class Cent::CentImpl {
         oci::Reference image{std::string(image_ref)};
         net::HttpClient http_client{};
         oci::RegistryClient client{&http_client};
-        std::stringstream ss;
-        auto manifest_list = client.manifest_list(image);
-        auto entry =
-            manifest_list.platform_manifest(oci::Platform{"amd64", "linux"});
-        if (!entry) {
-            logs::fatal("Manifest list: ", manifest_list);
-            raise("no entry: 'amd64'");
-        }
-        logs::trace("Manifest list: ", manifest_list);
-        std::string manifest_img_ref{image.repo()};
-        manifest_img_ref += "@";
-        manifest_img_ref += entry->digest.str();
-        oci::Reference manifest_image{manifest_img_ref};
-        auto manifest = client.manifest(manifest_image);
+        // auto manifest_list = client.manifest_list(image);
+        // auto entry =
+        //     manifest_list.platform_manifest(oci::Platform{"amd64", "linux"});
+        // if (!entry) {
+        //     logs::fatal("Manifest list: ", manifest_list);
+        //     raise("no entry: 'amd64'");
+        // }
+        // logs::trace("Manifest list: ", manifest_list);
+        // std::string manifest_img_ref{image.repo()};
+        // manifest_img_ref += "@";
+        // manifest_img_ref += entry->digest.str();
+        // oci::Reference manifest_image{manifest_img_ref};
+        // auto manifest = client.manifest(manifest_image);
+        auto manifest = get_manifest(client, image);
         logs::trace("Manifest: ", manifest);
         for (const auto& layer : manifest.layers()) {
             if (storage.layer_exists(layer.digest)) {

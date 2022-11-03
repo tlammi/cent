@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     create_cmd->final_callback([&]() { c.create(image); });
 
     // cent::LOG_LEVEL = cent::LogLevel::Trace;
-    cent::LOG_LEVEL = cent::LogLevel::Debug;
+    cent::LOG_LEVEL = cent::LogLevel::Trace;
     CLI11_PARSE(app, argc, argv);
 
     /*

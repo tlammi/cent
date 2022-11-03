@@ -26,4 +26,14 @@ MediaType MediaType::from_mime(std::string_view mime) {
 MediaType MediaType::from_kind(MediaKind kind) {
     return {kind, MIME_MAP[kind]};
 }
-}  // namespace cent
+
+std::vector<MediaType> all_media_types() {
+    std::vector<MediaType> v{};
+    v.reserve(util::underlying_cast(MediaKind::COUNT_));
+    for (std::underlying_type_t<MediaKind> i = 0;
+         i < util::underlying_cast(MediaKind::COUNT_); ++i) {
+        v.push_back(MediaType::from_kind(util::underlying_cast<MediaKind>(i)));
+    }
+    return v;
+}
+}  // namespace cent::oci

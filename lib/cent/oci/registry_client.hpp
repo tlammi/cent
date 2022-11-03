@@ -7,6 +7,7 @@
 #include "cent/oci/manifest.hpp"
 #include "cent/oci/manifest_list.hpp"
 #include "cent/oci/reference.hpp"
+#include "cent/oci/resource.hpp"
 
 namespace cent::oci {
 
@@ -20,9 +21,13 @@ class RegistryClient {
  public:
     RegistryClient(net::HttpSession* sess);
 
-    ManifestList manifest_list(const Reference& img);
+    Resource get_resource(const Reference& ref);
 
-    Manifest manifest(const Reference& img);
+    [[deprecated("use get_resource()")]] ManifestList manifest_list(
+        const Reference& img);
+
+    [[deprecated("use get_resource()")]] Manifest manifest(
+        const Reference& img);
 
     std::vector<uint8_t> blob(const Reference& img);
 

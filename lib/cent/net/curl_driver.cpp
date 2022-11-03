@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "cent/raise.hpp"
+#include "cent/util.hpp"
 #include "http/header.hpp"
 #include "http/token.hpp"
 
@@ -67,7 +68,8 @@ class CurlHttpSession final : public HttpSession {
 
  private:
     cpr::Session m_sess{};
-    std::map<std::string, std::string, std::less<>> m_received_headers{};
+    std::map<std::string, std::string, util::CaseInsensitiveCompare>
+        m_received_headers{};
     cpr::Header m_headers{};
     std::stringstream m_body{};
 };

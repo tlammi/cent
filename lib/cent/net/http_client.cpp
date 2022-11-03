@@ -72,6 +72,8 @@ int HttpClient::get(std::string_view url) {
             return m_sess->get(url);
         }
     }
+    // Tried HTTPS with HTTP-only server
+    if (res == 0) return 0;
     raise("Unsupported status code '", res, '\'');
 }
 

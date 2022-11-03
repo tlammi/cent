@@ -15,4 +15,5 @@ template <class Enum>
 constexpr Enum underlying_cast(std::underlying_type_t<Enum> v) {
     return static_cast<Enum>(v);
 }
+
 }  // namespace cent
