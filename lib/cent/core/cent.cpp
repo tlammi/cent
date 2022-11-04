@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier:  GPL-3.0-or-later */
 /* Copyright (C) 2022 Toni Lammi */
+#include <cent/archive/driver.hpp>
 #include <cent/cent.hpp>
 #include <cent/sandbox/driver.hpp>
 #include <cerrno>
@@ -55,19 +56,6 @@ class Cent::CentImpl {
         oci::Reference image{std::string(image_ref)};
         net::HttpClient http_client{};
         oci::RegistryClient client{&http_client};
-        // auto manifest_list = client.manifest_list(image);
-        // auto entry =
-        //     manifest_list.platform_manifest(oci::Platform{"amd64", "linux"});
-        // if (!entry) {
-        //     logs::fatal("Manifest list: ", manifest_list);
-        //     raise("no entry: 'amd64'");
-        // }
-        // logs::trace("Manifest list: ", manifest_list);
-        // std::string manifest_img_ref{image.repo()};
-        // manifest_img_ref += "@";
-        // manifest_img_ref += entry->digest.str();
-        // oci::Reference manifest_image{manifest_img_ref};
-        // auto manifest = client.manifest(manifest_image);
         auto manifest = get_manifest(client, image);
         logs::trace("Manifest: ", manifest);
         for (const auto& layer : manifest.layers()) {
@@ -171,5 +159,6 @@ void init_defaults() {
     fs::set_driver(fs::builtin_driver("linux"));
     net::set_driver(net::builtin_driver("curl"));
     sandbox::set_driver(sandbox::builtin_driver("namespace"));
+    archive::set_driver(archive::builtin_driver("libarchive"));
 }
 }  // namespace cent
