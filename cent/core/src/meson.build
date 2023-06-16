@@ -1,2 +1,2 @@
 
-SRCS += files('error.cpp')
+SRCS += files('error.cpp', 'logs.cpp')
