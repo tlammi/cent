@@ -24,6 +24,8 @@ class Result;
 template <>
 class Result<void> {
  public:
+    Result() = default;
+    explicit Result(Error e) : m_e{std::move(e)} {}
     constexpr bool valid() const noexcept { return false; }
     explicit constexpr operator bool() const noexcept { return false; }
 
@@ -33,6 +35,9 @@ class Result<void> {
  private:
     Error m_e{};
 };
+
+using UnitResult = Result<std::monostate>;
+using NullResult = Result<void>;
 
 template <class T>
 class Result {
@@ -67,27 +72,77 @@ class Result {
     constexpr Error& error() { return std::get<error_idx>(m_v); }
     constexpr const Error& error() const { return std::get<error_idx>(m_v); }
 
+    NullResult null() const { return NullResult{error()}; }
+
     template <class F, class Res = std::invoke_result_t<F, value_type&&>>
     auto translate(F&& f) && {
+        if (!this->valid()) return Result<Res>{null()};
         return Result<Res>{in_place_value, f(std::move(**this))};
     }
 
     template <class F, class Res = std::invoke_result_t<F, const value_type&>>
     auto translate(F&& f) const& {
-        return Result<Res>{in_place_value, f(**this)};
+        if (!this->valid()) return Result<Res>{null()};
+        return Result<Res>{in_place_value, error()};
     }
 
     template <class F, class Res = std::invoke_result_t<F, value_type&>>
     auto translate(F&& f) & {
+        if (!this->valid()) return Result<Res>{null()};
         return Result<Res>{in_place_value, f(**this)};
+    }
+
+    template <class F, class Res = std::invoke_result_t<F, value_type&&>>
+    auto and_then(F&& f) && {
+        if (!this->valid()) return Res{null()};
+        return f(std::move(**this));
+    }
+
+    template <class F, class Res = std::invoke_result_t<F, const value_type&>>
+    auto and_then(F&& f) const& {
+        if (!this->valid()) return Res{null()};
+        return f(**this);
+    }
+
+    template <class F, class Res = std::invoke_result_t<F, value_type&>>
+    auto and_then(F&& f) & {
+        if (!this->valid()) return Res{null()};
+        return f(**this);
+    }
+
+    template <class F>
+    void or_else(F&& f) && {
+        if (this->valid()) return;
+        if constexpr (std::is_invocable_v<F, Error&&>) {
+            f(std::move(error()));
+        } else {
+            f();
+        }
+    }
+
+    template <class F>
+    void or_else(F&& f) const& {
+        if (this->valid()) return;
+        if constexpr (std::is_invocable_v<F, const Error&>) {
+            f(error());
+        } else {
+            f();
+        }
+    }
+
+    template <class F>
+    void or_else(F&& f) & {
+        if (this->valid()) return;
+        if constexpr (std::is_invocable_v<F, Error&>) {
+            f(error());
+        } else {
+            f();
+        }
     }
 
  private:
     std::variant<T, Error> m_v{};
 };
-
-using UnitResult = Result<std::monostate>;
-using NullResult = Result<void>;
 
 template <class T, class... Ts>
 Result<T> make_value(Ts&&... ts) {
