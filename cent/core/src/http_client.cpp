@@ -17,7 +17,8 @@ class CurlRequest final : public HttpRequest {
         auto resp = s.Get();
         return HttpResponse{
             .status_code = static_cast<int>(resp.status_code),  // NOLINT
-            .header = HttpHeader{resp.header.begin(), resp.header.end()},
+            .header = HttpHeader{std::make_move_iterator(resp.header.begin()),
+                                 std::make_move_iterator(resp.header.end())},
             .body = resp.text,
         };
     }
