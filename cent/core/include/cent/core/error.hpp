@@ -21,4 +21,7 @@ class Error {
     std::string m_what;
 };
 
+
+#define CENT_FATAL(...) ::std::terminate();
+
 }  // namespace cent

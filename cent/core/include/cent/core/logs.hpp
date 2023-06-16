@@ -19,6 +19,8 @@ enum class LogLevel : std::uint8_t {
 void init(LogLevel lvl);
 LogLevel level();
 
+void flush();
+
 namespace logdetail {
 
 void push_log(LogLevel lvl, std::string&& msg);

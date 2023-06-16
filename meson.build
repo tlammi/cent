@@ -3,8 +3,7 @@ project('cent', 'cpp', default_options: ['cpp_std=c++20'])
 TESTS = {}
 
 subdir('cent')
-
-
+subdir('bin')
 gtest_deps = [dependency('gtest'), dependency('gtest_main')]
 
 foreach k, v : TESTS
