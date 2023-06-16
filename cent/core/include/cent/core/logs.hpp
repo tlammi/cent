@@ -21,10 +21,12 @@ LogLevel level();
 
 namespace logdetail {
 
-void push_log(std::string&& msg);
+void push_log(LogLevel lvl, std::string&& msg);
 
 template <class Fmt, class... Ts>
-void do_log(LogLevel lvl, Fmt&& fmt, Ts&&... ts) {}
+void do_log(LogLevel lvl, Fmt&& fmt, Ts&&... ts) {
+    push_log(lvl, fmt::format(std::forward<Fmt>(fmt), std::forward<Ts>(ts)...));
+}
 
 }  // namespace logdetail
 
