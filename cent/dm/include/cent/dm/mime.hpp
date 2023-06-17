@@ -10,19 +10,28 @@
 namespace cent::dm {
 
 enum class MimeType {
-    ManifestList,
+    ManifestListV2,
+    ImageRootfsDiffTarGz,
+    ContainerImageV1,
+    ManifestV2,
     COUNT_,
 };
 namespace mime_detail {
 using namespace cent::literals;
+
+// clang-format off
 constexpr EnumArr<MimeType, StaticStr> mime_map_docker =
     make_enum_arr<MimeType, StaticStr>(
-        MimeType::ManifestList,
-        "application/vnd.docker.distribution.manifest.list.v2+json"_ss);
+        MimeType::ManifestListV2, "application/vnd.docker.distribution.manifest.list.v2+json"_ss,
+        MimeType::ImageRootfsDiffTarGz, "application/vnd.docker.image.rootfs.diff.tar.gzip"_ss,
+        MimeType::ContainerImageV1, "application/vnd.docker.container.image.v1+json"_ss,
+        MimeType::ManifestV2, "application/vnd.docker.distribution.manifest.v2+json"_ss
+        );
 
 constexpr EnumArr<MimeType, StaticStr> mime_map_oci =
-    make_enum_arr<MimeType, StaticStr>(MimeType::ManifestList,
-                                       "manifest.list.v2+json"_ss);
+    make_enum_arr<MimeType, StaticStr>(
+    MimeType::ManifestListV2, "manifest.list.v2+json"_ss);
+// clang-format on
 }  // namespace mime_detail
 
 constexpr StaticStr docker_mime(MimeType type) {
@@ -46,6 +55,12 @@ constexpr std::optional<MimeType> docker_mime_from_str(
 constexpr std::optional<MimeType> oci_mime_from_str(
     std::string_view s) noexcept {
     return mime_detail::mime_map_oci.find(s);
+}
+
+constexpr std::optional<MimeType> mime_from_str(std::string_view s) noexcept {
+    auto mime = oci_mime_from_str(s);
+    if (mime) return mime;
+    return docker_mime_from_str(s);
 }
 
 }  // namespace cent::dm

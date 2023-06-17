@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cent/core.hpp>
-#include <cent/reg/manifest_list.hpp>
+#include <cent/dm/manifest_list.hpp>
 
 namespace cent::reg {
 
@@ -17,7 +17,7 @@ class Registry {
     Registry(std::string base_url, Ptr<HttpRequest> req);
     const HttpRequest* active_request() const;
 
-    ManifestList manifest_list();
+    dm::ManifestList manifest_list();
 
  private:
     std::string m_url;

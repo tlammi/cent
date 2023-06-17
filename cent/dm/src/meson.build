@@ -1,2 +1,2 @@
 
-SRCS += files('reference.cpp')
+SRCS += files('reference.cpp', 'manifest_list.cpp')
