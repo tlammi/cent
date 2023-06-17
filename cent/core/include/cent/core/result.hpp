@@ -39,6 +39,9 @@ class Result<void> {
 using UnitResult = Result<std::monostate>;
 using NullResult = Result<void>;
 
+template <class... Ts>
+using VariantResult = Result<std::variant<Ts...>>;
+
 template <class T>
 class Result {
     static constexpr auto value_idx = result_detail::value_idx;

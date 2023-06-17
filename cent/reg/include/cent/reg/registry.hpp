@@ -5,6 +5,10 @@
 #include "cent/core/http_client.hpp"
 
 namespace cent::reg {
+
+/**
+ * Connection to a remote (or local) Docker/OCI registry
+ * */
 class Registry {
  public:
     Registry(std::string_view url);
