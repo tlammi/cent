@@ -3,6 +3,6 @@
 
 int main() {
     cent::logs_init(cent::LogLevel::Trace);
-    auto i = LOG_EXPR(1 + 2);
+    auto i = CENT_EXPR(1 + 2);
     return i;
 }

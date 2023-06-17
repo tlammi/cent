@@ -50,17 +50,17 @@ class Result {
  public:
     using value_type = T;
     using error_type = Error;
-    Result() : Result(in_place_value) {}
+    constexpr Result() : Result(in_place_value) {}
 
     explicit Result(Error e) : Result(in_place_error, std::move(e)) {}
     explicit Result(Result<void> null) : Result(std::move(null.error())) {}
 
     template <class... Ts>
-    explicit Result(in_place_value_t /*unused*/, Ts&&... ts)
+    constexpr explicit Result(in_place_value_t /*unused*/, Ts&&... ts)
         : m_v{in_place_value, std::forward<Ts>(ts)...} {}
 
     template <class... Ts>
-    explicit Result(in_place_error_t /*unused*/, Ts&&... ts)
+    constexpr explicit Result(in_place_error_t /*unused*/, Ts&&... ts)
         : m_v{in_place_error, std::forward<Ts>(ts)...} {}
 
     constexpr bool valid() const noexcept { return m_v.index() == value_idx; }
@@ -148,7 +148,7 @@ class Result {
 };
 
 template <class T, class... Ts>
-Result<T> make_value(Ts&&... ts) {
+constexpr Result<T> make_value(Ts&&... ts) {
     return Result<T>{in_place_value, std::forward<Ts>(ts)...};
 }
 

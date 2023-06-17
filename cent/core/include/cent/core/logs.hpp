@@ -44,7 +44,7 @@ void do_log(LogLevel lvl, fmt::format_string<Ts&&...> fmtstr, Ts&&... ts) {
 }  // namespace logdetail
 
 // NOLINTNEXTLINE
-#define LOG_DO_LOG(lvl, ...)                                \
+#define CENT_DO_LOG(lvl, ...)                               \
     do {                                                    \
         if (::cent::underlying_cast(lvl) <=                 \
             ::cent::underlying_cast(::cent::log_level())) { \
@@ -53,29 +53,31 @@ void do_log(LogLevel lvl, fmt::format_string<Ts&&...> fmtstr, Ts&&... ts) {
     } while (0)
 
 // NOLINTNEXTLINE
-#define LOG_TRACE(...) LOG_DO_LOG(::cent::LogLevel::Trace, __VA_ARGS__)
+#define CENT_TRACE(...) CENT_DO_LOG(::cent::LogLevel::Trace, __VA_ARGS__)
 // NOLINTNEXTLINE
-#define LOG_DEBUG(...) LOG_DO_LOG(::cent::LogLevel::Debug, __VA_ARGS__)
+#define CENT_DEBUG(...) CENT_DO_LOG(::cent::LogLevel::Debug, __VA_ARGS__)
 // NOLINTNEXTLINE
-#define LOG_INFO(...) LOG_DO_LOG(::cent::LogLevel::Info, __VA_ARGS__)
+#define CENT_INFO(...) CENT_DO_LOG(::cent::LogLevel::Info, __VA_ARGS__)
 // NOLINTNEXTLINE
-#define LOG_WARN(...) LOG_DO_LOG(::cent::LogLevel::Warn, __VA_ARGS__)
+#define CENT_WARN(...) CENT_DO_LOG(::cent::LogLevel::Warn, __VA_ARGS__)
 // NOLINTNEXTLINE
-#define LOG_ERR(...) LOG_DO_LOG(::cent::LogLevel::Err, __VA_ARGS__)
+#define CENT_ERR(...) CENT_DO_LOG(::cent::LogLevel::Err, __VA_ARGS__)
 
 // NOLINTNEXTLINE
-#define LOG_EXPR(expr)                \
-    [&] {                             \
-        LOG_TRACE("expr: {}", #expr); \
-        auto res = expr;              \
-        LOG_TRACE("  -> {}", res);    \
-        return res;                   \
+#define CENT_EXPR(expr)                \
+    [&] {                              \
+        CENT_TRACE("expr: {}", #expr); \
+        auto res = expr;               \
+        CENT_TRACE("  -> {}", res);    \
+        return res;                    \
     }()
 
+/**
+ * NOTE: Careful with this and if blocks without braces
+ * */
 // NOLINTNEXTLINE
-#define LOG_STMT(stmt)          \
-    [&] {                       \
-        LOG_TRACE("{}", #stmt); \
-        stmt;                   \
-    }()
+#define CENT_STMT(stmt)      \
+    CENT_TRACE("{}", #stmt); \
+    stmt;
 }  // namespace cent
+

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cent/core/util.hpp>
 #include <cstddef>
+#include <optional>
 #include <type_traits>
 #include <utility>
 
@@ -26,6 +28,13 @@ class EnumArr {
     constexpr V& operator[](std::underlying_type_t<E> i) { return m_arr.at(i); }
     constexpr const V& operator[](std::underlying_type_t<E> i) const {
         return m_arr.at(i);
+    }
+
+    template <class V2>
+    constexpr std::optional<E> find(const V2& v) const noexcept {
+        auto iter = std::find(begin(), end(), v);
+        if (iter == end()) return std::nullopt;
+        return underlying_cast<E>(iter - begin());
     }
 
     constexpr size_t size() const noexcept { return S; }

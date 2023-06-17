@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cent/core/logs.hpp>
 #include <stdexcept>
 #include <string>
 namespace cent {
@@ -21,7 +22,11 @@ class Error {
     std::string m_what;
 };
 
-
-#define CENT_FATAL(...) ::std::terminate();
+// NOLINTNEXTLINE
+#define CENT_FATAL(...)        \
+    [&] {                      \
+        CENT_ERR(__VA_ARGS__); \
+        ::std::terminate();    \
+    }()
 
 }  // namespace cent
