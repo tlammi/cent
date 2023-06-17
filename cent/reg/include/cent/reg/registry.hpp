@@ -1,8 +1,7 @@
 #pragma once
 
 #include <cent/core.hpp>
-
-#include "cent/core/http_client.hpp"
+#include <cent/reg/manifest_list.hpp>
 
 namespace cent::reg {
 
@@ -11,11 +10,18 @@ namespace cent::reg {
  * */
 class Registry {
  public:
-    Registry(std::string_view url);
-    explicit Registry(Ptr<HttpRequest> sess);
+    /**
+     * \brief Attach the client to the given URL
+     * */
+    explicit Registry(std::string base_url);
+    Registry(std::string base_url, Ptr<HttpRequest> req);
     const HttpRequest* active_request() const;
 
+    ManifestList manifest_list();
+
  private:
+    std::string m_url;
+    Ptr<HttpRequest> m_req;
 };
 
 }  // namespace cent::reg

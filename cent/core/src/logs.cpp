@@ -1,4 +1,5 @@
 #include <sys/wait.h>
+
 #include <cent/core/logs.hpp>
 
 #include "cent/core/static_str.hpp"
@@ -6,9 +7,9 @@
 namespace cent {
 namespace {
 
-LogLevel g_lvl = LogLevel::Trace; //NOLINT
+LogLevel g_lvl = LogLevel::Trace;  // NOLINT
 
-StaticStr log_lvl_str(LogLevel lvl) {
+constexpr StaticStr log_lvl_str(LogLevel lvl) noexcept {
     using enum LogLevel;
     switch (lvl) {
         case Trace: return "[TRAC] ";
@@ -20,19 +21,13 @@ StaticStr log_lvl_str(LogLevel lvl) {
     return "[UNKN] ";
 }
 }  // namespace
-void init(LogLevel lvl){
-  g_lvl = lvl;
-}
+void logs_init(LogLevel lvl) { g_lvl = lvl; }
 
-LogLevel level(){
-  return g_lvl;
-}
+LogLevel log_level() { return g_lvl; }
 
-void flush(){
-  std::fflush(stderr);
-}
+void logs_flush() { std::fflush(stderr); }
 
-namespace logsdetail {
+namespace logdetail {
 
 void push_log(LogLevel lvl, std::string&& msg) {
     std::fputs(log_lvl_str(lvl), stderr);
@@ -40,5 +35,5 @@ void push_log(LogLevel lvl, std::string&& msg) {
     std::fputs("\n", stderr);
 }
 
-}  // namespace logsdetail
+}  // namespace logdetail
 }  // namespace cent

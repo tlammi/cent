@@ -1,0 +1,3 @@
+
+SRCS += files('registry.cpp')
+
