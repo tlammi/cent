@@ -18,3 +18,12 @@ TEST(Oci, ManifestList) {
     auto mime = cent::dm::oci_mime(Mt::ManifestList);
     ASSERT_TRUE(contains(mime, "manifest.list.v2"));
 }
+
+TEST(Both, Eq) {
+    auto do_check = [](Mt type) {
+        EXPECT_EQ(cent::dm::docker_mime(type), cent::dm::mime(type, true));
+        EXPECT_EQ(cent::dm::oci_mime(type), cent::dm::mime(type, false));
+    };
+
+    do_check(Mt::ManifestList);
+}
