@@ -1,6 +1,6 @@
 
 obj = {
-  'files': files('reference.cpp'),
+  'files': files('reference.cpp', 'mime.cpp'),
   'deps': libcent_dm_dep,
 }
 

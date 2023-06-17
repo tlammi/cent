@@ -6,6 +6,7 @@
  * */
 #pragma once
 
+#include <cent/core/enum_arr.hpp>
 #include <cent/core/error.hpp>
 #include <cent/core/http_client.hpp>
 #include <cent/core/memory.hpp>

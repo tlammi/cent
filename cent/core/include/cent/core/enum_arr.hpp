@@ -53,7 +53,7 @@ class EnumArr {
 
 namespace enum_arr_detail {
 template <class Arr, class Enum, class V, class... Rest>
-void insert_enum_arr_recurse(Arr& a, Enum e, V&& v, Rest&&... rest) {
+constexpr void insert_enum_arr_recurse(Arr& a, Enum e, V&& v, Rest&&... rest) {
     static_assert(std::is_enum_v<Enum>);
     a.at(e) = std::forward<V>(v);
     if constexpr (sizeof...(Rest)) {
@@ -63,7 +63,7 @@ void insert_enum_arr_recurse(Arr& a, Enum e, V&& v, Rest&&... rest) {
 }  // namespace enum_arr_detail
 
 template <class E, class V, class... Ts>
-auto make_enum_arr(Ts&&... ts) {
+constexpr auto make_enum_arr(Ts&&... ts) {
     EnumArr<E, V> arr{};
     enum_arr_detail::insert_enum_arr_recurse(arr, std::forward<Ts>(ts)...);
     return arr;

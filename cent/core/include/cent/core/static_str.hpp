@@ -6,6 +6,7 @@ namespace cent {
 
 class StaticStr {
  public:
+    consteval StaticStr() = default;
     template <size_t S>
     consteval StaticStr(const char (&str)[S])
         : m_s{str}, m_size{S} {}  // NOLINT
@@ -21,8 +22,8 @@ class StaticStr {
     constexpr operator const char*() const noexcept { return m_s; }
 
  private:
-    const char* m_s;
-    size_t m_size;
+    const char* m_s{nullptr};
+    size_t m_size{0};
 };
 
 namespace literals {
