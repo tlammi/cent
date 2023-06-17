@@ -4,7 +4,6 @@
 
 #cent = executable('cent', 'main.cpp', dependencies: [libcent_dep, cli11_dep])
 
-http = executable('http', 'http.cpp', dependencies: [libcent_core_dep, dependency('fmt')])
+cent_reg = executable('cent-reg', 'cent_reg.cpp', dependencies: [libcent_reg_dep])
 
-logs = executable('logs', 'logs.cpp', dependencies: [libcent_core_dep, dependency('fmt')])
 

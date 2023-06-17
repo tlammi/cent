@@ -39,3 +39,4 @@ struct fmt::formatter<cent::dm::ManifestList> : fmt::formatter<std::string> {
             "ManifestList{<placeholder>}", ctx);
     }
 };
+

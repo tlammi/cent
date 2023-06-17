@@ -17,7 +17,7 @@ class Registry {
     Registry(std::string base_url, Ptr<HttpRequest> req);
     const HttpRequest* active_request() const;
 
-    dm::ManifestList manifest_list();
+    dm::ManifestList manifest_list(std::string_view repo, std::string_view tag);
 
  private:
     std::string m_url;

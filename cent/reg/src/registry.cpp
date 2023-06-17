@@ -11,4 +11,9 @@ Registry::Registry(std::string base_url, Ptr<HttpRequest> req)
 
 const HttpRequest* Registry::active_request() const { return m_req.get(); }
 
+dm::ManifestList Registry::manifest_list(std::string_view repo,
+                                         std::string_view tag) {
+    return {};
+}
+
 }  // namespace cent::reg

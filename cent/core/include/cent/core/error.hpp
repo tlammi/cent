@@ -26,6 +26,7 @@ class Error {
 #define CENT_FATAL(...)        \
     [&] {                      \
         CENT_ERR(__VA_ARGS__); \
+        ::cent::logs_flush();  \
         ::std::terminate();    \
     }()
 

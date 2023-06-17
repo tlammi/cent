@@ -1,6 +1,6 @@
 
 SRCS = []
-DEPS = [dependency('cpr')]
+DEPS = [dependency('cpr'), dependency('fmt')]
 
 incdir = include_directories('include')
 subdir('src')

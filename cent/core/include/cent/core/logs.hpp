@@ -46,7 +46,7 @@ void do_log(LogLevel lvl, fmt::format_string<Ts&&...> fmtstr, Ts&&... ts) {
 // NOLINTNEXTLINE
 #define CENT_DO_LOG(lvl, ...)                               \
     do {                                                    \
-        if (::cent::underlying_cast(lvl) <=                 \
+        if (::cent::underlying_cast(lvl) >=                 \
             ::cent::underlying_cast(::cent::log_level())) { \
             ::cent::logdetail::do_log(lvl, __VA_ARGS__);    \
         }                                                   \
