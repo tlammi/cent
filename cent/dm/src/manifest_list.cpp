@@ -21,9 +21,9 @@ ManifestList::ManifestList(const nlohmann::json& data)
         std::string variant = pform.value("variant", "");
         Platform platform{std::move(arch), std::move(os), std::move(variant)};
 
-        m_entries.emplace_back(std::move(digest), std::move(mtype),
+        m_entries.push_back(Entry{std::move(digest), std::move(mtype),
                                std::move(platform),
-                               manifest["size"].get<size_t>());
+                               manifest["size"].get<size_t>()});
     }
 }
 
