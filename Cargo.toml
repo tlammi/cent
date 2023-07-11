@@ -1,0 +1,18 @@
+[workspace]
+
+resolver = "2"
+
+members = [
+  "cent-core",
+  "cent-reg",
+  "cent",
+  "cent-bin",
+]
+
+[profile.release]
+opt-level = "z"
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"
+
