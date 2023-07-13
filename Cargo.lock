@@ -150,6 +150,7 @@ dependencies = [
 name = "cent-reg"
 version = "0.1.0"
 dependencies = [
+ "cent-core",
  "reqwest",
 ]
 

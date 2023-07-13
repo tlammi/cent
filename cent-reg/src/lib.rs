@@ -1,3 +1,7 @@
+pub mod client;
+
+pub use client::Client;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
