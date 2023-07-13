@@ -1,26 +1,21 @@
-
 extern crate clap;
 
 use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
-struct RootArgs{
-
+struct RootArgs {
     #[command(subcommand)]
     cmd: Command,
-
 }
 
 #[derive(Subcommand, Debug)]
-enum Command{
+enum Command {
     Fetch(FetchArgs),
 }
 
 #[derive(Debug, Parser)]
-struct FetchArgs{
+struct FetchArgs {}
 
-}
-
-pub fn main(){
+pub fn main() {
     println!("hello, world");
 }
