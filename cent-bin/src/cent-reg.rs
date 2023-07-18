@@ -1,6 +1,8 @@
 extern crate clap;
 
 use clap::{Parser, Subcommand, ValueEnum};
+use simple_logger::SimpleLogger;
+use log::*;
 
 #[derive(Parser, Debug)]
 struct RootArgs {
@@ -28,7 +30,8 @@ enum What {
 }
 
 pub fn main() {
+    SimpleLogger::new().init().unwrap();
     let args = RootArgs::parse();
-    println!("{:?}", args);
+    trace!("CLI: {:?}", args);
     println!("hello, world");
 }

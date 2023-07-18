@@ -12,3 +12,5 @@ path = "src/cent-reg.rs"
 [dependencies]
 cent = {path = "../cent"}
 clap = { version = "4.3.11", features = ["derive"] }
+log = "0.4"
+simple_logger = "4.2"
