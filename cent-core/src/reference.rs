@@ -1,6 +1,8 @@
 
 use std::fmt::Debug;
 
+use crate::{DigestView, Digest, ManifestList};
+
 pub trait ReferenceData: AsRef<str> + Debug {}
 impl<T: AsRef<str> + Debug> ReferenceData for T {}
 
@@ -27,9 +29,19 @@ impl<T: ReferenceData> BasicReference<T>{
         }
     }
 
-    pub fn digest(&self) -> Option<&str> {
+    pub fn digest(&self) -> Option<DigestView> {
         let s = self.s.as_ref();
-        s.find('@').map(|i| &s[i+1..])
+        let v = s.find('@').map(|i| DigestView::new(&s[i+1..]));
+        return v;
+    }
+
+    pub fn digest_or_tag(&self) -> &str {
+        let s = self.s.as_ref();
+        let dig = s.find('@').map(|i| &s[i+1..]);
+        if dig.is_some() {
+            return dig.unwrap();
+        }
+        self.tag().unwrap_or("latest")
     }
 
     pub fn registry(&self) -> Option<&str> {
@@ -60,6 +72,38 @@ impl<T: ReferenceData> BasicReference<T>{
             (Some(i), None) => Some(i),
             (None, None) => None,
         }
+    }
+
+    /// Get HTTP URL of the registry this reference points to
+    pub fn registry_root_url(&self) -> Option<String> {
+        let reg = self.registry()?;
+        if reg == "docker.io" {
+            return Some("registry-1.".to_owned() + reg + "/v2/");
+        }
+        return Some(reg.to_owned() + "/v2/");
+    }
+
+    /// Resolve URL where to find manifest list for this reference
+    pub fn manifest_url(&self) -> String {
+        let mut url = self.registry_root_url().unwrap();
+        let nm = self.name();
+        let ref_ = self.digest_or_tag();
+        url = url + nm + "/manifests/" + ref_;
+        return url;
+    }
+
+    pub fn blob_url(&self) -> String {
+        let url = self.registry_root_url().unwrap();
+        let nm = self.name();
+        let ref_ = self.digest_or_tag();
+        url + nm + "/blobs/" + ref_
+    }
+
+}
+
+impl Reference {
+    pub fn view(&self) -> ReferenceView {
+        ReferenceView::new(self.s.as_str())
     }
 }
 

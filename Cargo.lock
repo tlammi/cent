@@ -152,6 +152,7 @@ version = "0.1.0"
 dependencies = [
  "cent-core",
  "reqwest",
+ "serde_json",
 ]
 
 [[package]]

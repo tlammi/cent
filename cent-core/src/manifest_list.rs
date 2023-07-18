@@ -1,11 +1,12 @@
-use serde_json::Value;
+
+use serde_json::Value as Json;
 
 pub struct ManifestList {
-    jsn: Value,
+    jsn: Json,
 }
 
 impl ManifestList {
-    pub fn new(jsn: Value) -> Option<ManifestList> {
+    pub fn new(jsn: Json) -> Option<ManifestList> {
         Some(ManifestList { jsn })
     }
 }

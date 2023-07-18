@@ -46,6 +46,10 @@ where
             None => &rf,
         }
     }
+
+    pub fn str(&self) -> &str {
+        self.v.as_ref()
+    }
 }
 
 impl<'a, 'b: 'a> Digest {
