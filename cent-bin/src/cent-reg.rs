@@ -2,16 +2,20 @@ extern crate clap;
 
 use clap::{Parser, Subcommand, ValueEnum};
 use simple_logger::SimpleLogger;
+//use log::LevelFilter;
 use log::*;
 
 #[derive(Parser, Debug)]
 struct RootArgs {
+    #[arg(short, long, default_value_t = LevelFilter::Warn)]
+    log_level: LevelFilter,
     #[command(subcommand)]
     cmd: Command,
 }
 
 #[derive(Subcommand, Debug)]
 enum Command {
+    /// Fetch resources
     Fetch(FetchArgs),
 }
 
@@ -23,15 +27,27 @@ struct FetchArgs {
     reference: String,
 }
 
-#[derive(Debug, ValueEnum, Clone)]
+#[derive(Debug, ValueEnum, Clone, PartialEq)]
 enum What {
     /// Fetch manifest list
     ManifestList
 }
 
+fn fetch(args: FetchArgs){
+    if args.what != What::ManifestList {
+        panic!("asdfasf");
+    }
+    let ref_ = cent::core::Reference::new(args.reference);
+    let client = cent::reg::Client::new();
+    client.manifest_list(&ref_.view());
+}
+
+
 pub fn main() {
-    SimpleLogger::new().init().unwrap();
     let args = RootArgs::parse();
+    SimpleLogger::new().with_level(args.log_level).init().unwrap();
     trace!("CLI: {:?}", args);
-    println!("hello, world");
+    match args.cmd {
+        Command::Fetch(f) => fetch(f),
+    };
 }

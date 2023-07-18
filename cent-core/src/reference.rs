@@ -78,9 +78,9 @@ impl<T: ReferenceData> BasicReference<T>{
     pub fn registry_root_url(&self) -> Option<String> {
         let reg = self.registry()?;
         if reg == "docker.io" {
-            return Some("registry-1.".to_owned() + reg + "/v2/");
+            return Some("https://registry-1.".to_owned() + reg + "/v2/");
         }
-        return Some(reg.to_owned() + "/v2/");
+        return Some("https://".to_owned() + reg + "/v2/");
     }
 
     /// Resolve URL where to find manifest list for this reference
