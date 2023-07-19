@@ -1,5 +1,7 @@
 pub mod client;
 
+mod header_view;
+
 pub use client::Client;
 
 pub fn add(left: usize, right: usize) -> usize {
