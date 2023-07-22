@@ -1,4 +1,3 @@
-
 use serde_json::Value as Json;
 
 pub struct ManifestList {

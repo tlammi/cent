@@ -1,23 +1,20 @@
-
 use std::fmt::Debug;
 
-use crate::{DigestView, Digest, ManifestList};
+use crate::{Digest, DigestView, ManifestList};
 
 pub trait ReferenceData: AsRef<str> + Debug {}
 impl<T: AsRef<str> + Debug> ReferenceData for T {}
 
-pub struct BasicReference<T>{
+pub struct BasicReference<T> {
     s: T,
 }
 
 pub type Reference = BasicReference<String>;
 pub type ReferenceView<'a> = BasicReference<&'a str>;
 
-
-impl<T: ReferenceData> BasicReference<T>{
-
-    pub fn new(s: impl Into<T>) -> BasicReference<T>{
-        BasicReference{s: s.into()}
+impl<T: ReferenceData> BasicReference<T> {
+    pub fn new(s: impl Into<T>) -> BasicReference<T> {
+        BasicReference { s: s.into() }
     }
 
     pub fn tag(&self) -> Option<&str> {
@@ -25,19 +22,19 @@ impl<T: ReferenceData> BasicReference<T>{
         match (s.find(':'), s.find('@')) {
             (_, Some(_)) => None,
             (None, _) => Some("latest"),
-            (Some(i), _) => Some(&s[i+1..]),
+            (Some(i), _) => Some(&s[i + 1..]),
         }
     }
 
     pub fn digest(&self) -> Option<DigestView> {
         let s = self.s.as_ref();
-        let v = s.find('@').map(|i| DigestView::new(&s[i+1..]));
+        let v = s.find('@').map(|i| DigestView::new(&s[i + 1..]));
         return v;
     }
 
     pub fn digest_or_tag(&self) -> &str {
         let s = self.s.as_ref();
-        let dig = s.find('@').map(|i| &s[i+1..]);
+        let dig = s.find('@').map(|i| &s[i + 1..]);
         if dig.is_some() {
             return dig.unwrap();
         }
@@ -52,7 +49,7 @@ impl<T: ReferenceData> BasicReference<T>{
     pub fn name(&self) -> &str {
         let mut s = self.s.as_ref();
         self.ref_sep().map(|i| s = &s[..i]);
-        s.find('/').map(|i| s = &s[i+1..]);
+        s.find('/').map(|i| s = &s[i + 1..]);
         s
     }
 
@@ -98,7 +95,6 @@ impl<T: ReferenceData> BasicReference<T>{
         let ref_ = self.digest_or_tag();
         url + nm + "/blobs/" + ref_
     }
-
 }
 
 impl Reference {
@@ -110,7 +106,9 @@ impl Reference {
 impl<T: ReferenceData, U: AsRef<str>> PartialEq<U> for BasicReference<T> {
     fn eq(&self, other: &U) -> bool {
         let tmp = ReferenceView::new(other.as_ref());
-        self.repostitory() == tmp.repostitory() && self.tag() == tmp.tag() && self.digest() == tmp.digest()
+        self.repostitory() == tmp.repostitory()
+            && self.tag() == tmp.tag()
+            && self.digest() == tmp.digest()
     }
 }
 
@@ -144,7 +142,7 @@ mod tests {
     }
 
     #[test]
-    fn repository(){
+    fn repository() {
         let mut r = Reference::new("foo");
         assert_eq!(r.repostitory(), "foo");
         r = Reference::new("foo:bar");

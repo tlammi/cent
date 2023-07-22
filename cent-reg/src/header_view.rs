@@ -1,25 +1,85 @@
-
+use core::fmt::Debug;
 /**
-* Type for handling header fields with 
+* Type for handling header fields with
 * */
-pub struct HeaderView<'a>{
-    val: &'a [u8] 
+use core::iter::zip;
+
+pub struct HeaderView<'a> {
+    values: Vec<(&'a [u8], &'a [u8])>,
 }
 
 impl<'a> HeaderView<'a> {
-
     pub fn new(val: &'a [u8]) -> HeaderView<'a> {
-        HeaderView{val}
+        let mut prev_idx = 0;
+        let mut bits = Vec::<&'a [u8]>::new();
+
+        val.iter()
+            .enumerate()
+            .filter(|(_, &c)| c == b',')
+            .for_each(|(i, _)| {
+                bits.push(&val[prev_idx..i]);
+                prev_idx = i
+            });
+        bits.push(&val[prev_idx..]);
+
+        let values = bits
+            .iter()
+            .map(|&s| {
+                let idx: usize = s.iter().position(|&c| c == b'=').unwrap();
+                return (&s[..idx], &s[idx + 2..s.len() - 1]);
+            })
+            .collect();
+        HeaderView { values }
     }
 
     pub fn at(&self, index: &[u8]) -> Option<&[u8]> {
-        let value = self.val.to_ascii_lowercase();
-        let searched = index.to_ascii_lowercase();
-        let begin = value.windows(index.len()).position(|window| window == searched)?;
-        let end = begin + index.len();
-        let eq = value[end..].iter().position(|&v| v == b'=')? + end;
-        let comma = value[eq..].iter().position(|&v| v == b',')? + eq;
-        return Some(&self.val[eq+2..comma-1]);
+        for (k, v) in &self.values {
+            if index.len() != k.len() {
+                continue;
+            }
+            let mut match_found = true;
+            for (kc, ic) in zip(*k, index) {
+                if kc.to_ascii_lowercase() != ic.to_ascii_lowercase() {
+                    match_found = false;
+                    break;
+                }
+            }
+            if match_found {
+                return Some(&v);
+            }
+        }
+        None
     }
 }
 
+impl<'a> Debug for HeaderView<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let vals: Vec<String> = self
+            .values
+            .iter()
+            .map(|(k, v)| {
+                "'".to_owned()
+                    + std::str::from_utf8(k).unwrap()
+                    + "': '"
+                    + std::str::from_utf8(v).unwrap()
+                    + "'"
+            })
+            .collect();
+        f.debug_struct("HeaderView").field("values", &vals).finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn single_value() {
+        let h = HeaderView::new(b"Bearer realm=\"foo/bar\"");
+        println!("{:?}", h);
+        let res = h.at(b"bearer realm");
+        assert!(res.is_some());
+        assert_eq!(res.unwrap(), b"foo/bar");
+    }
+}
