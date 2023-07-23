@@ -18,7 +18,7 @@ impl<'a> HeaderView<'a> {
             .filter(|(_, &c)| c == b',')
             .for_each(|(i, _)| {
                 bits.push(&val[prev_idx..i]);
-                prev_idx = i+1
+                prev_idx = i + 1
             });
         bits.push(&val[prev_idx..]);
 
@@ -83,7 +83,7 @@ mod tests {
     }
 
     #[test]
-    fn multiple_values(){
+    fn multiple_values() {
         let input = b"Bearer realm=\"https://auth.docker.io/token\",service=\"registry.docker.io\"";
         let h = HeaderView::new(input);
         let bearer = h.at(b"bearer realm").unwrap();
@@ -92,4 +92,3 @@ mod tests {
         assert_eq!(service, b"registry.docker.io");
     }
 }
-
