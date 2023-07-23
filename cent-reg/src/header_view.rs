@@ -18,7 +18,7 @@ impl<'a> HeaderView<'a> {
             .filter(|(_, &c)| c == b',')
             .for_each(|(i, _)| {
                 bits.push(&val[prev_idx..i]);
-                prev_idx = i
+                prev_idx = i+1
             });
         bits.push(&val[prev_idx..]);
 
@@ -77,9 +77,19 @@ mod tests {
     #[test]
     fn single_value() {
         let h = HeaderView::new(b"Bearer realm=\"foo/bar\"");
-        println!("{:?}", h);
         let res = h.at(b"bearer realm");
         assert!(res.is_some());
         assert_eq!(res.unwrap(), b"foo/bar");
     }
+
+    #[test]
+    fn multiple_values(){
+        let input = b"Bearer realm=\"https://auth.docker.io/token\",service=\"registry.docker.io\"";
+        let h = HeaderView::new(input);
+        let bearer = h.at(b"bearer realm").unwrap();
+        let service = h.at(b"service").unwrap();
+        assert_eq!(bearer, b"https://auth.docker.io/token");
+        assert_eq!(service, b"registry.docker.io");
+    }
 }
+
