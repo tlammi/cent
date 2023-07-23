@@ -1,6 +1,17 @@
 use crate::header_view::HeaderView;
 use log::*;
 use serde_json::Value as Json;
+use serde::Deserialize;
+use chrono::{DateTime, FixedOffset};
+
+
+#[derive(Deserialize, Debug)]
+struct BearerTokenResp{
+    access_token: String,
+    token: String,
+    issued_at: DateTime<FixedOffset>,
+    expires_in: usize,
+}
 
 /// Client for connecting to container registries
 pub struct Client {
@@ -39,9 +50,8 @@ impl Client {
                         .unwrap();
                         let challenge_resp = self.client.get(url).send();
                         let body = challenge_resp.unwrap().text().unwrap();
-                        warn!("{}", body);
-                        let jsn = serde_json::from_str::<Json>(body.as_str());
-                        warn!("Challenge resp: {:?}", jsn);
+                        let bearer_resp: BearerTokenResp = serde_json::from_str(&body).unwrap();
+                        warn!("{:?}", bearer_resp);
                     }
                     None => error!("no bearer realm"),
                 }
