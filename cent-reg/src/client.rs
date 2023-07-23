@@ -25,8 +25,23 @@ impl Client {
                 let challenge = resp.headers()["www-authenticate"].as_bytes();
                 let view = HeaderView::new(challenge);
                 match view.at(b"bearer realm") {
-                    Some(v) => {
-                        info!("bearer realm: {}", std::str::from_utf8(v).unwrap());
+                    Some(bearer) => {
+                        let session = view.at(b"session").unwrap_or(b"");
+                        let scope = view.at(b"token").unwrap_or(b"");
+                        let params = [
+                            ("session", std::str::from_utf8(session).unwrap()),
+                            ("scope", std::str::from_utf8(scope).unwrap()),
+                        ];
+                        let url = reqwest::Url::parse_with_params(
+                            std::str::from_utf8(bearer).unwrap(),
+                            &params,
+                        )
+                        .unwrap();
+                        let challenge_resp = self.client.get(url).send();
+                        let body = challenge_resp.unwrap().text().unwrap();
+                        warn!("{}", body);
+                        let jsn = serde_json::from_str::<Json>(body.as_str());
+                        warn!("Challenge resp: {:?}", jsn);
                     }
                     None => error!("no bearer realm"),
                 }
