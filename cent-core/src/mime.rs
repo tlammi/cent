@@ -40,6 +40,10 @@ where
             None => "",
         }
     }
+
+    pub fn to_string(&self) -> String {
+        self.v.as_ref().into()
+    }
 }
 
 impl<T> Debug for BasicMime<T>

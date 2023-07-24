@@ -38,7 +38,7 @@ fn fetch(args: FetchArgs) {
         panic!("asdfasf");
     }
     let ref_ = cent::core::Reference::new(args.reference);
-    let client = cent::reg::Client::new();
+    let mut client = cent::reg::Client::new();
     client.manifest_list(&ref_.view());
 }
 
