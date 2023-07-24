@@ -97,6 +97,24 @@ where
     }
 }
 
+impl<'a> serde::Deserialize<'a> for Digest {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'a>,
+    {
+        Ok(Digest::new(String::deserialize(deserializer)?))
+    }
+}
+
+impl<T: DigestData> serde::Serialize for BasicDigest<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.v.as_ref())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

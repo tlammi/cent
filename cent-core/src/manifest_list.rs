@@ -1,11 +1,21 @@
 use serde_json::Value as Json;
 
-pub struct ManifestList {
-    jsn: Json,
+use crate::Digest;
+use crate::Mime;
+use crate::Platform;
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ManifestListElem {
+    pub digest: Digest,
+
+    #[serde(rename = "mediaType")]
+    pub mime: Mime,
+    pub platform: Platform,
 }
 
-impl ManifestList {
-    pub fn new(jsn: Json) -> Option<ManifestList> {
-        Some(ManifestList { jsn })
-    }
+#[derive(Deserialize, Serialize, Debug)]
+pub struct ManifestList {
+    pub manifests: Vec<ManifestListElem>,
 }

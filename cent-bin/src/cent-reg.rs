@@ -39,7 +39,8 @@ fn fetch(args: FetchArgs) {
     }
     let ref_ = cent::core::Reference::new(args.reference);
     let mut client = cent::reg::Client::new();
-    client.manifest_list(&ref_.view());
+    let mlist = client.manifest_list(&ref_.view());
+    info!("Manifest list: {:?}", mlist);
 }
 
 pub fn main() {

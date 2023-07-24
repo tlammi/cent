@@ -12,6 +12,8 @@ pub type MimeView<'a> = BasicMime<&'a str>;
 
 pub const DOCKER_MANIFEST_LIST: MimeView =
     MimeView::new_const("application/vnd.docker.distribution.manifest.list.v2+json");
+pub const DOCKER_MANIFEST: MimeView =
+    MimeView::new_const("application/vnd.docker.distribution.manifest.v2+json");
 
 impl<T> BasicMime<T>
 where
@@ -71,6 +73,24 @@ where
 {
     fn eq(&self, other: &U) -> bool {
         self.as_ref() == other.as_ref()
+    }
+}
+
+impl<'a> serde::Deserialize<'a> for Mime {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'a>,
+    {
+        Ok(Mime::new(String::deserialize(deserializer)?))
+    }
+}
+
+impl<T: MimeData> serde::Serialize for BasicMime<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.v.as_ref())
     }
 }
 

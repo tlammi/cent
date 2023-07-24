@@ -84,7 +84,7 @@ impl Client {
         trace!("request: {:?}", builder);
         let _resp = builder.send();
         trace!("manifest list resp: {:?}", _resp);
-        trace!("manifest list body: '{}'", _resp.unwrap().text().unwrap());
-        cent_core::ManifestList::new(Json::Null).unwrap()
+        let body = _resp.unwrap().text().unwrap();
+        serde_json::from_str(&body).unwrap()
     }
 }
