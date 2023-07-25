@@ -37,31 +37,21 @@ impl Client {
     }
 
     pub fn manifest_list(&mut self, ref_: &cent_core::ReferenceView) -> cent_core::ManifestList {
-        let url = ref_.manifest_url();
-        let mut builder = self.client.get(&url);
-        builder = builder.header("Accept", cent_core::mime::DOCKER_MANIFEST_LIST.to_string());
-        let mut resp = builder.try_clone().unwrap().send().unwrap();
-
-        match resp.status() {
-            reqwest::StatusCode::UNAUTHORIZED => {
-                let challenge = resp.headers()["www-authenticate"].as_bytes();
-                let auth = self.resolve_auth_from_challenge(challenge);
-                builder = builder.header("Authorization", format!("Bearer {}", auth));
-                resp = builder.send().unwrap();
-            }
-            reqwest::StatusCode::OK => (),
-            c => panic!("Unsupported HTTP status code {}", c),
-        };
-        trace!("manifest list resp: {:?}", resp);
-        let body = resp.text().unwrap();
+        let body = self.fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST_LIST);
         let mut val: Json = serde_json::from_str(&body).unwrap();
         serde_json::from_value(val["manifests"].take()).unwrap()
     }
 
     pub fn manifest(&mut self, ref_: &cent_core::ReferenceView) -> cent_core::Manifest {
-        let url = ref_.manifest_url();
-        let mut builder = self.client.get(&url);
-        builder = builder.header("Accept", cent_core::mime::DOCKER_MANIFEST.to_string());
+        let body = self.fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST);
+        trace!("manifest body: {}", body);
+        let mut val: Json = serde_json::from_str(&body).unwrap();
+        cent_core::Manifest::new()
+    }
+
+    fn fetch(&mut self, url: &String, accept: cent_core::MimeView) -> String {
+        let mut builder = self.client.get(url);
+        builder = builder.header("Accept", accept.to_string());
         let mut resp = builder.try_clone().unwrap().send().unwrap();
 
         match resp.status() {
@@ -74,11 +64,9 @@ impl Client {
             reqwest::StatusCode::OK => (),
             c => panic!("Unsupported HTTP status code {}", c),
         };
-        trace!("manifest resp: {:?}", resp);
+        trace!("fetch resp: {:?}", resp);
         let body = resp.text().unwrap();
-        trace!("manifest body: {}", body);
-        let mut val: Json = serde_json::from_str(&body).unwrap();
-        cent_core::Manifest::new()
+        body
     }
 
     fn resolve_auth(&mut self, url: reqwest::Url) -> &String {
