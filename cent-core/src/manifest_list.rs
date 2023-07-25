@@ -15,7 +15,5 @@ pub struct ManifestListElem {
     pub platform: Platform,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct ManifestList {
-    pub manifests: Vec<ManifestListElem>,
-}
+pub type ManifestList = Vec<ManifestListElem>;
+

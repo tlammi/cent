@@ -85,6 +85,7 @@ impl Client {
         let _resp = builder.send();
         trace!("manifest list resp: {:?}", _resp);
         let body = _resp.unwrap().text().unwrap();
-        serde_json::from_str(&body).unwrap()
+        let mut val: Json = serde_json::from_str(&body).unwrap();
+        serde_json::from_value(val["manifests"].take()).unwrap()
     }
 }

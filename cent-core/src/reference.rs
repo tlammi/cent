@@ -80,7 +80,7 @@ impl<T: ReferenceData> BasicReference<T> {
         return Some("https://".to_owned() + reg + "/v2/");
     }
 
-    /// Resolve URL where to find manifest list for this reference
+    /// Resolve URL where to find manifests or manifest lists for this reference
     pub fn manifest_url(&self) -> String {
         let mut url = self.registry_root_url().unwrap();
         let nm = self.name();
