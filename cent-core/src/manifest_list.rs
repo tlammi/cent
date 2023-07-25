@@ -16,4 +16,3 @@ pub struct ManifestListElem {
 }
 
 pub type ManifestList = Vec<ManifestListElem>;
-

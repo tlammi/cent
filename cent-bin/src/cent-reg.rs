@@ -31,16 +31,25 @@ struct FetchArgs {
 enum What {
     /// Fetch manifest list
     ManifestList,
+    /// Fetch manifest
+    Manifest,
 }
 
 fn fetch(args: FetchArgs) {
-    if args.what != What::ManifestList {
-        panic!("asdfasf");
-    }
     let ref_ = cent::core::Reference::new(args.reference);
     let mut client = cent::reg::Client::new();
-    let mlist = client.manifest_list(&ref_.view());
-    info!("Manifest list: {:?}", mlist);
+
+    use What::*;
+    match args.what {
+        ManifestList => {
+            let mlist = client.manifest_list(&ref_.view());
+            info!("Manifest list: {:?}", mlist);
+        }
+        Manifest => {
+            let m = client.manifest(&ref_.view());
+            info!("Manifest: {:?}", m);
+        }
+    }
 }
 
 pub fn main() {
