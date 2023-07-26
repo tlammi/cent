@@ -45,8 +45,7 @@ impl Client {
     pub fn manifest(&mut self, ref_: &cent_core::ReferenceView) -> cent_core::Manifest {
         let body = self.fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST);
         trace!("manifest body: {}", body);
-        let mut val: Json = serde_json::from_str(&body).unwrap();
-        cent_core::Manifest::new()
+        serde_json::from_str(&body).unwrap()
     }
 
     fn fetch(&mut self, url: &String, accept: cent_core::MimeView) -> String {

@@ -1,8 +1,30 @@
-#[derive(Debug)]
-pub struct Manifest {}
+use crate::Digest;
+use crate::Mime;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ManifestField {
+    #[serde(rename = "mediaType")]
+    mime: Mime,
+    size: usize,
+    digest: Digest,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Manifest {
+    pub config: ManifestField,
+    pub layers: Vec<ManifestField>,
+}
 
 impl Manifest {
     pub fn new() -> Manifest {
-        Manifest {}
+        Manifest {
+            config: ManifestField {
+                mime: Mime::new(""),
+                size: 0,
+                digest: Digest::new(""),
+            },
+            layers: vec![],
+        }
     }
 }
