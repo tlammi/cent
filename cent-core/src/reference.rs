@@ -1,9 +1,15 @@
 use std::fmt::Debug;
 
-use crate::{Digest, DigestView, ManifestList};
+use crate::DigestView;
 
-pub trait ReferenceData: AsRef<str> + Debug {}
-impl<T: AsRef<str> + Debug> ReferenceData for T {}
+pub trait ReferenceData: AsRef<str> + Debug + Clone {}
+impl<T: AsRef<str> + Debug + Clone> ReferenceData for T {}
+
+pub enum Suffix<'a> {
+    Null,
+    Tag(&'a str),
+    Digest(DigestView<'a>),
+}
 
 pub struct BasicReference<T> {
     s: T,
@@ -15,6 +21,18 @@ pub type ReferenceView<'a> = BasicReference<&'a str>;
 impl<T: ReferenceData> BasicReference<T> {
     pub fn new(s: impl Into<T>) -> BasicReference<T> {
         BasicReference { s: s.into() }
+    }
+
+    pub fn suffix(&self) -> Suffix {
+        let maybe_tag = self.tag();
+        if maybe_tag.is_some() {
+            return Suffix::Tag(maybe_tag.unwrap());
+        }
+        let maybe_dig = self.digest();
+        if maybe_dig.is_some() {
+            return Suffix::Digest(maybe_dig.unwrap());
+        }
+        Suffix::Null
     }
 
     pub fn tag(&self) -> Option<&str> {
@@ -98,6 +116,20 @@ impl<T: ReferenceData> BasicReference<T> {
 }
 
 impl Reference {
+    pub fn set_suffix(&mut self, s: Suffix) {
+        use Suffix::*;
+        let mut slice: &str = self.s.as_ref();
+        match self.ref_sep() {
+            Some(i) => slice = &slice[..i],
+            None => (),
+        };
+        match s {
+            Null => (),
+            Tag(st) => self.s = slice.to_string() + ":" + st,
+            Digest(st) => self.s = slice.to_string() + "@" + st.str(),
+        }
+    }
+
     pub fn view(&self) -> ReferenceView {
         ReferenceView::new(self.s.as_str())
     }
@@ -115,6 +147,12 @@ impl<T: ReferenceData, U: AsRef<str>> PartialEq<U> for BasicReference<T> {
 impl<T: ReferenceData> Debug for BasicReference<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.s.fmt(f)
+    }
+}
+
+impl<T: ReferenceData> Clone for BasicReference<T> {
+    fn clone(&self) -> Self {
+        Self { s: self.s.clone() }
     }
 }
 

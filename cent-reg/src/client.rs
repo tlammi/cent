@@ -37,18 +37,29 @@ impl Client {
     }
 
     pub fn manifest_list(&mut self, ref_: &cent_core::ReferenceView) -> cent_core::ManifestList {
-        let body = self.fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST_LIST);
+        let body = self
+            .fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST_LIST)
+            .text()
+            .unwrap();
         let mut val: Json = serde_json::from_str(&body).unwrap();
         serde_json::from_value(val["manifests"].take()).unwrap()
     }
 
     pub fn manifest(&mut self, ref_: &cent_core::ReferenceView) -> cent_core::Manifest {
-        let body = self.fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST);
+        let body = self
+            .fetch(&ref_.manifest_url(), cent_core::mime::DOCKER_MANIFEST)
+            .text()
+            .unwrap();
         trace!("manifest body: {}", body);
         serde_json::from_str(&body).unwrap()
     }
 
-    fn fetch(&mut self, url: &String, accept: cent_core::MimeView) -> String {
+    pub fn blob(&mut self, ref_: &cent_core::ReferenceView, mime: cent_core::MimeView) -> Vec<u8> {
+        let body = self.fetch(&ref_.blob_url(), mime);
+        body.bytes().unwrap().to_vec()
+    }
+
+    fn fetch(&mut self, url: &String, accept: cent_core::MimeView) -> reqwest::blocking::Response {
         let mut builder = self.client.get(url);
         builder = builder.header("Accept", accept.to_string());
         let mut resp = builder.try_clone().unwrap().send().unwrap();
@@ -64,8 +75,7 @@ impl Client {
             c => panic!("Unsupported HTTP status code {}", c),
         };
         trace!("fetch resp: {:?}", resp);
-        let body = resp.text().unwrap();
-        body
+        resp
     }
 
     fn resolve_auth(&mut self, url: reqwest::Url) -> &String {

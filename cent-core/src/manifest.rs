@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ManifestField {
     #[serde(rename = "mediaType")]
-    mime: Mime,
-    size: usize,
-    digest: Digest,
+    pub mime: Mime,
+    pub size: usize,
+    pub digest: Digest,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

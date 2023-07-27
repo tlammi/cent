@@ -15,6 +15,9 @@ pub const DOCKER_MANIFEST_LIST: MimeView =
 pub const DOCKER_MANIFEST: MimeView =
     MimeView::new_const("application/vnd.docker.distribution.manifest.v2+json");
 
+pub const DOCKER_ROOTFS_DIFF_TAR_GZ: MimeView =
+    MimeView::new_const("application/vnd.docker.image.rootfs.diff.tar.gzip");
+
 impl<T> BasicMime<T>
 where
     T: MimeData,
@@ -45,6 +48,12 @@ where
 
     pub fn to_string(&self) -> String {
         self.v.as_ref().into()
+    }
+}
+
+impl Mime {
+    pub fn view(&self) -> MimeView {
+        MimeView { v: self.v.as_ref() }
     }
 }
 

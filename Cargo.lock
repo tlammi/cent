@@ -153,6 +153,7 @@ dependencies = [
  "cent",
  "clap",
  "log",
+ "serde_json",
  "simple_logger",
 ]
 

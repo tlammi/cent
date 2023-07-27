@@ -1,5 +1,7 @@
 extern crate clap;
 
+use std::io::Write;
+
 use clap::{Parser, Subcommand, ValueEnum};
 use simple_logger::SimpleLogger;
 //use log::LevelFilter;
@@ -21,6 +23,9 @@ enum Command {
 
 #[derive(Debug, Parser)]
 struct FetchArgs {
+    /// Output file, or directory if fetch results in multiple files
+    #[arg(long)]
+    out: Option<String>,
     /// Resource type to fetch
     what: What,
     /// Reference to the resource, e.g. "docker.io/library/alpine:latest"
@@ -33,6 +38,8 @@ enum What {
     ManifestList,
     /// Fetch manifest
     Manifest,
+    /// Fetch layers of the image
+    Layers,
 }
 
 fn fetch(args: FetchArgs) {
@@ -43,11 +50,21 @@ fn fetch(args: FetchArgs) {
     match args.what {
         ManifestList => {
             let mlist = client.manifest_list(&ref_.view());
-            info!("Manifest list: {:?}", mlist);
+            println!("{}", serde_json::to_string(&mlist).unwrap());
         }
         Manifest => {
             let m = client.manifest(&ref_.view());
-            info!("Manifest: {:?}", m);
+            println!("{}", serde_json::to_string(&m).unwrap());
+        }
+        Layers => {
+            let m = client.manifest(&ref_.view());
+            let mut imgref = ref_.clone();
+            for layer in &m.layers {
+                imgref.set_suffix(cent::core::Suffix::Digest(layer.digest.view()));
+                let b = client.blob(&imgref.view(), layer.mime.view());
+                let mut f = std::fs::File::create(layer.digest.str()).unwrap();
+                f.write_all(b.as_slice()).unwrap();
+            }
         }
     }
 }

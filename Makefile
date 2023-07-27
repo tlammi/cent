@@ -5,4 +5,4 @@ all:
 
 .PHONY: format-fix
 format-fix:
-	 rustfmt $(shell find -type f -name "*.rs")
+	 rustfmt $(shell find cent-* -type f -name "*.rs")
