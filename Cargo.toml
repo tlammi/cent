@@ -1,18 +1,26 @@
-[workspace]
+[package]
+name = "cent"
+version = "0.1.0"
+edition = "2021"
 
-resolver = "2"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-members = [
-  "cent-core",
-  "cent-reg",
-  "cent",
-  "cent-bin",
-]
+[dependencies]
+clap = { version = "4.3.11", features = ["derive"] }
+shrinkwraprs = "0.3.0"
+serde_json = "1.0"
+serde = {version = "1.0", features = ["derive"]}
+rust-ini = "0.19"
+log = "0.4"
+simple_logger = {version = "4.2", features = ["stderr"]}
+chrono = {version = "0.4", features = ["serde"]}
+reqwest = {version = "0.11", features = ["blocking"]}
 
-[profile.release]
-opt-level = "z"
-strip = true
-lto = true
-codegen-units = 1
-panic = "abort"
+[lib]
+name = "cent"
+path = "src/lib.rs"
 
+
+[[bin]]
+name = "cent"
+path = "src/cent.rs"
