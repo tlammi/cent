@@ -1,4 +1,3 @@
-
 use std::io::Write;
 
 use clap::{Parser, Subcommand, ValueEnum};
@@ -16,7 +15,10 @@ struct RootArgs {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Fetch resources
+    /// Fetch raw resources
+    ///
+    /// This can be used to fetch raw resources, such as manifest lists, manifests or layers from
+    /// container registries.
     Fetch(FetchArgs),
 }
 
@@ -79,4 +81,3 @@ pub fn main() {
         Command::Fetch(f) => fetch(f),
     };
 }
-

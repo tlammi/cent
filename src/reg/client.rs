@@ -1,10 +1,9 @@
-
 use super::HeaderView;
 
+use crate::mime;
+use crate::{Manifest, ManifestList, MimeView, ReferenceView};
 use log::*;
 use serde_json::Value as Json;
-use crate::{MimeView, ReferenceView, ManifestList, Manifest};
-use crate::mime as mime;
 // use serde::Deserialize;
 // use chrono::{DateTime, FixedOffset};
 // use reqwest::StatusCode;

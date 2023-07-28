@@ -1,9 +1,7 @@
 use std::{convert::AsRef, fmt::Debug};
 
-
 pub trait DigestData: AsRef<str> + Debug + Into<String> {}
 impl<T: AsRef<str> + Debug + Into<String>> DigestData for T {}
-
 
 #[derive(Eq)]
 pub struct BasicDigest<T: DigestData>(T);
@@ -58,7 +56,10 @@ impl<'a, 'b: 'a> Digest {
     }
 }
 
-impl<T> AsRef<str> for BasicDigest<T> where T: DigestData {
+impl<T> AsRef<str> for BasicDigest<T>
+where
+    T: DigestData,
+{
     fn as_ref(&self) -> &str {
         self.0.as_ref()
     }

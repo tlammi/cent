@@ -21,11 +21,11 @@ where
     T: MimeData,
 {
     pub fn new(v: impl Into<T>) -> BasicMime<T> {
-        BasicMime (v.into())
+        BasicMime(v.into())
     }
 
     pub const fn new_const(v: T) -> BasicMime<T> {
-        BasicMime (v )
+        BasicMime(v)
     }
 
     pub fn toptype(&self) -> &str {
@@ -51,7 +51,7 @@ where
 
 impl Mime {
     pub fn view(&self) -> MimeView {
-        BasicMime::<&str>(self.0.as_ref() )
+        BasicMime::<&str>(self.0.as_ref())
     }
 }
 

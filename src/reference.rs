@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use crate::DigestView;
+use std::fmt::Debug;
 
 pub trait ReferenceData: AsRef<str> + Debug + Clone {}
 impl<T: AsRef<str> + Debug + Clone> ReferenceData for T {}
@@ -17,7 +17,7 @@ pub type ReferenceView<'a> = BasicReference<&'a str>;
 
 impl<T: ReferenceData> BasicReference<T> {
     pub fn new(s: impl Into<T>) -> BasicReference<T> {
-        BasicReference ( s.into() )
+        BasicReference(s.into())
     }
 
     pub fn suffix(&self) -> Suffix {
@@ -149,7 +149,7 @@ impl<T: ReferenceData> Debug for BasicReference<T> {
 
 impl<T: ReferenceData> Clone for BasicReference<T> {
     fn clone(&self) -> Self {
-        Self (self.0.clone())
+        Self(self.0.clone())
     }
 }
 
