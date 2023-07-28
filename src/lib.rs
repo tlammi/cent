@@ -6,6 +6,7 @@ pub mod mime;
 pub mod platform;
 pub mod reference;
 pub mod reg;
+pub mod strg;
 
 pub use config::*;
 pub use digest::*;
