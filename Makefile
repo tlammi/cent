@@ -1,16 +1,26 @@
 
-.PHONY: compile run
 
-compile: build
-	cd build && meson compile
+.PHONY: compile
+compile: build/tag
+	cd build && ninja
 
-build:
-	meson build
+.PHONY: test
+test: build/tag
+	cd build && ninja test
 
-run: compile
-	cd build && bin/cent
-debug: compile
-	cd build && gdb bin/cent
+.PHONY: unity
+unity: unity/tag
+	cd unity && ninja
 
-test: build
-	cd build && meson test
+.PHONY: clean
+clean:
+	rm -rf build
+	rm -rf unity
+
+build/tag:
+	meson setup build
+	touch build/tag
+
+unity/tag:
+	meson setup -Dbuild_unity=true unity
+	touch unity/tag

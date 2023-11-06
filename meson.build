@@ -1,13 +1,27 @@
-project('cent', 'cpp', default_options: ['cpp_std=c++20'])
+project('cent', 'cpp', default_options: ['cpp_std=c++23', 'cpp_eh=none', 'cpp_rtti=false'])
+add_project_arguments('-Wfatal-errors', language: 'cpp')
 
-add_project_arguments('-fno-rtti', '-Wfatal-errors', language: 'cpp')
+incdir = include_directories('src')
 
-cmake = import('cmake')
+TESTS = {}
+SRCS = []
+subdir('src')
 
-PUBLIC_INCLUDE = include_directories('include')
 
-subdir('lib')
-
-libcent_dep = declare_dependency(include_directories: PUBLIC_INCLUDE, link_with: LIBCENT)
-
-subdir('bin')
+if get_option('build_unity')
+  gen_unity = custom_target('gen-unity',
+    output: 'unity.cpp',
+    input: SRCS,
+    command: ['scripts/gen-unity.py', '--out=@OUTPUT@', '@INPUT@'],
+    depend_files: SRCS,
+  )
+  gen_unity_dep = declare_dependency(sources: gen_unity)
+  cent = executable('cent', dependencies: gen_unity_dep)
+else
+  test_deps = [dependency('gtest'), dependency('gtest_main')]
+  foreach k, v : TESTS
+    test_name = '@0@_test'.format(k)
+    test_exec = executable(test_name, v, dependencies: test_deps, include_directories: incdir)
+    test(test_name, test_exec)
+  endforeach
+endif
