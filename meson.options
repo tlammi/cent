@@ -1,2 +1,0 @@
-option('build_unity', type: 'boolean', description: 'Perform a unity build', value: false)
-

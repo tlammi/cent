@@ -1,0 +1,3 @@
+
+
+executable('hello', 'hello.cpp')

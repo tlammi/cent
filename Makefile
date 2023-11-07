@@ -1,26 +1,19 @@
 
 
 .PHONY: compile
-compile: build/tag
+compile: build
 	cd build && ninja
 
-.PHONY: test
-test: build/tag
-	cd build && ninja test
+build:
+	meson setup build
 
-.PHONY: unity
-unity: unity/tag
-	cd unity && ninja
+TEST_NAME ?= *
+.PHONY: test
+test:
+	cd build && meson test "$(TEST_NAME)"
 
 .PHONY: clean
 clean:
 	rm -rf build
-	rm -rf unity
 
-build/tag:
-	meson setup build
-	touch build/tag
 
-unity/tag:
-	meson setup -Dbuild_unity=true unity
-	touch unity/tag

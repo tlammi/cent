@@ -2,7 +2,6 @@
 Checks:          'clang-diagnostic-*,clang-analyzer-*,cppcoreguidelines-*'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            tlammi
 CheckOptions:
@@ -42,5 +41,9 @@ CheckOptions:
     value:           'false'
   - key:             google-readability-function-size.StatementThreshold
     value:           '800'
+  - key:             cppcoreguidelines-avoid-do-while.IgnoreMacros
+    value:           'true'
+  - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:           true
 ...
 
