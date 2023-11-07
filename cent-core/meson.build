@@ -4,11 +4,12 @@ SRCS = []
 TESTS = {}
 
 pub_include = include_directories('include')
-deps = [dependency('boost')]
+deps = [dependency('boost'), dependency('fmt')]
 
-#libcent_core = library('cent-core', dependencies: deps, include_directories: pub_include)
+subdir('src')
 
-libcent_core_dep = declare_dependency(dependencies: deps, include_directories: pub_include)
+libcent_core = library('cent-core', SRCS, dependencies: deps, include_directories: pub_include)
+libcent_core_dep = declare_dependency(link_with: libcent_core, dependencies: deps, include_directories: pub_include)
 
 TESTS = {}
 subdir('test')
