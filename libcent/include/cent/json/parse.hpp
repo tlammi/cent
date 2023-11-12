@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cent/dt/result.hpp>
 #include <cent/json/json.hpp>
+#include <cent/util/str.hpp>
 #include <string_view>
 
 namespace cent::json {
@@ -11,10 +13,9 @@ enum class Token {
     EndObject,
     StartArray,
     EndArray,
-    String,
+    Str,
     Int,
     Float,
-    Exp,
     True,
     False,
     Null,
@@ -26,6 +27,11 @@ enum class Token {
 struct Lexeme {
     Token token;
     std::string_view value;
+};
+
+class Lexer {
+ public:
+ private:
 };
 
 constexpr std::string_view split_prefix(std::string_view& s, size_t count) {
@@ -51,7 +57,7 @@ constexpr void discard_ws(std::string_view& s) {
 
 constexpr Lexeme lex_str(std::string_view& s) {
     for (size_t i = 1; i < s.size(); ++i) {
-        if (s[i] == '"') return {Token::String, split_prefix(s, i + 1)};
+        if (s[i] == '"') return {Token::Str, split_prefix(s, i + 1)};
         if (s[i] == '\\') { ++i; }
     }
     return {Token::Err, "Non-terminated string"};
@@ -147,5 +153,54 @@ std::vector<Lexeme> lex_all(std::string_view s) {
     }
     return lexemes;
 }
+
+Result<Json> parse_recurse(std::string_view& s) {
+    static constexpr auto invalid = std::errc::invalid_argument;
+    using enum Token;
+    auto [tok, val] = lex_next(s);
+    switch (tok) {
+        case Err: return {invalid};
+        case Eof: return {invalid};
+        case Null: return Json();
+        case True: return Json(true);
+        case False: return Json(false);
+        case Int: return Json(parse_int<::cent::json::Int>(val).unwrap());
+        case Float: return Json(parse_float<::cent::json::Float>(val).unwrap());
+        case Str: return Json(std::string(val));
+        case StartObject: {
+            Json obj{Obj{}};
+            while (true) {
+                auto lexeme = lex_next(s);
+                if (lexeme.token != Str) return {invalid};
+                auto key = lexeme.value;
+                lexeme = lex_next(s);
+                if (lexeme.token != Colon) return {invalid};
+                auto val = parse_recurse(s);
+                if (!val) return val.errc();
+                obj.as_obj()[std::string(key)] = std::move(*val);
+                lexeme = lex_next(s);
+                if (lexeme.token == EndObject) return obj;
+                if (lexeme.token != Comma) return {invalid};
+            }
+        }
+        case StartArray: {
+            Json arr{Arr{}};
+            while (true) {
+                auto lexeme = lex_next(s);
+                if (lexeme.token == Eof || lexeme.token == Err)
+                    return {invalid};
+                if (lexeme.token == EndArray) return arr;
+            }
+        }
+        case EndObject:
+        case EndArray:
+        case Comma:
+        case Colon: return {std::errc::invalid_argument};
+    }
+}
+
+Result<Json> parse(std::string_view s);
+
+Result<Json> parse(std::string_view s) { return parse_recurse(s); }
 
 }  // namespace cent::json

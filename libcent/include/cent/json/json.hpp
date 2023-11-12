@@ -22,7 +22,7 @@ class Json;
 
 class Arr {
  public:
-    Arr() = default;
+    Arr();
 
     template <class... Ts>
     Arr(std::in_place_t, Ts&&... values)
@@ -47,7 +47,7 @@ class Arr {
     void emplace_back(T&& v);
 
  private:
-    std::vector<Json> m_values{};
+    std::vector<Json> m_values;
 };
 
 class Obj {
@@ -124,6 +124,7 @@ class Json {
  private:
     Value m_value;
 };
+Arr::Arr(): m_values(){}
 
 const Json& Arr::operator[](size_t index) const { return m_values.at(index); }
 Json& Arr::operator[](size_t index) { return m_values.at(index); }

@@ -50,11 +50,28 @@ TEST(Lex, Str) {
     auto toks = get_tokens(lexemes);
     {
         auto [tok, val] = lexemes.at(0);
-        ASSERT_EQ(tok, Token::String);
+        ASSERT_EQ(tok, Token::Str);
         ASSERT_EQ(val, R"("hello")");
     }
     ASSERT_EQ(toks.size(), 2);
     ASSERT_EQ(toks[1], Token::Eof);
+}
+
+TEST(Lex, StrNonTerminated) {
+    auto lexemes = lex_all("\"hello");
+    auto toks = get_tokens(lexemes);
+    ASSERT_EQ(toks.size(), 1);
+    ASSERT_EQ(toks[0], Token::Err);
+}
+
+TEST(Lex, StrEscapedQuote) {
+    auto lexemes = lex_all(R"("hello\"")");
+    {
+        auto [tok, val] = lexemes.at(0);
+        ASSERT_EQ(tok, Token::Str);
+        ASSERT_EQ(val, R"("hello\"")");
+    }
+    ASSERT_EQ(lexemes.at(1).token, Token::Eof);
 }
 
 TEST(Lex, Exp) {
