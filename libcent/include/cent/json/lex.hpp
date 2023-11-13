@@ -99,11 +99,13 @@ class Lexer {
                    work.front() <= '9') {
                 work.remove_prefix(1);
             }
+        } else {
+            return {Token::Err, "Invalid number"};
         }
         if (work.starts_with('.')) {
             is_float = true;
             work.remove_prefix(1);
-            if (work.empty() && !(work.front() > '0' && work.front() <= '9')) {
+            if (work.empty() || !(work.front() >= '0' && work.front() <= '9')) {
                 return {Token::Err, "Decimals expected"};
             }
             while (!work.empty() && work.front() >= '0' &&

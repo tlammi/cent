@@ -52,7 +52,7 @@ TEST(Lexer, Int) {
 TEST(Lexer, Float) {
     Lexer lexer{"42.0"};
     auto lexeme = lexer.next();
-    ASSERT_EQ(lexeme.token, Token::Float);
+    ASSERT_EQ(lexeme.token, Token::Float) << lexeme.value;
     ASSERT_EQ(lexeme.value, "42.0");
     ASSERT_EQ(lexer.current().token, Token::Float);
 }
@@ -121,3 +121,10 @@ TEST(Lexer, EmptyArr) {
     ASSERT_EQ(lexer.current().token, Token::Eof);
 }
 
+/*
+TEST(Lexer, Garbage) {
+    Lexer lexer{"44e44444]t"};
+    auto lexeme = lexer.next();
+    ASSERT_EQ(lexeme.token, Token::Err);
+}
+*/

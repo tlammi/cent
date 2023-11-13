@@ -23,7 +23,7 @@ clean:
 	rm -rf build
 
 build/dev/tag:
-	meson setup -Db_coverage=true -Db_sanitize=address --buildtype=debug build/dev
+	meson setup -Db_coverage=true -Db_sanitize=address -Db_lundef=false --buildtype=debug build/dev
 	touch build/dev/tag
 
 build/prod/tag:
