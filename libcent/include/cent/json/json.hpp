@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <map>
+#include <ostream>
 #include <string>
 #include <variant>
 #include <vector>
@@ -34,10 +35,20 @@ class Arr {
     Arr& operator=(Arr&&) = default;
     ~Arr() = default;
 
+    auto begin() noexcept { return m_values.begin(); }
+    auto end() noexcept { return m_values.end(); }
+    auto begin() const noexcept { return m_values.begin(); }
+    auto end() const noexcept { return m_values.end(); }
+    auto cbegin() const noexcept { return m_values.cbegin(); }
+    auto cend() const noexcept { return m_values.cend(); }
+
     bool empty() const noexcept { return m_values.empty(); }
 
     const Json& operator[](size_t index) const;
     Json& operator[](size_t index);
+
+    const Json& front() const noexcept;
+    const Json& back() const noexcept;
 
     size_t size() const noexcept;
     size_t length() const noexcept;
@@ -60,6 +71,13 @@ class Obj {
     Obj& operator=(const Obj&) = default;
     Obj& operator=(Obj&&) = default;
     ~Obj() = default;
+
+    auto begin() noexcept { return m_values.begin(); }
+    auto end() noexcept { return m_values.end(); }
+    auto begin() const noexcept { return m_values.begin(); }
+    auto end() const noexcept { return m_values.end(); }
+    auto cbegin() const noexcept { return m_values.cbegin(); }
+    auto cend() const noexcept { return m_values.cend(); }
 
     bool empty() const noexcept { return m_values.empty(); }
     size_t size() const noexcept { return m_values.size(); }
@@ -124,10 +142,55 @@ class Json {
  private:
     Value m_value;
 };
-Arr::Arr(): m_values(){}
+
+std::ostream& operator<<(std::ostream& s, const Json& j);
+
+inline std::ostream& operator<<(std::ostream& s, const Arr& a) {
+    s << "[";
+    bool first = true;
+    for (const auto& v : a) {
+        if (!first) s << ", ";
+        first = false;
+        s << v;
+    }
+    s << "]";
+    return s;
+}
+
+inline std::ostream& operator<<(std::ostream& s, const Obj& o) {
+    s << "{";
+    for (const auto& [k, v] : o) {
+        if (k != o.begin()->first) s << ", ";
+        s << R"(")" << k << R"(": )" << v;
+    }
+    s << "}";
+    return s;
+}
+
+inline std::ostream& operator<<(std::ostream& s, const Json& j) {
+    if (j.is_null())
+        s << "null";
+    else if (j.is_bool())
+        s << (j.as_bool() ? "true" : "false");
+    else if (j.is_int())
+        s << j.as_int();
+    else if (j.is_float())
+        s << j.as_float();
+    else if (j.is_str())
+        s << j.as_str();
+    else if (j.is_arr())
+        s << j.as_arr();
+    else if (j.is_obj())
+        s << j.as_obj();
+    return s;
+}
+
+Arr::Arr() : m_values() {}
 
 const Json& Arr::operator[](size_t index) const { return m_values.at(index); }
 Json& Arr::operator[](size_t index) { return m_values.at(index); }
+const Json& Arr::front() const noexcept { return m_values.front(); }
+const Json& Arr::back() const noexcept { return m_values.back(); }
 
 size_t Arr::size() const noexcept { return m_values.size(); }
 size_t Arr::length() const noexcept { return m_values.size(); }

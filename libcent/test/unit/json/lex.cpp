@@ -73,6 +73,14 @@ TEST(Lexer, FloatExp) {
     ASSERT_EQ(lexer.current().token, Token::Float);
 }
 
+TEST(Lexer, FloatExp2) {
+    Lexer lexer{"123.456e-789"};
+    auto lexeme = lexer.next();
+    ASSERT_EQ(lexeme.token, Token::Float);
+    ASSERT_EQ(lexeme.value, "123.456e-789");
+    ASSERT_EQ(lexer.current().token, Token::Float);
+}
+
 TEST(Lexer, Str) {
     Lexer lexer{R"("hello")"};
     auto lexeme = lexer.next();

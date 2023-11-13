@@ -46,9 +46,9 @@ constexpr Result<T> parse_int(std::string_view s) {
 template <std::floating_point T>
 Result<T> parse_float(std::string_view s) {
     T out{};
-    auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), &out);
+    auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), out);
     if (ec == std::errc()) { return out; }
-    return {ec};
+    return Result<T>(ec);
 }
 
 }  // namespace cent

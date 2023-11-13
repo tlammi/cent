@@ -3,135 +3,121 @@
 
 #include <cent/json/parse.hpp>
 
-using cent::json::lex_all;
-using cent::json::lex_next;
-using cent::json::Lexeme;
-using cent::json::Token;
-
-std::vector<Token> get_tokens(const std::vector<Lexeme>& lexemes) {
-    std::vector<Token> out{};
-    out.reserve(lexemes.size());
-    for (const auto& l : lexemes) { out.emplace_back(l.token); }
-    return out;
+TEST(Value, Empty) {
+    auto res = cent::json::parse("");
+    ASSERT_FALSE(res);
 }
 
-std::vector<std::string_view> get_values(const std::vector<Lexeme>& lexemes) {
-    std::vector<std::string_view> out{};
-    out.reserve(lexemes.size());
-    for (const auto& l : lexemes) { out.emplace_back(l.value); }
-    return out;
+TEST(Value, Null) {
+    auto res = cent::json::parse("null");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_null());
 }
 
-TEST(Lex, Empty) {
-    auto lexemes = lex_all("");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 1);
-    ASSERT_EQ(toks[0], Token::Eof);
+TEST(Value, True) {
+    auto res = cent::json::parse("true");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_bool());
+    ASSERT_TRUE(res->as_bool());
 }
 
-TEST(Lex, Int) {
-    auto lexemes = lex_all("123");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::Int);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Value, False) {
+    auto res = cent::json::parse("false");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_bool());
+    ASSERT_FALSE(res->as_bool());
 }
 
-TEST(Lex, Float) {
-    auto lexemes = lex_all("123.456");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::Float);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Value, Int) {
+    auto res = cent::json::parse("42");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_int());
+    ASSERT_EQ(res->as_int(), 42);
 }
 
-TEST(Lex, Str) {
-    auto lexemes = lex_all("\"hello\"");
-    auto toks = get_tokens(lexemes);
-    {
-        auto [tok, val] = lexemes.at(0);
-        ASSERT_EQ(tok, Token::Str);
-        ASSERT_EQ(val, R"("hello")");
-    }
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Value, Float) {
+    auto res = cent::json::parse("42.0");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_float());
+    ASSERT_EQ(res->as_float(), 42.0f);
 }
 
-TEST(Lex, StrNonTerminated) {
-    auto lexemes = lex_all("\"hello");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 1);
-    ASSERT_EQ(toks[0], Token::Err);
+TEST(Value, Str) {
+    auto res = cent::json::parse(R"("hello")");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_str());
+    ASSERT_EQ(res->as_str(), "hello");
 }
 
-TEST(Lex, StrEscapedQuote) {
-    auto lexemes = lex_all(R"("hello\"")");
-    {
-        auto [tok, val] = lexemes.at(0);
-        ASSERT_EQ(tok, Token::Str);
-        ASSERT_EQ(val, R"("hello\"")");
-    }
-    ASSERT_EQ(lexemes.at(1).token, Token::Eof);
+TEST(Value, EmptyStr) {
+    auto res = cent::json::parse(R"("")");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_str());
+    ASSERT_EQ(res->as_str(), "");
 }
 
-TEST(Lex, Exp) {
-    auto lexemes = lex_all("123.456e789");
-    auto toks = get_tokens(lexemes);
-    auto vals = get_values(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::Float);
-    ASSERT_EQ(vals[0], "123.456e789");
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Arr, Empty) {
+    auto res = cent::json::parse("[]");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_arr());
+    ASSERT_TRUE(res->as_arr().empty());
 }
 
-TEST(Lex, ExpPlus) {
-    auto lexemes = lex_all("123.456e+789");
-    ASSERT_EQ(lexemes.size(), 2);
-    {
-        auto [tok, val] = lexemes.at(0);
-        ASSERT_EQ(tok, Token::Float);
-        ASSERT_EQ(val, "123.456e+789");
-    }
-    ASSERT_EQ(lexemes.at(1).token, Token::Eof);
+TEST(Arr, Int) {
+    auto res = cent::json::parse("[42]");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_arr());
+    ASSERT_EQ(res->as_arr().size(), 1);
+    ASSERT_EQ(res->as_arr()[0].as_int(), 42);
 }
 
-TEST(Lex, ExpMinus) {
-    auto lexemes = lex_all("123.456e-789");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::Float);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Arr, NonTerminated) {
+    auto res = cent::json::parse("[42");
+    ASSERT_FALSE(res);
 }
 
-TEST(Lex, True) {
-    auto lexemes = lex_all("true");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::True);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Arr, TrailingComma) {
+    auto res = cent::json::parse("[42,]");
+    ASSERT_FALSE(res);
 }
 
-TEST(Lex, False) {
-    auto lexemes = lex_all("false");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::False);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Obj, Empty) {
+    auto res = cent::json::parse("{}");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_obj());
+    ASSERT_TRUE(res->as_obj().empty());
 }
 
-TEST(Lex, Null) {
-    auto lexemes = lex_all("null");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 2);
-    ASSERT_EQ(toks[0], Token::Null);
-    ASSERT_EQ(toks[1], Token::Eof);
+TEST(Obj, Int) {
+    auto res = cent::json::parse(R"({"a": 42})");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_obj());
+    ASSERT_EQ(res->as_obj().size(), 1);
+    ASSERT_EQ(res->as_obj()["a"].as_int(), 42);
 }
 
-TEST(Lex, ArrEmpty) {
-    auto lexemes = lex_all("[ ]");
-    auto toks = get_tokens(lexemes);
-    ASSERT_EQ(toks.size(), 3);
-    ASSERT_EQ(toks[0], Token::StartArray);
-    ASSERT_EQ(toks[1], Token::EndArray);
-    ASSERT_EQ(toks[2], Token::Eof);
+TEST(Obj, NonTerminated) {
+    auto res = cent::json::parse(R"({"a": 42)");
+    ASSERT_FALSE(res);
 }
+
+TEST(Tree, ArrObj) {
+    auto res = cent::json::parse(R"([{"a": 42}])");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_arr());
+    ASSERT_EQ(res->as_arr().size(), 1);
+    ASSERT_TRUE(res->as_arr()[0].is_obj());
+    ASSERT_EQ(res->as_arr()[0].as_obj().size(), 1);
+    ASSERT_EQ(res->as_arr()[0].as_obj()["a"].as_int(), 42);
+}
+
+TEST(Tree, ObjArr) {
+    auto res = cent::json::parse(R"({"a": [42]})");
+    ASSERT_TRUE(res);
+    ASSERT_TRUE(res->is_obj());
+    ASSERT_EQ(res->as_obj().size(), 1);
+    ASSERT_TRUE(res->as_obj()["a"].is_arr());
+    ASSERT_EQ(res->as_obj()["a"].as_arr().size(), 1);
+    ASSERT_EQ(res->as_obj()["a"].as_arr()[0].as_int(), 42);
+}
+
