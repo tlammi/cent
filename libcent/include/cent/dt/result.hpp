@@ -26,6 +26,8 @@ class Result {
     constexpr Result(value_t /*unused*/, Ts&&... values)
         : m_value{std::forward<Ts>(values)...}, m_has_value(true) {}
 
+    explicit Result(std::error_code ec)
+        : m_errc{ec.value()}, m_has_value(false) {}
     constexpr Result(std::errc ec) : m_errc{ec}, m_has_value(false) {}
 
     constexpr Result(Result&& other) noexcept : m_has_value(other.m_has_value) {
@@ -53,7 +55,9 @@ class Result {
 
     constexpr std::errc errc() const noexcept { return m_errc; }
 
-    std::error_code error() const noexcept { return std::error_code(m_errc); }
+    std::error_code error() const noexcept {
+        return std::make_error_code(m_errc);
+    }
 
     T& unwrap() {
         if (!m_has_value)

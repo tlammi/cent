@@ -17,7 +17,7 @@ std::string_view rm_quotes(std::string_view s) {
 
 Result<Json> parse_recurse(Lexer& l);
 
-Result<Json> parse_recurse_obj(Lexer& l) {
+inline Result<Json> parse_recurse_obj(Lexer& l) {
     static constexpr auto invalid = std::errc::invalid_argument;
     using enum Token;
     Json jsn{Obj()};
@@ -45,7 +45,7 @@ Result<Json> parse_recurse_obj(Lexer& l) {
     return jsn;
 }
 
-Result<Json> parse_recurse_arr(Lexer& l) {
+inline Result<Json> parse_recurse_arr(Lexer& l) {
     using enum Token;
     auto arr = Arr();
     auto lexeme = l.next();
@@ -74,7 +74,11 @@ Result<Json> parse_recurse(Lexer& l) {
         case True: return Json(true);
         case False: return Json(false);
         case Int: return Json(parse_int<::cent::json::Int>(val).unwrap());
-        case Float: return Json(parse_float<::cent::json::Float>(val).unwrap());
+        case Float: {
+            auto res = parse_float<::cent::json::Float>(val);
+            if (!res) return Result<Json>(res.error());
+            return Json(std::move(*res));
+        }
         case Str: return Json(std::string(parse_detail::rm_quotes(val)));
         case StartObject: return parse_recurse_obj(l);
         case StartArray: return parse_recurse_arr(l);
