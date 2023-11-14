@@ -15,87 +15,141 @@ std::string_view rm_quotes(std::string_view s) {
     return s;
 }
 
-Result<Json> parse_recurse(Lexer& l);
+using LexemeOrJson = std::variant<Lexeme, Json>;
 
-inline Result<Json> parse_recurse_obj(Lexer& l) {
+Result<Json> squash_tail_obj(std::vector<LexemeOrJson>& stack) {
     static constexpr auto invalid = std::errc::invalid_argument;
+    auto out = Json(Obj());
+    auto& obj = out.as_obj();
     using enum Token;
-    Json jsn{Obj()};
-    auto& obj = jsn.as_obj();
-    auto lexeme = l.next();
-    if (lexeme.token == EndObject) {
-        l.next();
-        return jsn;
+    if (stack.empty()) return invalid;
+    auto* maybe_begin = std::get_if<Lexeme>(&stack.back());
+    if (maybe_begin && maybe_begin->token == StartObject) {
+        stack.pop_back();
+        return out;
     }
     while (true) {
-        auto lexeme = l.current();
-        if (lexeme.token != Str) return {invalid};
-        auto key = rm_quotes(lexeme.value);
-        lexeme = l.next();
-        if (lexeme.token != Colon) return {invalid};
-        l.next();
-        auto val = parse_recurse(l);
-        if (!val) return val;
-        obj[std::string(key)] = std::move(*val);
-        lexeme = l.next();
-        if (lexeme.token == EndObject) break;
-        if (lexeme.token != Comma) { return {invalid}; }
-        l.next();
-    }
-    return jsn;
-}
+        if (stack.size() < 4) return invalid;
+        auto* val = std::get_if<Json>(&stack.at(stack.size() - 1));
+        auto* colon = std::get_if<Lexeme>(&stack.at(stack.size() - 2));
+        auto* key = std::get_if<Json>(&stack.at(stack.size() - 3));
+        auto* comma_or_begin = std::get_if<Lexeme>(&stack.at(stack.size() - 4));
+        if (!(val && colon && key && comma_or_begin)) return invalid;
+        if (colon->token != Colon) return invalid;
 
-inline Result<Json> parse_recurse_arr(Lexer& l) {
-    using enum Token;
-    auto arr = Arr();
-    auto lexeme = l.next();
-    if (lexeme.token == EndArray) {
-        l.next();
-        return Json(std::move(arr));
-    }
-    while (true) {
-        auto val = parse_recurse(l);
-        if (!val) return val;
-        arr.push_back(std::move(*val));
-        lexeme = l.next();
-        if (lexeme.token == EndArray) { return Json(std::move(arr)); }
-        if (lexeme.token != Comma) return {std::errc::invalid_argument};
+        if (!key->is_str()) return invalid;
+        obj[std::move(key->as_str())] = std::move(*val);
+        auto tok = comma_or_begin->token;
+        stack.pop_back();
+        stack.pop_back();
+        stack.pop_back();
+        stack.pop_back();
+        if (tok == StartObject) return out;
+        if (tok == Comma) continue;
+        return invalid;
     }
 }
 
-Result<Json> parse_recurse(Lexer& l) {
-    using enum Token;
+Result<Json> squash_tail_arr(std::vector<LexemeOrJson>& stack) {
     static constexpr auto invalid = std::errc::invalid_argument;
-    auto [tok, val] = l.current();
-    switch (tok) {
-        case Err: return {invalid};
-        case Eof: return {invalid};
-        case Null: return Json();
-        case True: return Json(true);
-        case False: return Json(false);
-        case Int: return Json(parse_int<::cent::json::Int>(val).unwrap());
-        case Float: {
-            auto res = parse_float<::cent::json::Float>(val);
-            if (!res) return Result<Json>(res.error());
-            return Json(std::move(*res));
+    auto out = Json(Arr());
+    auto& arr = out.as_arr();
+    using enum Token;
+    std::vector<Json> tmp{};
+    if (stack.empty()) return invalid;
+    auto* maybe_begin = std::get_if<Lexeme>(&stack.back());
+    if (maybe_begin && maybe_begin->token == StartArray) {
+        stack.pop_back();
+        return out;
+    }
+
+    while (true) {
+        if (stack.size() < 2) return invalid;
+        auto* val = std::get_if<Json>(&stack.at(stack.size() - 1));
+        auto* comma_or_begin = std::get_if<Lexeme>(&stack.at(stack.size() - 2));
+        if (!(val && comma_or_begin)) return invalid;
+        tmp.push_back(std::move(*val));
+        auto tok = comma_or_begin->token;
+        stack.pop_back();
+        stack.pop_back();
+        if (tok == StartArray) {
+            // TODO: better implementation for this
+            for (auto& v : tmp) { arr.push_back(std::move(v)); }
+            return out;
         }
-        case Str: return Json(std::string(parse_detail::rm_quotes(val)));
-        case StartObject: return parse_recurse_obj(l);
-        case StartArray: return parse_recurse_arr(l);
-        case EndObject:
-        case EndArray:
-        case Comma:
-        case Colon: {
+        if (tok == Comma) continue;
+        return invalid;
+    }
+}
+
+Result<Json> parse_iterate(Lexer& l) {
+    std::vector<LexemeOrJson> stack{};
+    using enum Token;
+    while (true) {
+        auto lexeme = l.next();
+        switch (lexeme.token) {
+            case Eof: {
+                if (stack.size() != 1) return {std::errc::invalid_argument};
+                if (!std::holds_alternative<Json>(stack.front()))
+                    return {std::errc::invalid_argument};
+                return std::get<Json>(std::move(stack.front()));
+            }
+            case Err: return {std::errc::invalid_argument};
+            case Null: {
+                stack.push_back(Json());
+                break;
+            }
+            case True: {
+                stack.push_back(Json(true));
+                break;
+            }
+            case False: {
+                stack.push_back(Json(false));
+                break;
+            }
+            case Int: {
+                stack.push_back(
+                    Json(parse_int<::cent::json::Int>(lexeme.value).unwrap()));
+                break;
+            }
+            case Float: {
+                auto res = parse_float<::cent::json::Float>(lexeme.value);
+                if (!res) return Result<Json>(res.error());
+                stack.push_back(Json(std::move(*res)));
+                break;
+            }
+            case Str: {
+                stack.push_back(
+                    Json(std::string(parse_detail::rm_quotes(lexeme.value))));
+                break;
+            }
+            case Colon:
+            case Comma:
+            case StartObject:
+            case StartArray: {
+                stack.push_back(lexeme);
+                break;
+            }
+            case EndObject: {
+                auto res = squash_tail_obj(stack);
+                if (!res) return res;
+                stack.push_back(std::move(*res));
+                break;
+            }
+            case EndArray: {
+                auto res = squash_tail_arr(stack);
+                if (!res) return res;
+                stack.push_back(std::move(*res));
+                break;
+            }
         }
     }
-    return {invalid};
 }
 }  // namespace parse_detail
 
 Result<Json> parse(std::string_view s) {
     auto lexer = Lexer(s);
-    lexer.next();
-    return parse_detail::parse_recurse(lexer);
+    return parse_detail::parse_iterate(lexer);
 }
 
 }  // namespace cent::json
