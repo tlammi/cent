@@ -121,3 +121,7 @@ TEST(Tree, ObjArr) {
     ASSERT_EQ(res->as_obj()["a"].as_arr()[0].as_int(), 42);
 }
 
+TEST(Garbage, 1) {
+    auto res = cent::json::parse("44e44444]t");
+    ASSERT_FALSE(res);
+}

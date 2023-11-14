@@ -119,7 +119,7 @@ class Lexer {
             if (work.empty()) return {Token::Err, "Exponent expected"};
             if (work.front() == '-' || work.front() == '+')
                 work.remove_prefix(1);
-            if (work.empty() && !(work.front() >= '0' && work.front() <= '9'))
+            if (work.empty() || !(work.front() >= '0' && work.front() <= '9'))
                 return {Token::Err, "Exponent expected"};
             while (!work.empty() && work.front() >= '0' &&
                    work.front() <= '9') {

@@ -121,10 +121,3 @@ TEST(Lexer, EmptyArr) {
     ASSERT_EQ(lexer.current().token, Token::Eof);
 }
 
-/*
-TEST(Lexer, Garbage) {
-    Lexer lexer{"44e44444]t"};
-    auto lexeme = lexer.next();
-    ASSERT_EQ(lexeme.token, Token::Err);
-}
-*/

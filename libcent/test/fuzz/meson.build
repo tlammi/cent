@@ -1,1 +1,1 @@
-subdir('json_parser')
+subdir('json')
