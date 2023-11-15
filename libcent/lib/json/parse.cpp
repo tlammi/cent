@@ -1,7 +1,7 @@
 
 #include <cent/json/parse.hpp>
 
-namespace cent::json{
+namespace cent::json {
 namespace {
 namespace parse_detail {
 
@@ -142,10 +142,10 @@ Result<Json> parse_iterate(Lexer& l) {
     }
 }
 }  // namespace parse_detail
-}
+}  // namespace
 
 Result<Json> parse(std::string_view s) {
     auto lexer = Lexer(s);
     return parse_detail::parse_iterate(lexer);
 }
-}
+}  // namespace cent::json
