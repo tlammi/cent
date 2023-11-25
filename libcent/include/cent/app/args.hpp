@@ -25,4 +25,9 @@ constexpr Args<CharT> args(int argc, CharT** argv) {
     return {argc, argv};
 }
 
+template <class CharT>
+constexpr Args<CharT> args(size_t argc, CharT** argv) {
+    return {argc, argv};
+}
+
 }  // namespace cent::app
