@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cent/dt/error.hpp>
 #include <cent/util/raise.hpp>
 #include <system_error>
 #include <utility>
@@ -26,9 +27,9 @@ class Result {
     constexpr Result(value_t /*unused*/, Ts&&... values)
         : m_value{std::forward<Ts>(values)...}, m_has_value(true) {}
 
-    explicit Result(std::error_code ec)
-        : m_errc{ec.value()}, m_has_value(false) {}
-    constexpr Result(std::errc ec) : m_errc{ec}, m_has_value(false) {}
+    constexpr Result(Errno e) : m_err{e}, m_has_value(false) {}
+
+    constexpr Result(Error e) : m_err(e), m_has_value(false) {}
 
     constexpr Result(Result&& other) noexcept : m_has_value(other.m_has_value) {
         if (other.m_has_value) new (&m_value) T(std::move(other.m_value));
@@ -42,7 +43,10 @@ class Result {
     }
 
     constexpr ~Result() {
-        if (m_has_value) m_value.~T();
+        if (m_has_value)
+            m_value.~T();
+        else
+            m_err.~Error();
     }
 
     constexpr bool has_value() const noexcept { return m_has_value; }
@@ -53,22 +57,20 @@ class Result {
     constexpr T* operator->() noexcept { return &m_value; }
     constexpr const T* operator->() const noexcept { return &m_value; }
 
-    constexpr std::errc errc() const noexcept { return m_errc; }
-
-    std::error_code error() const noexcept {
-        return std::make_error_code(m_errc);
+    const Error& error() const noexcept {
+        if (m_has_value) raise("Has value");
+        return m_err;
     }
 
     T& unwrap() {
-        if (!m_has_value)
-            raise("Has error: ", std::make_error_code(m_errc).message());
+        if (!m_has_value) raise("Has error: ", m_err.message());
         return m_value;
     }
 
  private:
     union {
         T m_value;
-        std::errc m_errc;
+        Error m_err;
     };
     bool m_has_value{false};
 };

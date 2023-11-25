@@ -14,26 +14,25 @@ std::string_view rm_quotes(std::string_view s) {
 using LexemeOrJson = std::variant<Lexeme, Json>;
 
 Result<Json> squash_tail_obj(std::vector<LexemeOrJson>& stack) {
-    static constexpr auto invalid = std::errc::invalid_argument;
     auto out = Json(Obj());
     auto& obj = out.as_obj();
     using enum Token;
-    if (stack.empty()) return invalid;
+    if (stack.empty()) return Errno::Einval;
     auto* maybe_begin = std::get_if<Lexeme>(&stack.back());
     if (maybe_begin && maybe_begin->token == StartObject) {
         stack.pop_back();
         return out;
     }
     while (true) {
-        if (stack.size() < 4) return invalid;
+        if (stack.size() < 4) return Errno::Einval;
         auto* val = std::get_if<Json>(&stack.at(stack.size() - 1));
         auto* colon = std::get_if<Lexeme>(&stack.at(stack.size() - 2));
         auto* key = std::get_if<Json>(&stack.at(stack.size() - 3));
         auto* comma_or_begin = std::get_if<Lexeme>(&stack.at(stack.size() - 4));
-        if (!(val && colon && key && comma_or_begin)) return invalid;
-        if (colon->token != Colon) return invalid;
+        if (!(val && colon && key && comma_or_begin)) return Errno::Einval;
+        if (colon->token != Colon) return Errno::Einval;
 
-        if (!key->is_str()) return invalid;
+        if (!key->is_str()) return Errno::Einval;
         obj[std::move(key->as_str())] = std::move(*val);
         auto tok = comma_or_begin->token;
         stack.pop_back();
@@ -42,17 +41,16 @@ Result<Json> squash_tail_obj(std::vector<LexemeOrJson>& stack) {
         stack.pop_back();
         if (tok == StartObject) return out;
         if (tok == Comma) continue;
-        return invalid;
+        return Errno::Einval;
     }
 }
 
 Result<Json> squash_tail_arr(std::vector<LexemeOrJson>& stack) {
-    static constexpr auto invalid = std::errc::invalid_argument;
     auto out = Json(Arr());
     auto& arr = out.as_arr();
     using enum Token;
     std::vector<Json> tmp{};
-    if (stack.empty()) return invalid;
+    if (stack.empty()) return Errno::Einval;
     auto* maybe_begin = std::get_if<Lexeme>(&stack.back());
     if (maybe_begin && maybe_begin->token == StartArray) {
         stack.pop_back();
@@ -60,10 +58,10 @@ Result<Json> squash_tail_arr(std::vector<LexemeOrJson>& stack) {
     }
 
     while (true) {
-        if (stack.size() < 2) return invalid;
+        if (stack.size() < 2) return Errno::Einval;
         auto* val = std::get_if<Json>(&stack.at(stack.size() - 1));
         auto* comma_or_begin = std::get_if<Lexeme>(&stack.at(stack.size() - 2));
-        if (!(val && comma_or_begin)) return invalid;
+        if (!(val && comma_or_begin)) return Errno::Einval;
         tmp.push_back(std::move(*val));
         auto tok = comma_or_begin->token;
         stack.pop_back();
@@ -74,7 +72,7 @@ Result<Json> squash_tail_arr(std::vector<LexemeOrJson>& stack) {
             return out;
         }
         if (tok == Comma) continue;
-        return invalid;
+        return Errno::Einval;
     }
 }
 
@@ -85,12 +83,12 @@ Result<Json> parse_iterate(Lexer& l) {
         auto lexeme = l.next();
         switch (lexeme.token) {
             case Eof: {
-                if (stack.size() != 1) return {std::errc::invalid_argument};
+                if (stack.size() != 1) return Errno::Einval;
                 if (!std::holds_alternative<Json>(stack.front()))
-                    return {std::errc::invalid_argument};
+                    return Errno::Einval;
                 return std::get<Json>(std::move(stack.front()));
             }
-            case Err: return {std::errc::invalid_argument};
+            case Err: return Errno::Einval;
             case Null: {
                 stack.push_back(Json());
                 break;

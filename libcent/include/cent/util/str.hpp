@@ -48,7 +48,7 @@ Result<T> parse_float(std::string_view s) {
     T out{};
     auto [ptr, ec] = std::from_chars(s.data(), s.data() + s.size(), out);
     if (ec == std::errc()) { return out; }
-    return Result<T>(ec);
+    return Result<T>(Errno::Einval);
 }
 
 }  // namespace cent
