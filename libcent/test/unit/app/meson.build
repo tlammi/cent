@@ -1,6 +1,6 @@
 TESTS += {
-  'app_arg_view': {
-    'srcs': files('arg_view.cpp'),
+  'app_args': {
+    'srcs': files('args.cpp'),
     'deps': libcent_dep,
   },
 }

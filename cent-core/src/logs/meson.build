@@ -1,2 +1,0 @@
-
-SRCS += files('logger.cpp')
