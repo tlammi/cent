@@ -103,7 +103,7 @@ Result<Json> parse_iterate(Lexer& l) {
             }
             case Int: {
                 stack.push_back(
-                    Json(parse_int<::cent::json::Int>(lexeme.value).unwrap()));
+                    Json(parse_int<::cent::json::Int>(lexeme.value).value()));
                 break;
             }
             case Float: {
