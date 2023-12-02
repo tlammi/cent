@@ -8,6 +8,10 @@ namespace cent {
 
 template <class... Ts>
 [[noreturn]] void raise(Ts&&... ts) {
+    panic(std::forward<Ts>(ts)...);
+}
+template <class... Ts>
+[[noreturn]] void panic(Ts&&... ts) {
 #if defined(__cpp_exceptions)
     throw std::runtime_error(concat(std::forward<Ts>(ts)...));
 #else
