@@ -6,6 +6,8 @@
 #include <cent/util/assert.hpp>
 #include <memory>
 
+// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
+
 namespace cent {
 template <class V, class E>
 class BasicResult;
@@ -184,3 +186,4 @@ constexpr BasicResult<V, E> make_error(Ts&&... ts) {
 }
 }  // namespace cent
 
+// NOLINTEND(cppcoreguidelines-pro-type-union-access)

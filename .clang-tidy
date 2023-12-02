@@ -42,5 +42,7 @@ CheckOptions:
     value:           'false'
   - key:             google-readability-function-size.StatementThreshold
     value:           '800'
+  - key:             cppcoreguidelines-avoid-do-while.IgnoreMacros
+    value:           'true'
 ...
 
