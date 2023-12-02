@@ -1,0 +1,2 @@
+option('min-log-level', type: 'string', description: 'Min log level to include in build.')
+

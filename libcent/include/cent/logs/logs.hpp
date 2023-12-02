@@ -4,6 +4,10 @@
 
 #include <cent/logs/level.hpp>
 
+#if !defined(CENT_MIN_LOG_LEVEL)
+#define CENT_MIN_LOG_LEVEL Trace
+#endif
+
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
 namespace cent::logs {
@@ -21,18 +25,25 @@ class Logger {
 namespace detail {
 
 void push_log(Level lvl, std::string msg);
+
+consteval Level min_log_level() {
+    using enum Level;
+    return CENT_MIN_LOG_LEVEL;
 }
+}  // namespace detail
 
 void init(Level lvl, std::unique_ptr<Logger> logger);
 Level level();
 
 }  // namespace cent::logs
 
-#define CENT_DETAIL_LOG(lvl, ...)                                    \
-    do {                                                             \
-        if (level() <= ::cent::logs::Level::lvl)                     \
-            ::cent::logs::detail::push_log(::cent::logs::Level::lvl, \
-                                           fmt::format(__VA_ARGS__)) \
+#define CENT_DETAIL_LOG(lvl, ...)                                        \
+    do {                                                                 \
+        if constexpr (::cent::logs::detail::min_log_level() <=           \
+                      ::cent::logs::Level::lvl)                          \
+            if (level() <= ::cent::logs::Level::lvl)                     \
+                ::cent::logs::detail::push_log(::cent::logs::Level::lvl, \
+                                               fmt::format(__VA_ARGS__)) \
     } while (0)
 
 #define CENT_TRACE(...) CENT_DETAIL_LOG(Trace, __VA_ARGS__)
