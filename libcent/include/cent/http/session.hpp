@@ -50,6 +50,13 @@ class Session {
         on_header_impl(nullptr, nullptr);
     }
 
+    template <class Map>
+    void set_headers(Map&& headers) {
+        clear_headers_impl();
+        for (auto& [k, v] : headers) { add_header_impl(k, v); }
+        commit_headers_impl();
+    }
+
     Result get(const std::string& url) { return get_impl(url.c_str()); }
     Result get(const char* url) { return get_impl(url); }
 
@@ -58,6 +65,13 @@ class Session {
                                void*) = 0;
     virtual void on_header_impl(size_t (*cb)(char*, size_t, size_t, void*),
                                 void*) = 0;
+
+    virtual void clear_headers_impl() = 0;
+
+    virtual void add_header_impl(std::string_view key,
+                                 std::string_view val) = 0;
+
+    virtual void commit_headers_impl() = 0;
 
     virtual Result get_impl(const char* url) = 0;
 

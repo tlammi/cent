@@ -1,3 +1,5 @@
+#include <fmt/format.h>
+
 #include <cent/http/curl_session.hpp>
 #include <cent/util.hpp>
 
@@ -44,6 +46,15 @@ void CurlSession::on_header_impl(size_t (*cb)(char*, size_t, size_t, void*),
                                  void* userdata) {
     do_curl_easy_setopt(m_c, CURLOPT_HEADERFUNCTION, cb);
     do_curl_easy_setopt(m_c, CURLOPT_HEADERDATA, userdata);
+}
+
+void CurlSession::clear_headers_impl() { m_headers.clear(); }
+void CurlSession::add_header_impl(std::string_view key,
+                                  std::string_view value) {
+    m_headers.append(fmt::format("{}:{}", key, value).c_str());
+}
+void CurlSession::commit_headers_impl() {
+    do_curl_easy_setopt(m_c, CURLOPT_HTTPHEADER, m_headers.handle());
 }
 
 Result CurlSession::get_impl(const char* url) {

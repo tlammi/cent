@@ -53,5 +53,6 @@ class CurlSList {
 
  private:
     curl_slist* m_handle{};
+    curl_slist* m_back{};
 };
 }  // namespace cent::http
