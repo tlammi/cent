@@ -29,7 +29,7 @@ class Anon {
 
     ~Anon() = default;
 
-    constexpr void* data() const noexcept { return m_ptr.get(); }
+    void* data() const noexcept { return m_ptr.get(); }
 
     void reset() { m_ptr.reset(); }
 

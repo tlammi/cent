@@ -11,12 +11,16 @@ template <class... Ts>
     panic(std::forward<Ts>(ts)...);
 }
 template <class... Ts>
+[[noreturn]] void abort(Ts&&... ts) {
+    (std::cerr << ... << std::forward<Ts>(ts));
+    ::std::abort();
+}
+template <class... Ts>
 [[noreturn]] void panic(Ts&&... ts) {
 #if defined(__cpp_exceptions)
     throw std::runtime_error(concat(std::forward<Ts>(ts)...));
 #else
-    (std::cerr << ... << std::forward<Ts>(ts));
-    std::abort();
+    ::cent::abort(std::forward<Ts>(ts)...);
 #endif
 }
 

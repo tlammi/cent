@@ -50,13 +50,16 @@ class Session {
         on_header_impl(nullptr, nullptr);
     }
 
-    virtual Status get(std::string_view url) = 0;
+    Result get(const std::string& url) { return get_impl(url.c_str()); }
+    Result get(const char* url) { return get_impl(url); }
 
  private:
     virtual void on_write_impl(size_t (*cb)(char*, size_t, size_t, void*),
                                void*) = 0;
     virtual void on_header_impl(size_t (*cb)(char*, size_t, size_t, void*),
                                 void*) = 0;
+
+    virtual Result get_impl(const char* url) = 0;
 
     cent::Anon m_on_write{};
     cent::Anon m_on_header{};
