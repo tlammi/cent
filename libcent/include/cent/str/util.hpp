@@ -8,4 +8,16 @@ constexpr char to_lower(char c) noexcept {
     return c;
 }
 
+constexpr bool is_space(char c) noexcept {
+    switch (c) {
+        case ' ':
+        case '\t':
+        case '\n':
+        case '\v':
+        case '\f':
+        case '\r': return true;
+        default: return false;
+    }
+}
+
 }  // namespace cent

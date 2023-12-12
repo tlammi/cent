@@ -1,7 +1,9 @@
 #pragma once
 #include <cent/dt.hpp>
 #include <cstdint>
-namespace cent::http {
+
+namespace cent::net {
+
 using Status = std::uint8_t;
 
 enum class ErrorCode {
@@ -16,4 +18,4 @@ struct Error {
 
 using Result = cent::BasicResult<Status, Error>;
 
-}  // namespace cent::http
+}  // namespace cent::net
