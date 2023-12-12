@@ -49,6 +49,13 @@ size_t progress_callback(void* userdata, curl_off_t dltotal, curl_off_t dlnow,
 class Session {
  public:
     Session();
+
+    Session(const Session&) = delete;
+    Session& operator=(const Session&) = delete;
+
+    Session(Session&& other) noexcept;
+    Session& operator=(Session&& other) noexcept;
+
     ~Session();
 
     template <concepts::proto<bool(std::string_view, std::string_view)> F>
@@ -67,7 +74,23 @@ class Session {
         on_write_impl(session_detail::write_callback<T>, m_on_write.data());
     }
 
+    template <concepts::proto<size_t(std::span<char>)> F>
+    void on_read(F&& f) {
+        using T = std::remove_cvref_t<F>;
+        m_on_read = Anon(std::in_place_type<T>, std::forward<F>(f));
+        on_read_impl(session_detail::read_callback<T>, m_on_read.data());
+    }
+
+    template <concepts::proto<bool(Progress)> F>
+    void on_progress(F&& f) {
+        using T = std::remove_cvref_t<F>;
+        m_on_prog = Anon(std::in_place_type<T>, std::forward<F>(f));
+        on_progress_impl(session_detail::progress_callback<T>,
+                         m_on_prog.data());
+    }
+
     void url(const char* s);
+
     net::Result get();
 
  private:
@@ -76,8 +99,18 @@ class Session {
 
     void on_write_impl(size_t (*cb)(char*, size_t, size_t, void*),
                        void* userdata) noexcept;
+
+    void on_read_impl(size_t (*cb)(char*, size_t, size_t, void*),
+                      void* userdata);
+
+    void on_progress_impl(int (*cb)(void*, curl_off_t, curl_off_t, curl_off_t,
+                                    curl_off_t),
+                          void* userdata);
+
     CURL* m_c{};
     Anon m_on_header{};
     Anon m_on_write{};
+    Anon m_on_read{};
+    Anon m_on_prog{};
 };
 }  // namespace cent::net
