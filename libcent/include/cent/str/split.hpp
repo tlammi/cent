@@ -19,4 +19,12 @@ constexpr std::pair<std::string_view, std::string_view> split_left(
     return {str.substr(0, pos), str.substr(pos + split_detail::tok_size(tok))};
 }
 
+template <class Tok>
+constexpr std::pair<std::string_view, std::string_view> split_right(
+    std::string_view str, Tok tok) {
+    auto pos = str.rfind(tok);
+    if (pos == std::string_view::npos) { return {{}, str}; }
+    return {str.substr(0, pos), str.substr(pos + split_detail::tok_size(tok))};
+}
+
 }  // namespace cent
