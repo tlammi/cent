@@ -11,18 +11,6 @@ std::string_view Reference::repo() const noexcept {
     auto colon_idx = tag_idx();
     if (colon_idx == std::string::npos) return m_s;
     return std::string_view(m_s).substr(0, colon_idx);
-    /*
-      auto colon_idx = tag_idx();
-      if (colon_idx == std::string::npos) return m_s;
-      auto colon_idx = m_s.rfind(':');
-      if (at_idx == std::string::npos && colon_idx == std::string::npos) {
-          return m_s;
-      } else if (at_idx == std::string::npos) {
-          return std::string_view(m_s).substr(0, colon_idx);
-      } else {
-          return std::string_view(m_s).substr(0, at_idx);
-      }
-    */
 }
 
 std::string_view Reference::tag() const noexcept {

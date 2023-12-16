@@ -6,23 +6,27 @@
 
 namespace cent::net {
 namespace client_detail {
+
 template <class C>
 class CtxHolder {
  protected:
+    template <net_concepts::session S>
+    auto mk_session() {
+        return S{m_ctx};
+    }
+
+ private:
     C m_ctx{};
 };
 
 template <>
-class CtxHolder<std::nullptr_t> {};
-
-template <net_concepts::session S, class C>
-S make_session(C&& c) {
-    if constexpr (std::is_same_v<C, std::nullptr_t>) {
+class CtxHolder<std::nullptr_t> {
+ protected:
+    template <net_concepts::session S>
+    auto mk_session() {
         return S{};
-    } else {
-        return S{std::forward<C>(c)};
     }
-}
+};
 
 }  // namespace client_detail
 
@@ -41,7 +45,7 @@ class Client final : private client_detail::CtxHolder<C> {
 
     template <concepts::proto<bool(std::string_view, std::string_view)> F>
     void on_header(F&& f) noexcept {
-        m_sess.on_header(std::forward<F>(f));
+        m_sess.on_header(decorate_on_header(std::forward<F>(f)));
     }
 
     template <concepts::proto<bool(std::string_view)> F>
@@ -59,10 +63,38 @@ class Client final : private client_detail::CtxHolder<C> {
         m_sess.on_progress(std::forward<F>(f));
     }
 
-    Result get() noexcept { return m_sess.get(); }
+    void url(const char* url) noexcept { m_sess.url(url); }
+    void url(const std::string& url) noexcept { m_sess.url(url.c_str()); }
+
+    Result get() noexcept {
+        auto res = m_sess.get();
+        if (!res) {
+            if (m_www_auth.empty()) return res;
+            return res;
+        } else {
+            return m_sess.get();
+        }
+    }
     Result head() noexcept { return m_sess.head(); }
 
  private:
-    S m_sess{client_detail::make_session<S>(Parent::m_ctx)};
+    std::string m_www_auth{};
+
+    template <class F>
+    auto decorate_on_header(F&& f) noexcept {
+        return [&, f = std::forward<F>(f)](std::string_view key,
+                                           std::string_view val) -> bool {
+            if (key == "www-authenticate") {
+                m_www_auth = std::string(val);
+                std::cerr << "www auth: " << m_www_auth << '\n';
+                return false;
+            }
+            return f(key, val);
+        };
+    }
+
+    void resolve_www_auth() { S auth_sess{}; }
+
+    S m_sess{this->template mk_session<S>()};
 };
 }  // namespace cent::net

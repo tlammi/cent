@@ -1,3 +1,3 @@
 
-SRCS += files('reference.cpp')
+SRCS += files('reference.cpp', 'client.cpp')
 

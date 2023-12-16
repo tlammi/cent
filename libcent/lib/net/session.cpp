@@ -43,8 +43,13 @@ void Session::on_progress_impl(int (*cb)(void*, curl_off_t, curl_off_t,
 void Session::url(const char* s) { curl_easy_setopt(m_c, CURLOPT_URL, s); }
 
 net::Result Session::get() {
-    curl_easy_perform(m_c);
-    return {};
+    CURLcode res = curl_easy_perform(m_c);
+    switch (res) {
+        case CURLE_OK: return {};
+        case CURLE_ABORTED_BY_CALLBACK:
+        case CURLE_WRITE_ERROR: return {ErrorCode::Cancelled};
+        default: panic("Unsupported CURLE_*: ", res);
+    }
 }
 
 }  // namespace cent::net
