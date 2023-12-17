@@ -1,4 +1,6 @@
 
+#include <fmt/format.h>
+
 #include <cent/bits/net/session.hpp>
 
 namespace cent::net {
@@ -38,6 +40,17 @@ void Session::on_progress_impl(int (*cb)(void*, curl_off_t, curl_off_t,
                                void* userdata) {
     curl_easy_setopt(m_c, CURLOPT_XFERINFOFUNCTION, cb);
     curl_easy_setopt(m_c, CURLOPT_XFERINFODATA, userdata);
+}
+
+void Session::set_headers(const Headers& headers) {
+    m_headers.clear();
+    for (const auto& [k, v] : headers) {
+        if (v.empty())
+            m_headers.append(fmt::format("{};", k));
+        else
+            m_headers.append(fmt::format("{}: {}", k, v));
+    }
+    curl_easy_setopt(m_c, CURLOPT_HTTPHEADER, m_headers.handle());
 }
 
 void Session::url(const char* s) { curl_easy_setopt(m_c, CURLOPT_URL, s); }

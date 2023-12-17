@@ -1,11 +1,7 @@
 #pragma once
 
+#include <cent/dt.hpp>
+
 namespace cent::net {
-
-class Headers {
- public:
- private:
-    FlatMap<std::string, std::string> m_str;
-};
-
+using Headers = FlatMultimap<std::string, std::string>;
 }  // namespace cent::net

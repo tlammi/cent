@@ -2,6 +2,8 @@
 
 #include <curl/curl.h>
 
+#include <cent/bits/net/curl_slist.hpp>
+#include <cent/bits/net/headers.hpp>
 #include <cent/bits/net/progress.hpp>
 #include <cent/bits/net/result.hpp>
 #include <cent/concepts.hpp>
@@ -89,6 +91,8 @@ class Session {
                          m_on_prog.data());
     }
 
+    void set_headers(const Headers& headers);
+
     void url(const char* s);
 
     net::Result get();
@@ -108,6 +112,7 @@ class Session {
                           void* userdata);
 
     CURL* m_c{};
+    CurlSlist m_headers{};
     Anon m_on_header{};
     Anon m_on_write{};
     Anon m_on_read{};
