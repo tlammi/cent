@@ -68,6 +68,11 @@ class Client final : private client_detail::CtxHolder<C> {
         m_sess.on_progress(std::forward<F>(f));
     }
 
+    void set_headers(Headers headers) {
+        m_headers.clear();
+        m_headers = std::move(headers);
+    }
+
     void url(const char* url) noexcept { m_sess.url(url); }
     void url(const std::string& url) noexcept { m_sess.url(url.c_str()); }
 

@@ -73,6 +73,8 @@ class FlatMultimap {
         });
     }
 
+    void clear() noexcept { m_vec.clear(); }
+
  private:
     Vec m_vec{};
 };

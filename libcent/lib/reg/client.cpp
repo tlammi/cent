@@ -12,7 +12,7 @@ class ClientImpl final : public Client {
     std::string manifest_list(const Reference& ref) override {
         (void)ref;
         std::string url =
-            "https://registry-1.docker.io/v2/library/ubuntu/manifests/22:04";
+            "https://registry-1.docker.io/v2/library/ubuntu/manifests/22.04";
         m_client.on_header([&](std::string_view h, std::string_view v) -> bool {
             std::cerr << "header: " << h << ": " << v << '\n';
             return true;
@@ -21,6 +21,9 @@ class ClientImpl final : public Client {
             std::cerr << "body: " << buf << '\n';
             return true;
         });
+        m_client.set_headers(
+            {{"Accept",
+              "application/vnd.docker.distribution.manifest.v2+json"}});
         m_client.url(url);
         m_client.get();
         return "";
