@@ -2,7 +2,7 @@ project('libcent', 'cpp', default_options: {'cpp_std': 'c++20', 'cpp_eh': 'none'
 
 
 libcent_inc = include_directories('include')
-DEPS = [dependency('libcurl')]
+DEPS = [dependency('libcurl'), dependency('fmt')]
 SRCS = []
 subdir('lib')
 libcent = library('libcent', SRCS, include_directories: libcent_inc)

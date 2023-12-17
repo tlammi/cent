@@ -11,9 +11,11 @@ class CaseInsensitive {
     constexpr explicit CaseInsensitive(std::string_view s) noexcept : m_s(s) {}
 
     constexpr bool operator==(std::string_view other) const noexcept {
-        return m_s <=> other == std::strong_ordering::equal;
+        return (*this <=> other) == std::strong_ordering::equal;
     }
-    constexpr auto operator<=>(std::string_view other) const noexcept {
+
+    constexpr std::strong_ordering operator<=>(
+        std::string_view other) const noexcept {
         return threeway_compare_case_insenstive(m_s, other);
     }
 

@@ -12,7 +12,7 @@ template <class... Ts>
 }
 template <class... Ts>
 [[noreturn]] void abort(Ts&&... ts) {
-    (std::cerr << ... << std::forward<Ts>(ts));
+    (std::cerr << ... << std::forward<Ts>(ts)) << '\n';
     ::std::abort();
 }
 template <class... Ts>
