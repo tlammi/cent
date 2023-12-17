@@ -9,7 +9,7 @@ namespace cent::reg {
 class ClientImpl final : public Client {
  public:
     using NetClient = net::Client<net::Session>;
-    std::string manifest_list(const Reference& ref) override {
+    Result<ManifestList> manifest_list(const Reference& ref) override {
         (void)ref;
         std::string url =
             "https://registry-1.docker.io/v2/library/ubuntu/manifests/22.04";
@@ -17,8 +17,9 @@ class ClientImpl final : public Client {
             std::cerr << "header: " << h << ": " << v << '\n';
             return true;
         });
+        std::string body{};
         m_client.on_write([&](std::string_view buf) -> bool {
-            std::cerr << "body: " << buf << '\n';
+            body.append(buf);
             return true;
         });
         m_client.set_headers(
@@ -26,7 +27,9 @@ class ClientImpl final : public Client {
               "application/vnd.docker.distribution.manifest.v2+json"}});
         m_client.url(url);
         m_client.get();
-        return "";
+        auto jsn = json::parse(body);
+        if (!jsn) return jsn.error();
+        return make_manifest_list(*jsn);
     }
 
  private:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cent/bits/reg/manifest_list.hpp>
 #include <cent/bits/reg/reference.hpp>
 #include <memory>
 
@@ -9,11 +10,11 @@ class Client {
  public:
     virtual ~Client() = default;
 
-    std::string manifest_list(const std::string& s) {
+    Result<ManifestList> manifest_list(const std::string& s) {
         return manifest_list(Reference{s});
     }
 
-    virtual std::string manifest_list(const Reference& ref) = 0;
+    virtual Result<ManifestList> manifest_list(const Reference& ref) = 0;
 
  private:
 };

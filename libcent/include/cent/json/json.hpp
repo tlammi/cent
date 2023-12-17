@@ -86,6 +86,8 @@ class Obj {
     Json& operator[](const std::string& key);
     const Json& operator[](const std::string& key) const;
 
+    [[nodiscard]] bool contains(const std::string& key) const;
+
  private:
     std::map<std::string, Json> m_values;
 };
@@ -209,6 +211,10 @@ inline Obj::Obj(std::initializer_list<std::pair<std::string, Value>> values)
 inline Json& Obj::operator[](const std::string& key) { return m_values[key]; }
 inline const Json& Obj::operator[](const std::string& key) const {
     return m_values.at(key);
+}
+
+inline bool Obj::contains(const std::string& key) const {
+    return m_values.contains(key);
 }
 
 }  // namespace cent::json

@@ -8,5 +8,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     auto client = cent::reg::client();
-    std::cout << client->manifest_list(argv[1]) << '\n';
+    auto res = client->manifest_list(argv[1]);
+    if (!res) { return EXIT_FAILURE; }
+    std::cout << res.value().size() << '\n';
 }
