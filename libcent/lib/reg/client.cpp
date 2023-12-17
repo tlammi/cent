@@ -17,6 +17,10 @@ class ClientImpl final : public Client {
             std::cerr << "header: " << h << ": " << v << '\n';
             return true;
         });
+        m_client.on_write([&](std::string_view buf) -> bool {
+            std::cerr << "body: " << buf << '\n';
+            return true;
+        });
         m_client.url(url);
         m_client.get();
         return "";

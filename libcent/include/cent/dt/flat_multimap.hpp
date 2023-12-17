@@ -38,8 +38,10 @@ class FlatMultimap {
 
     template <class... Ts>
     void emplace(Ts&&... ts) {
-        m_vec.emplac_back(std::forward<Ts>(ts)...);
+        m_vec.emplace_back(std::forward<Ts>(ts)...);
     }
+
+    void add(K k, V v) { m_vec.emplace_back(std::move(k), std::move(v)); }
 
     template <class L>
     iterator find(const L& lookup) noexcept {

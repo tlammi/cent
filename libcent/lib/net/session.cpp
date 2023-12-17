@@ -5,7 +5,9 @@
 
 namespace cent::net {
 
-Session::Session() : m_c(curl_easy_init()) {}
+Session::Session() : m_c(curl_easy_init()) {
+    curl_easy_setopt(m_c, CURLOPT_VERBOSE, 1);
+}
 
 Session::Session(Session&& other) noexcept { std::swap(m_c, other.m_c); }
 

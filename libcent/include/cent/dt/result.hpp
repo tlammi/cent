@@ -124,6 +124,11 @@ class BasicResult {
     constexpr bool has_value() const noexcept { return m_has_val; }
     constexpr explicit operator bool() const noexcept { return m_has_val; }
 
+    constexpr V& unwrap() {
+        if (!m_has_val) panic("Result::unwrap without value");
+        return m_val;
+    }
+
     constexpr V& value() {
         CENT_ASSERT(m_has_val);
         return m_val;

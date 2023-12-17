@@ -3,8 +3,10 @@
 #include <fmt/format.h>
 
 #include <cent/bits/net/concepts.hpp>
+#include <cent/bits/net/headers.hpp>
 #include <cent/bits/net/result.hpp>
 #include <cent/concepts.hpp>
+#include <cent/json.hpp>
 #include <cent/str.hpp>
 
 namespace cent::net {
@@ -74,7 +76,7 @@ class Client final : private client_detail::CtxHolder<C> {
         if (!res) {
             if (m_www_auth.empty()) return res;
             resolve_www_auth();
-            return res;
+            return m_sess.get();
         }
         return res;
     }
@@ -95,6 +97,7 @@ class Client final : private client_detail::CtxHolder<C> {
     }
 
     void resolve_www_auth() {
+        std::cerr << "handling www authentication challenge\n";
         S auth_sess{};
         std::string bearer_realm{};
         std::string service{};
@@ -114,22 +117,27 @@ class Client final : private client_detail::CtxHolder<C> {
         }
         auto url =
             fmt::format("{}?service={}&scope={}", bearer_realm, service, scope);
-        std::cerr << "challenge url: " << url << '\n';
-        auth_sess.on_header(
-            [&](std::string_view key, std::string_view val) -> bool {
-                std::cerr << "challenge header: " << key << ' ' << val << '\n';
-                return true;
-            });
+        auth_sess.on_header([&](std::string_view key,
+                                std::string_view val) -> bool { return true; });
+        std::string body{};
         auth_sess.on_write([&](std::string_view buf) -> bool {
-            std::cerr << "challenge body: " << buf << '\n';
+            body.append(buf);
             return true;
         });
+        std::cerr << "challenge url: " << url << '\n';
         auth_sess.url(url.c_str());
         auto res = auth_sess.get();
-        (void)res;
+        if (!res) panic("auth_sess::get()");
+        auto jsn = std::move(json::parse(body).unwrap());
+        auto tok = jsn.as_obj()["token"].as_str();
+        tok = fmt::format("Bearer {}", std::move(tok));
+        m_headers.emplace("Authorization", std::move(tok));
+        m_sess.set_headers(m_headers);
+        std::cerr << "handled www authentication challenge\n";
     }
 
     std::string m_www_auth{};
+    Headers m_headers{};
     S m_sess{this->template mk_session<S>()};
 };
 }  // namespace cent::net

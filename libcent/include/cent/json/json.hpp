@@ -185,27 +185,29 @@ inline std::ostream& operator<<(std::ostream& s, const Json& j) {
     return s;
 }
 
-Arr::Arr() : m_values() {}
+inline Arr::Arr() : m_values() {}
 
-const Json& Arr::operator[](size_t index) const { return m_values.at(index); }
-Json& Arr::operator[](size_t index) { return m_values.at(index); }
-const Json& Arr::front() const noexcept { return m_values.front(); }
-const Json& Arr::back() const noexcept { return m_values.back(); }
+inline const Json& Arr::operator[](size_t index) const {
+    return m_values.at(index);
+}
+inline Json& Arr::operator[](size_t index) { return m_values.at(index); }
+inline const Json& Arr::front() const noexcept { return m_values.front(); }
+inline const Json& Arr::back() const noexcept { return m_values.back(); }
 
-size_t Arr::size() const noexcept { return m_values.size(); }
-size_t Arr::length() const noexcept { return m_values.size(); }
-void Arr::push_back(Json v) { m_values.push_back(std::move(v)); }
+inline size_t Arr::size() const noexcept { return m_values.size(); }
+inline size_t Arr::length() const noexcept { return m_values.size(); }
+inline void Arr::push_back(Json v) { m_values.push_back(std::move(v)); }
 
 template <class T>
 void Arr::emplace_back(T&& v) {
     m_values.emplace_back(std::forward<T>(v));
 }
 
-Obj::Obj(std::initializer_list<std::pair<std::string, Value>> values)
+inline Obj::Obj(std::initializer_list<std::pair<std::string, Value>> values)
     : m_values(values.begin(), values.end()) {}
 
-Json& Obj::operator[](const std::string& key) { return m_values[key]; }
-const Json& Obj::operator[](const std::string& key) const {
+inline Json& Obj::operator[](const std::string& key) { return m_values[key]; }
+inline const Json& Obj::operator[](const std::string& key) const {
     return m_values.at(key);
 }
 
