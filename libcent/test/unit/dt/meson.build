@@ -12,5 +12,9 @@ TESTS += {
   'dt_result': {
     'srcs': files('result.cpp'),
     'deps': libcent_dep,
-  }
+  },
+  'dt_flat_multimap': {
+    'srcs': files('flat_multimap.cpp'),
+    'deps': libcent_dep,
+  },
 }
