@@ -33,7 +33,8 @@ Result<Json> squash_tail_obj(std::vector<LexemeOrJson>& stack) {
         if (colon->token != Colon) return Errno::Einval;
 
         if (!key->is_str()) return Errno::Einval;
-        obj[std::move(key->as_str())] = std::move(*val);
+        std::cerr << key->as_str() << ": " << *val << '\n';
+        obj[key->as_str()] = std::move(*val);
         auto tok = comma_or_begin->token;
         stack.pop_back();
         stack.pop_back();

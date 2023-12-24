@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cent/util.hpp>
 #include <cstdint>
 #include <initializer_list>
 #include <map>
@@ -83,13 +84,13 @@ class Obj {
     size_t size() const noexcept { return m_values.size(); }
     size_t length() const noexcept { return m_values.size(); }
 
-    Json& operator[](const std::string& key);
-    const Json& operator[](const std::string& key) const;
+    Json& operator[](std::string_view key);
+    const Json& operator[](std::string_view key) const;
 
     [[nodiscard]] bool contains(const std::string& key) const;
 
  private:
-    std::map<std::string, Json> m_values;
+    std::map<std::string, Json, std::less<>> m_values;
 };
 
 class Json {
@@ -140,6 +141,21 @@ class Json {
     constexpr const Arr& as_arr() const { return std::get<Arr>(m_value); }
     constexpr Obj& as_obj() { return std::get<Obj>(m_value); }
     constexpr const Obj& as_obj() const { return std::get<Obj>(m_value); }
+
+    const Json& operator[](size_t i) const { return as_arr()[i]; }
+    Json& operator[](size_t i) { return as_arr()[i]; }
+
+    template <size_t S>
+    Json& operator[](const char (&arr)[S]) {
+        return (*this)[std::string_view(arr, S)];
+    }
+
+    template <size_t S>
+    const Json& operator[](const char (&arr)[S]) const {
+        return (*this)[std::string_view(arr, S)];
+    }
+    const Json& operator[](std::string_view s) const { return as_obj()[s]; }
+    Json& operator[](std::string_view s) { return as_obj()[s]; }
 
  private:
     Value m_value;
@@ -208,9 +224,16 @@ void Arr::emplace_back(T&& v) {
 inline Obj::Obj(std::initializer_list<std::pair<std::string, Value>> values)
     : m_values(values.begin(), values.end()) {}
 
-inline Json& Obj::operator[](const std::string& key) { return m_values[key]; }
-inline const Json& Obj::operator[](const std::string& key) const {
-    return m_values.at(key);
+inline Json& Obj::operator[](std::string_view key) {
+    auto iter = m_values.find(key);
+    if (iter == m_values.end()) return m_values[std::string(key)];
+    return iter->second;
+}
+
+inline const Json& Obj::operator[](std::string_view key) const {
+    auto iter = m_values.find(key);
+    if (iter == m_values.end()) panic("Obj::operator[]: out of bounds");
+    return iter->second;
 }
 
 inline bool Obj::contains(const std::string& key) const {
