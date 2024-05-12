@@ -6,6 +6,7 @@ basedeps = [dependency('gtest'), dependency('gtest_main')]
 
 subdir('sd')
 subdir('str')
+subdir('cli')
 
 fs = import('fs')
 
