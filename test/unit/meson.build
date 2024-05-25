@@ -4,9 +4,9 @@ TESTS = []
 
 basedeps = [dependency('gtest'), dependency('gtest_main')]
 
+subdir('cli')
 subdir('sd')
 subdir('str')
-subdir('cli')
 
 fs = import('fs')
 

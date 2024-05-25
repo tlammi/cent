@@ -1,2 +1,2 @@
 
-TESTS += {'src': files('arg_iter.cpp'), 'depends': libcent_cli_dep}
+TESTS += {'src': files('lex.cpp'), 'depends': libcent_cli_dep}

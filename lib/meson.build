@@ -6,5 +6,6 @@ libcent_cli_dep = declare_dependency(include_directories: libcent_incdir)
 subdir('src')
 
 
-libcent_dep = declare_dependency(dependencies: [libcent_sd_dep, libcent_str_dep])
+deps = [libcent_sd_dep, libcent_str_dep, libcent_cli_dep]
+libcent_dep = declare_dependency(dependencies: deps)
 
