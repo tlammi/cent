@@ -1,11 +1,19 @@
 
+SANITIZE_ADDRESS ?= 0
+
+
+MESON_OPTS = 
+
+ifeq ($(SANITIZE_ADDRESS), 1)
+	MESON_OPTS += -Db_sanitize=address
+endif
 
 .PHONY: compile
 compile: build
 	cd build && ninja
 
 build:
-	meson setup build
+	meson setup $(MESON_OPTS) build
 
 TEST_NAME ?= *
 .PHONY: test

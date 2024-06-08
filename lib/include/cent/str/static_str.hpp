@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cent/str/c_str.hpp>
 #include <cent/util.hpp>
 #include <cstddef>
 #include <string_view>
@@ -88,22 +89,22 @@ class StaticStr {
  public:
     constexpr StaticStr() noexcept = default;
 
-    template <size_t S>
-    consteval StaticStr(const char (&s)[S]) noexcept : m_s(s), m_len(S - 1) {}
+    consteval StaticStr(CStr s) : m_s(s.c_str()) {}
 
-    consteval StaticStr(std::string_view s) noexcept
-        : m_s(s.data()), m_len(s.size()) {}
+    template <size_t S>
+    consteval StaticStr(const StrLit<S>& s) noexcept : m_s(s) {}
 
     template <size_t S>
     consteval StaticStr(const StaticStrArr<S>& s) noexcept
         : StaticStr(s.view()) {}
 
-    constexpr const char* c_str() const noexcept { return m_s; }
-    constexpr std::string_view view() const noexcept { return {m_s, m_len}; }
+    constexpr const char* c_str() const noexcept { return m_s.c_str(); }
+    constexpr std::string_view view() const noexcept { return m_s.view(); }
+
+    [[nodiscard]] constexpr bool empty() const noexcept { return m_s.empty(); }
 
  private:
-    const char* m_s{};
-    size_t m_len{};
+    CStr m_s{};
 };
 
 namespace literals {
