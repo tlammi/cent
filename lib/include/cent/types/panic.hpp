@@ -10,4 +10,5 @@ namespace cent {
     std::terminate();
 #endif
 }
+
 }  // namespace cent

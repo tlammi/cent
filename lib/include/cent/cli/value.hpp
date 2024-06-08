@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cent/types.hpp>
 #include <string_view>
 #include <vector>
 
@@ -15,7 +16,7 @@ enum class Nargs {
 class IValue {
  public:
     virtual constexpr ~IValue() = default;
-    virtual bool parse(std::string_view s) noexcept = 0;
+    virtual Result<void> parse(std::string_view s) noexcept = 0;
 
     virtual Nargs nargs() const noexcept = 0;
 
@@ -28,13 +29,13 @@ struct Value final : public IValue {
 
     explicit constexpr Value(T* store) noexcept : value{store} {}
 
-    bool parse(std::string_view s) noexcept override {
+    Result<void> parse(std::string_view s) noexcept override {
         for (auto c : s) {
-            if (c < '0' || c > '9') return false;
+            if (c < '0' || c > '9') return error(ErrorCode::Inval);
             *value *= 10;  // NOLINT
             *value += c - '0';
         }
-        return true;
+        return {};
     }
 
     Nargs nargs() const noexcept override { return Nargs::One; }

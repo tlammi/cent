@@ -11,8 +11,10 @@ using ErrorCode = error_detail::Errno;
 
 class Error {
  public:
-    constexpr Error(int e)
-        : m_code(ErrorCode(e)), m_msg(error_detail::errno_to_desc(m_code)) {}
+    constexpr Error(ErrorCode e)
+        : m_code(e), m_msg(error_detail::errno_to_desc(e)) {}
+
+    explicit constexpr Error(int e) noexcept : Error(ErrorCode(e)) {}
 
     template <size_t S>
     consteval Error(int e, const char (&arr)[S]) noexcept

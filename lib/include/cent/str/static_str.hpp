@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cent/str/c_str.hpp>
+#include <cent/types/panic.hpp>
 #include <cent/util.hpp>
 #include <cstddef>
 #include <string_view>

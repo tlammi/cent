@@ -13,16 +13,25 @@ class Leaf {
     friend class LeafBuilder;
 
  public:
-    bool parse(int argc, const char* const* argv) {
+    Result<void> parse(int argc, const char* const* argv) {
         return parse(
             std::span<const char* const>(argv, static_cast<size_t>(argc)));
     }
-    bool parse(std::span<const char* const> spn) {
+    Result<void> parse(std::span<const char* const> spn) {
         auto iter = m_pos_args.begin();
+        using enum Nargs;
         for (const auto* arg : spn) {
-            if (iter == m_pos_args.end()) { return false; }
+            if (iter == m_pos_args.end()) { return error(ErrorCode::Toobig); }
+            auto res = iter->value->parse(arg);
+            if (!res) return res;
+            switch (iter->value->nargs()) {
+                case None:
+                case One: ++iter; break;
+                case Some: break;
+                case More: break;
+            }
         }
-        return true;
+        return {};
     }
 
  private:
