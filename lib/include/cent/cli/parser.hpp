@@ -56,24 +56,25 @@ class LeafBuilder {
         return *this;
     }
 
-    template <std::integral I>
+    template <class I>
     constexpr LeafBuilder& pos_arg(std::string_view name, I* store,
                                    std::string_view help) {
         m_pos_args.emplace_back(name, std::make_unique<Value<I>>(store), help);
         return *this;
     }
+    //
+    // template <concepts::string S>
+    // constexpr LeafBuilder& pos_arg(std::string_view name, S* store,
+    //                                std::string_view help) {
+    //     return *this;
+    // }
 
-    template <concepts::string S>
-    constexpr LeafBuilder& pos_arg(std::string_view name, S* store,
-                                   std::string_view help) {
-        return *this;
-    }
-
-    template <concepts::vector V>
-    constexpr LeafBuilder& pos_arg(std::string_view name, V* store,
-                                   std::string_view help) {
-        return *this;
-    }
+    // template <concepts::vector V>
+    // constexpr LeafBuilder& pos_arg(std::string_view name, V* store,
+    //                                std::string_view help) {
+    //     m_pos_args.emplace_back(name, std::make_unique<Value<V>>(store), help);
+    //     return *this;
+    // }
 
     constexpr Leaf commit() noexcept {
         return Leaf{m_name, m_desc, std::move(m_pos_args)};
