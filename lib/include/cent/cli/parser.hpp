@@ -31,6 +31,13 @@ class Leaf {
                 case Short: {
                     std::println("got short");
                     std::println("{}", m_opts.size());
+                    for (auto& flag : m_flags) {
+                        std::println("checking: -{}, --{}", flag.shortf,
+                                     flag.longf);
+                        if (flag.shortf == arg.value.front()) {
+                            (void)flag.value->parse("1");
+                        }
+                    }
                     for (auto& opt : m_opts) {
                         std::println("checking: -{}, --{}", opt.shortf,
                                      opt.longf);
@@ -57,6 +64,13 @@ class Leaf {
                 case Long: {
                     std::println("got long");
                     std::println("{}", m_opts.size());
+                    for (auto& flag : m_flags) {
+                        std::println("checking: -{}, --{}", flag.shortf,
+                                     flag.longf);
+                        if (flag.longf == arg.value) {
+                            (void)flag.value->parse("1");
+                        }
+                    }
                     for (auto& opt : m_opts) {
                         std::println("checking: -{}, --{}", opt.shortf,
                                      opt.longf);
@@ -104,16 +118,19 @@ class Leaf {
 
  private:
     constexpr Leaf(std::string_view name, std::string_view desc,
-                   std::vector<PosArg> pos_args, std::vector<Opt> opts)
+                   std::vector<PosArg> pos_args, std::vector<Opt> opts,
+                   std::vector<Opt> flags)
         : m_name{name},
           m_desc{desc},
           m_pos_args(std::move(pos_args)),
-          m_opts(std::move(opts)) {}
+          m_opts(std::move(opts)),
+          m_flags(std::move(flags)) {}
 
     std::string_view m_name;
     std::string_view m_desc;
     std::vector<PosArg> m_pos_args;
     std::vector<Opt> m_opts;
+    std::vector<Opt> m_flags;
 };
 
 class LeafBuilder {
@@ -151,14 +168,30 @@ class LeafBuilder {
         return *this;
     }
 
+    constexpr LeafBuilder& flag(char shortf, std::string_view longf,
+                                bool* store, std::string_view help) {
+        m_flags.emplace_back(shortf, longf,
+                             std::make_unique<Value<bool>>(store), help);
+        return *this;
+    }
+
+    constexpr LeafBuilder& flag(std::string_view longf, bool* store,
+                                std::string_view help) {
+        m_flags.emplace_back('\0', longf, std::make_unique<Value<bool>>(store),
+                             help);
+        return *this;
+    }
+
     constexpr Leaf commit() noexcept {
-        return Leaf{m_name, m_desc, std::move(m_pos_args), std::move(m_opts)};
+        return Leaf{m_name, m_desc, std::move(m_pos_args), std::move(m_opts),
+                    std::move(m_flags)};
     }
 
  private:
     std::string_view m_name;
     std::string_view m_desc;
     std::vector<Opt> m_opts{};
+    std::vector<Opt> m_flags{};
     std::vector<PosArg> m_pos_args{};
 };
 class Branch {};

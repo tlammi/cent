@@ -95,3 +95,18 @@ TEST(Leaf, OptLongEq) {
     ASSERT_EQ(i, 4);
 }
 
+TEST(Leaf, ShortFlag) {
+    bool b{};
+    auto leaf = LeafBuilder().flag('b', "bool", &b, "flag").commit();
+    auto res = leaf.parse(mk_args("-b"));
+    ASSERT_TRUE(res) << res.error().message();
+    ASSERT_TRUE(b);
+}
+TEST(Leaf, LongFlag) {
+    bool b{};
+    auto leaf = LeafBuilder().flag("bool", &b, "flag").commit();
+    auto res = leaf.parse(mk_args("--bool"));
+    ASSERT_TRUE(res) << res.error().message();
+    ASSERT_TRUE(b);
+}
+
