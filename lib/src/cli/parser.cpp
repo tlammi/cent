@@ -106,7 +106,7 @@ Result<void> Leaf::parse(std::span<const char* const> spn) const {
     using enum Nargs;
     auto lexer = make_lexer(spn);
     auto arg = lexer();
-    auto res = parser_detail::parse_opts(arg, lexer, m_flags, m_opts);
+    auto res = parser_detail::parse_opts(arg, lexer, flags(), opts());
     if (!res) return res;
     auto iter = m_pos_args.begin();
     while (arg) {

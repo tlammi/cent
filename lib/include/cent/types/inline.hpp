@@ -20,6 +20,12 @@ class Inline {
         std::construct_at(buf<T>(), std::forward<Ts>(ts)...);
     }
 
+    template <std::derived_from<B> T>
+    explicit Inline(T&& t) : m_value(true) {
+        static_assert(sizeof(T) <= S);
+        std::construct_at(buf<T>(), std::forward<T>(t));
+    }
+
     Inline(const Inline&) = delete;
     Inline(Inline&&) = delete;
 
