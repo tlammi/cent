@@ -73,22 +73,6 @@ struct Value final : public IValue {
     Nargs nargs() const noexcept override { return Nargs::One; }
 };
 
-// template <std::integral T>
-// struct Value<T> final : public IValue {
-//     T* value;
-//
-//     explicit constexpr Value(T* store) noexcept : value{store} {}
-//
-//     Result<void> parse(std::string_view s) noexcept override {
-//         return detail::parse<T>(s).and_then([&](auto&& val) {
-//             *value = val;
-//             return Result<void>();
-//         });
-//     }
-//
-//     Nargs nargs() const noexcept override { return Nargs::One; }
-// };
-
 template <class T>
 struct is_vector : std::false_type {};
 

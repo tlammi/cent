@@ -63,3 +63,35 @@ TEST(Leaf, PosArgVecInt) {
     ASSERT_THAT(is, testing::ElementsAre(42, 43, 44));  // NOLINT
 }
 
+TEST(Leaf, OptShort) {
+    int i{};
+    auto leaf = LeafBuilder().opt('i', "i", &i, "integer").commit();
+    auto res = leaf.parse(mk_args("-i", "1"));
+    ASSERT_TRUE(res) << res.error().message();
+    ASSERT_EQ(i, 1);
+}
+
+TEST(Leaf, OptShortEq) {
+    int i{};
+    auto leaf = LeafBuilder().opt('i', "i", &i, "integer").commit();
+    auto res = leaf.parse(mk_args("-i=2"));
+    ASSERT_TRUE(res) << res.error().message();
+    ASSERT_EQ(i, 2);
+}
+
+TEST(Leaf, OptLong) {
+    int i{};
+    auto leaf = LeafBuilder().opt("i", &i, "integer").commit();
+    auto res = leaf.parse(mk_args("--i", "3"));
+    ASSERT_TRUE(res) << res.error().message();
+    ASSERT_EQ(i, 3);
+}
+
+TEST(Leaf, OptLongEq) {
+    int i{};
+    auto leaf = LeafBuilder().opt("i", &i, "integer").commit();
+    auto res = leaf.parse(mk_args("--i=4"));
+    ASSERT_TRUE(res) << res.error().message();
+    ASSERT_EQ(i, 4);
+}
+

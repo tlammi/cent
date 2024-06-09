@@ -23,8 +23,10 @@ class Error {
     constexpr explicit Error(int e, str::StaticStr msg) noexcept
         : m_code(ErrorCode{e}), m_msg(msg) {}
 
-    constexpr explicit Error(int e, const std::string& msg)
-        : m_code(ErrorCode{e}), m_msg(msg) {}
+    constexpr Error(ErrorCode e, const std::string& msg)
+        : m_code(e), m_msg(msg) {}
+
+    constexpr Error(int e, const std::string& msg) : Error(ErrorCode{e}, msg) {}
 
     constexpr ErrorCode code() const noexcept { return m_code; }
     constexpr str::CStr message() const noexcept { return m_msg.view(); }

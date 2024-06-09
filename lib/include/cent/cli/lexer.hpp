@@ -1,5 +1,6 @@
 #pragma once
 
+#include <span>
 #include <string_view>
 #include <utility>
 
@@ -56,4 +57,9 @@ constexpr auto make_lexer(int argc, const char* const* argv) {
         return {};
     };
 }
+
+constexpr auto make_lexer(std::span<const char* const> spn) noexcept {
+    return make_lexer(spn.size(), spn.data());
+}
+
 }  // namespace cent::cli
