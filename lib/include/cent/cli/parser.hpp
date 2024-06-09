@@ -16,11 +16,11 @@ class Leaf {
     friend class LeafBuilder;
 
  public:
-    Result<void> parse(int argc, const char* const* argv) {
+    Result<void> parse(int argc, const char* const* argv) const {
         return parse(
             std::span<const char* const>(argv, static_cast<size_t>(argc)));
     }
-    Result<void> parse(std::span<const char* const> spn) {
+    Result<void> parse(std::span<const char* const> spn) const {
         using enum Nargs;
         auto lexer = make_lexer(spn);
         auto arg = lexer();
@@ -31,32 +31,27 @@ class Leaf {
                 case Short: {
                     std::println("got short");
                     std::println("{}", m_opts.size());
-                    for (auto& flag : m_flags) {
-                        std::println("checking: -{}, --{}", flag.shortf,
-                                     flag.longf);
-                        if (flag.shortf == arg.value.front()) {
-                            (void)flag.value->parse("1");
-                        }
+                    const auto* flag = lookup_short(m_flags, arg.value.front());
+                    if (flag) {
+                        flag->value->parse("1");
+                        break;
                     }
-                    for (auto& opt : m_opts) {
-                        std::println("checking: -{}, --{}", opt.shortf,
-                                     opt.longf);
-                        if (opt.shortf == arg.value.front()) {
-                            arg = lexer();
-                            std::println("arg: {}", arg.value);
-                            switch (arg.type) {
-                                case End:
-                                    return error(
-                                        ErrorCode::Noent,
-                                        std::format("missing argument for --{}",
-                                                    opt.longf));
-                                case Short:
-                                case Long:
-                                case Value: {
-                                    std::println("parsing flag");
-                                    auto res = opt.value->parse(arg.value);
-                                    if (!res) return res;
-                                }
+                    const auto* opt = lookup_short(m_opts, arg.value.front());
+                    if (opt) {
+                        arg = lexer();
+                        std::println("arg: {}", arg.value);
+                        switch (arg.type) {
+                            case End:
+                                return error(
+                                    ErrorCode::Noent,
+                                    std::format("missing argument for --{}",
+                                                opt->longf));
+                            case Short:
+                            case Long:
+                            case Value: {
+                                std::println("parsing flag");
+                                auto res = opt->value->parse(arg.value);
+                                if (!res) return res;
                             }
                         }
                     }
@@ -125,6 +120,21 @@ class Leaf {
           m_pos_args(std::move(pos_args)),
           m_opts(std::move(opts)),
           m_flags(std::move(flags)) {}
+
+    static const Opt* lookup_short(std::span<const Opt> span, char shortf) {
+        for (auto& v : span) {
+            if (v.shortf == shortf) return &v;
+        }
+        return nullptr;
+    }
+
+    static const Opt* lookup_long(std::span<const Opt> span,
+                                  std::string_view longf) {
+        for (auto& v : span) {
+            if (v.longf == longf) return &v;
+        }
+        return nullptr;
+    }
 
     std::string_view m_name;
     std::string_view m_desc;
