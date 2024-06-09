@@ -12,6 +12,15 @@
 #include <string_view>
 
 namespace cent::cli {
+namespace parse_detail {
+class Base {
+ public:
+ protected:
+    constexpr Base() = default;
+
+ private:
+};
+}  // namespace parse_detail
 
 class Leaf {
     friend class LeafBuilder;
@@ -99,7 +108,15 @@ class LeafBuilder {
     std::vector<Flag> m_flags{};
     std::vector<PosArg> m_pos_args{};
 };
-class Branch {};
+
+class Branch;
+using Cmd = std::variant<Leaf, Branch>;
+
+class Branch {
+ public:
+ private:
+    std::vector<Cmd> m_subcmds{};
+};
 class BranchBuilder {};
 
 }  // namespace cent::cli

@@ -2,6 +2,7 @@
 
 tests = [
   files('error.cpp'),
+  files('inline.cpp'),
 ]
 
 foreach t: tests
