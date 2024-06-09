@@ -34,7 +34,6 @@ Result<void> parse_opts_short(auto& lexeme, auto& lexer,
     const auto* opt = lookup_short(opts, lexeme.value.front());
     if (opt) {
         lexeme = lexer();
-        std::println("arg: {}", lexeme.value);
         switch (lexeme.type) {
             case End:
                 return error(
@@ -42,14 +41,37 @@ Result<void> parse_opts_short(auto& lexeme, auto& lexer,
                     std::format("missing argument for --{}", opt->longf));
             case Short:
             case Long:
-            case Value: {
-                std::println("parsing flag");
-                return opt->value->parse(lexeme.value);
-            }
+            case Value: return opt->value->parse(lexeme.value);
         }
     }
     return error(ErrorCode::Inval,
                  std::format("unknown flag: -{}", lexeme.value.front()));
+}
+
+Result<void> parse_opts_long(auto& lexeme, auto& lexer,
+                             const std::vector<Flag>& flags,
+                             const std::vector<Opt>& opts) {
+    using enum ArgType;
+    const auto* flag = lookup_long(flags, lexeme.value);
+    if (flag) {
+        *flag->store = true;
+        return {};
+    }
+    const auto* opt = lookup_long(opts, lexeme.value);
+    if (opt) {
+        lexeme = lexer();
+        switch (lexeme.type) {
+            case End:
+                return error(
+                    ErrorCode::Noent,
+                    std::format("missing argument for --{}", opt->longf));
+            case Short:
+            case Long:
+            case Value: return opt->value->parse(lexeme.value);
+        }
+    }
+    return error(ErrorCode::Inval,
+                 std::format("unknown flag: --{}", lexeme.value));
 }
 
 Result<void> parse_opts(auto& lexeme, auto& lexer,
@@ -59,41 +81,21 @@ Result<void> parse_opts(auto& lexeme, auto& lexer,
         using enum ArgType;
         switch (lexeme.type) {
             case End: return {};
-            case Short: {
-                auto res = parse_opts_short(lexeme, lexer, flags, opts);
-                if (!res) return res;
-            } break;
-            case Long: {
-                const auto* flag = lookup_long(flags, lexeme.value);
-                if (flag) {
-                    *flag->store = true;
-                    break;
-                }
-                const auto* opt = lookup_long(opts, lexeme.value);
-                if (opt) {
-                    lexeme = lexer();
-                    switch (lexeme.type) {
-                        case End:
-                            return error(
-                                ErrorCode::Noent,
-                                std::format("missing argument for --{}",
-                                            opt->longf));
-                        case Short:
-                        case Long:
-                        case Value: {
-                            std::println("parsing flag");
-                            auto res = opt->value->parse(lexeme.value);
-                            if (!res) return res;
-                        }
-                    }
-                    break;
-                }
-            } break;
-
+            case Short:
+                if (auto res = parse_opts_short(lexeme, lexer, flags, opts);
+                    !res)
+                    return res;
+                break;
+            case Long:
+                if (auto res = parse_opts_long(lexeme, lexer, flags, opts);
+                    !res)
+                    return res;
+                break;
             case Value: return {};
         }
         lexeme = lexer();
     }
+    return {};
 }
 
 }  // namespace
