@@ -59,34 +59,30 @@ class Leaf {
                 case Long: {
                     std::println("got long");
                     std::println("{}", m_opts.size());
-                    for (auto& flag : m_flags) {
-                        std::println("checking: -{}, --{}", flag.shortf,
-                                     flag.longf);
-                        if (flag.longf == arg.value) {
-                            (void)flag.value->parse("1");
-                        }
+                    const auto* flag = lookup_long(m_flags, arg.value);
+                    if (flag) {
+                        (void)flag->value->parse("1");
+                        break;
                     }
-                    for (auto& opt : m_opts) {
-                        std::println("checking: -{}, --{}", opt.shortf,
-                                     opt.longf);
-                        if (opt.longf == arg.value) {
-                            arg = lexer();
-                            std::println("arg: {}", arg.value);
-                            switch (arg.type) {
-                                case End:
-                                    return error(
-                                        ErrorCode::Noent,
-                                        std::format("missing argument for --{}",
-                                                    opt.longf));
-                                case Short:
-                                case Long:
-                                case Value: {
-                                    std::println("parsing flag");
-                                    auto res = opt.value->parse(arg.value);
-                                    if (!res) return res;
-                                }
+                    const auto* opt = lookup_long(m_opts, arg.value);
+                    if (opt) {
+                        arg = lexer();
+                        std::println("arg: {}", arg.value);
+                        switch (arg.type) {
+                            case End:
+                                return error(
+                                    ErrorCode::Noent,
+                                    std::format("missing argument for --{}",
+                                                opt->longf));
+                            case Short:
+                            case Long:
+                            case Value: {
+                                std::println("parsing flag");
+                                auto res = opt->value->parse(arg.value);
+                                if (!res) return res;
                             }
                         }
+                        break;
                     }
                 } break;
 
