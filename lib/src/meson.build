@@ -1,1 +1,2 @@
 subdir('sd')
+subdir('cli')

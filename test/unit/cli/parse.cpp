@@ -102,6 +102,7 @@ TEST(Leaf, ShortFlag) {
     ASSERT_TRUE(res) << res.error().message();
     ASSERT_TRUE(b);
 }
+
 TEST(Leaf, LongFlag) {
     bool b{};
     auto leaf = LeafBuilder().flag("bool", &b, "flag").commit();
@@ -109,4 +110,3 @@ TEST(Leaf, LongFlag) {
     ASSERT_TRUE(res) << res.error().message();
     ASSERT_TRUE(b);
 }
-

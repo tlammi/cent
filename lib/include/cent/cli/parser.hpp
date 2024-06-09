@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cent/cli/concepts.hpp>
+#include <cent/cli/flag.hpp>
 #include <cent/cli/lexer.hpp>
 #include <cent/cli/opt.hpp>
 #include <cent/cli/pos_arg.hpp>
@@ -20,123 +21,23 @@ class Leaf {
         return parse(
             std::span<const char* const>(argv, static_cast<size_t>(argc)));
     }
-    Result<void> parse(std::span<const char* const> spn) const {
-        using enum Nargs;
-        auto lexer = make_lexer(spn);
-        auto arg = lexer();
-        while (true) {
-            using enum ArgType;
-            switch (arg.type) {
-                case End: goto opts_processed;
-                case Short: {
-                    std::println("got short");
-                    std::println("{}", m_opts.size());
-                    const auto* flag = lookup_short(m_flags, arg.value.front());
-                    if (flag) {
-                        flag->value->parse("1");
-                        break;
-                    }
-                    const auto* opt = lookup_short(m_opts, arg.value.front());
-                    if (opt) {
-                        arg = lexer();
-                        std::println("arg: {}", arg.value);
-                        switch (arg.type) {
-                            case End:
-                                return error(
-                                    ErrorCode::Noent,
-                                    std::format("missing argument for --{}",
-                                                opt->longf));
-                            case Short:
-                            case Long:
-                            case Value: {
-                                std::println("parsing flag");
-                                auto res = opt->value->parse(arg.value);
-                                if (!res) return res;
-                            }
-                        }
-                    }
-                } break;
-                case Long: {
-                    std::println("got long");
-                    std::println("{}", m_opts.size());
-                    const auto* flag = lookup_long(m_flags, arg.value);
-                    if (flag) {
-                        (void)flag->value->parse("1");
-                        break;
-                    }
-                    const auto* opt = lookup_long(m_opts, arg.value);
-                    if (opt) {
-                        arg = lexer();
-                        std::println("arg: {}", arg.value);
-                        switch (arg.type) {
-                            case End:
-                                return error(
-                                    ErrorCode::Noent,
-                                    std::format("missing argument for --{}",
-                                                opt->longf));
-                            case Short:
-                            case Long:
-                            case Value: {
-                                std::println("parsing flag");
-                                auto res = opt->value->parse(arg.value);
-                                if (!res) return res;
-                            }
-                        }
-                        break;
-                    }
-                } break;
-
-                case Value: goto opts_processed;
-            }
-            arg = lexer();
-        }
-    opts_processed:
-        auto iter = m_pos_args.begin();
-        while (arg) {
-            if (iter == m_pos_args.end()) return error(ErrorCode::Toobig);
-            auto res = iter->value->parse(arg.value);
-            if (!res) return res;
-            switch (iter->value->nargs()) {
-                case None: panic();
-                case One: ++iter; break;
-                case Some: break;
-                case More: break;
-            }
-            arg = lexer();
-        }
-        return {};
-    }
+    Result<void> parse(std::span<const char* const> spn) const;
 
  private:
     constexpr Leaf(std::string_view name, std::string_view desc,
                    std::vector<PosArg> pos_args, std::vector<Opt> opts,
-                   std::vector<Opt> flags)
+                   std::vector<Flag> flags)
         : m_name{name},
           m_desc{desc},
           m_pos_args(std::move(pos_args)),
           m_opts(std::move(opts)),
           m_flags(std::move(flags)) {}
 
-    static const Opt* lookup_short(std::span<const Opt> span, char shortf) {
-        for (auto& v : span) {
-            if (v.shortf == shortf) return &v;
-        }
-        return nullptr;
-    }
-
-    static const Opt* lookup_long(std::span<const Opt> span,
-                                  std::string_view longf) {
-        for (auto& v : span) {
-            if (v.longf == longf) return &v;
-        }
-        return nullptr;
-    }
-
     std::string_view m_name;
     std::string_view m_desc;
     std::vector<PosArg> m_pos_args;
     std::vector<Opt> m_opts;
-    std::vector<Opt> m_flags;
+    std::vector<Flag> m_flags;
 };
 
 class LeafBuilder {
@@ -176,15 +77,13 @@ class LeafBuilder {
 
     constexpr LeafBuilder& flag(char shortf, std::string_view longf,
                                 bool* store, std::string_view help) {
-        m_flags.emplace_back(shortf, longf,
-                             std::make_unique<Value<bool>>(store), help);
+        m_flags.emplace_back(shortf, longf, store, help);
         return *this;
     }
 
     constexpr LeafBuilder& flag(std::string_view longf, bool* store,
                                 std::string_view help) {
-        m_flags.emplace_back('\0', longf, std::make_unique<Value<bool>>(store),
-                             help);
+        m_flags.emplace_back('\0', longf, store, help);
         return *this;
     }
 
@@ -197,7 +96,7 @@ class LeafBuilder {
     std::string_view m_name;
     std::string_view m_desc;
     std::vector<Opt> m_opts{};
-    std::vector<Opt> m_flags{};
+    std::vector<Flag> m_flags{};
     std::vector<PosArg> m_pos_args{};
 };
 class Branch {};
