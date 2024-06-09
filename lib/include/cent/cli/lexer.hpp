@@ -20,8 +20,8 @@ struct Arg {
     constexpr explicit operator bool() const { return type != ArgType::End; }
 };
 
-constexpr auto make_lexer(int argc, const char* const* argv) {
-    return [argc, argv, first = std::string_view()]() mutable -> Arg {
+constexpr auto make_lexer(std::span<const char* const> spn) noexcept {
+    return [spn, first = std::string_view()]() mutable -> Arg {
         using enum ArgType;
         if (!first.empty()) {
             if (first.front() == '=') {
@@ -32,10 +32,9 @@ constexpr auto make_lexer(int argc, const char* const* argv) {
             first.remove_prefix(1);
             return {Short, val};
         }
-        if (!argc) return {End, ""};
-        first = argv[0];
-        argv++;
-        argc--;
+        if (spn.empty()) return {End, ""};
+        first = spn.front();
+        spn = spn.subspan(1);
         if (first.starts_with("--")) {
             first.remove_prefix(2);
             auto idx = first.find('=');
@@ -58,8 +57,8 @@ constexpr auto make_lexer(int argc, const char* const* argv) {
     };
 }
 
-constexpr auto make_lexer(std::span<const char* const> spn) noexcept {
-    return make_lexer(spn.size(), spn.data());
+constexpr auto make_lexer(int argc, const char* const* argv) {
+    return make_lexer(std::span<const char* const>(argv, argc));
 }
 
 }  // namespace cent::cli
