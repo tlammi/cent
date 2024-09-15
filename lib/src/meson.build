@@ -1,2 +1,0 @@
-subdir('sd')
-subdir('cli')

@@ -1,12 +1,25 @@
 
-libcent_incdir = include_directories('include')
-subdir('include')
-libcent_str_dep = declare_dependency(include_directories: libcent_incdir)
-libcent_types = library('cent-types', [GEN_ERRNO])
-libcent_types_dep = declare_dependency(include_directories: libcent_incdir, link_with: libcent_types)
-subdir('src')
+incdir = include_directories('include')
 
 
-deps = [libcent_sd_dep, libcent_str_dep, libcent_cli_dep]
-libcent_dep = declare_dependency(dependencies: deps)
+libcent_str_dep = declare_dependency(include_directories: incdir)
 
+magic_enum_dep = dependency(
+  'magic_enum',
+  fallback: ['magic_enum', 'magic_enum_dep'],
+  default_options: {
+    'test': false
+  },
+)
+
+libcent_util_dep = declare_dependency(include_directories: incdir)
+
+libcent_containers_dep = declare_dependency(
+  include_directories: incdir,
+  dependencies: [
+    magic_enum_dep,
+    libcent_util_dep,
+  ],
+)
+
+subdir('test')
