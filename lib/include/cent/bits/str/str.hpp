@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cent/bits/str/c_str.hpp>
+#include <cent/bits/str/static_str.hpp>
 #include <string>
 #include <utility>
 
@@ -17,8 +18,10 @@ class Str {
  public:
     constexpr Str() noexcept = default;
 
-    explicit constexpr Str(const char* s) noexcept : m_str(s) {}
+    template <size_t S>
+    explicit constexpr Str(const char (&s)[S]) noexcept : m_str(s) {}
     explicit constexpr Str(CStr s) noexcept : m_str(s) {}
+    explicit constexpr Str(StaticStr s) noexcept : m_str(s) {}
     explicit constexpr Str(const std::string& s) noexcept
         : m_str(str_dup<char>(s)), m_alloc(true) {}
 
