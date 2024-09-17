@@ -1,6 +1,9 @@
 
 incdir = include_directories('include')
 
+SRCS = []
+
+subdir('src')
 
 libcent_str_dep = declare_dependency(include_directories: incdir)
 
@@ -20,6 +23,18 @@ libcent_containers_dep = declare_dependency(
     magic_enum_dep,
     libcent_util_dep,
   ],
+)
+
+curl_dep = dependency('libcurl')
+
+libcent = library('cent', SRCS, dependencies: [curl_dep], include_directories: incdir)
+libcent_dep = declare_dependency(
+  link_with: libcent,
+  dependencies: [
+    libcent_str_dep,
+    libcent_util_dep,
+    libcent_containers_dep,
+  ]
 )
 
 subdir('test')

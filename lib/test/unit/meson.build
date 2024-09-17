@@ -3,6 +3,7 @@ TEST_DEPS = {}
 subdir('core')
 subdir('str')
 subdir('containers')
+subdir('net')
 
 fs = import('fs')
 
