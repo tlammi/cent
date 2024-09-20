@@ -4,6 +4,8 @@ subdir('core')
 subdir('str')
 subdir('containers')
 subdir('net')
+subdir('util')
+subdir('async')
 
 fs = import('fs')
 

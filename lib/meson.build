@@ -1,11 +1,5 @@
 
-incdir = include_directories('include')
-
-SRCS = []
-
-subdir('src')
-
-libcent_str_dep = declare_dependency(include_directories: incdir)
+cmake = import('cmake')
 
 magic_enum_dep = dependency(
   'magic_enum',
@@ -14,6 +8,20 @@ magic_enum_dep = dependency(
     'test': false
   },
 )
+
+reflectcpp_proj = cmake.subproject('reflect-cpp')
+reflectcpp_dep = reflectcpp_proj.get_variable('reflectcpp_dep')
+
+incdir = include_directories('include')
+
+
+SRCS = []
+
+subdir('src')
+
+libcent_str_dep = declare_dependency(include_directories: incdir)
+
+
 
 libcent_util_dep = declare_dependency(include_directories: incdir)
 

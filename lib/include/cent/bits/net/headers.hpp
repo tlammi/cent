@@ -4,6 +4,9 @@
 
 namespace cent::net {
 
+/**
+ * \brief HTTP headers
+ * */
 class Headers {
  public:
     constexpr Headers() noexcept = default;
@@ -16,6 +19,8 @@ class Headers {
     ~Headers();
 
     size_t size() const noexcept;
+
+    bool empty() const noexcept { return size() == 0; }
 
  private:
     class Deleter {

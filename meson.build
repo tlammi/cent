@@ -6,5 +6,7 @@ project(
     'cpp_rtti': 'false'
 })
 
+add_project_arguments('-Wfatal-errors', language: 'cpp')
+
 subdir('lib')
 
