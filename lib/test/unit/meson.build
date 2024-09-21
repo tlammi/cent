@@ -9,8 +9,12 @@ subdir('async')
 
 fs = import('fs')
 
+cpp = meson.get_compiler('cpp')
+
+lib =cpp.find_library('stdc++exp')
 deps = [
-  dependency('gtest'), dependency('gtest_main'), dependency('gmock')
+  dependency('gtest'), dependency('gtest_main'), dependency('gmock'),
+  lib
 ]
 
 foreach t : TESTS
