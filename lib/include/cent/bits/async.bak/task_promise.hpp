@@ -54,17 +54,12 @@ class TaskPromise : public TaskPromiseBase<TaskPromise<T>> {
     using task_type = Task<T>;
     template <class V>
     constexpr void return_value(V&& v) noexcept {
-        std::println("{}", std::stacktrace::current());
         m_val.emplace(std::forward<V>(v));
     }
 
-    T& value() noexcept {
-        std::println("{}", std::stacktrace::current());
-        return m_val.value();
-    }
-    const T& value() const noexcept {
-        std::println("{}", std::stacktrace::current());
-        return m_val.value();
+    template <class Self>
+    auto& value(this Self&& self) noexcept {
+        return std::forward<Self>(self).value();
     }
 
  private:

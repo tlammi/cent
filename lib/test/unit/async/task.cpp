@@ -16,12 +16,12 @@ TEST(Init, Int) {
 
 TEST(Flat, Void) {
     auto t = [] -> ca::Task<void> { co_return; }();
-    ca::run(t);
+    ca::run(std::move(t));
 }
 
 TEST(Flat, Int) {
     auto t = [] -> ca::Task<int> { co_return 1; }();
-    auto i = ca::run(t);
+    auto i = ca::run(std::move(t));
     ASSERT_EQ(i, 1);
 }
 
@@ -31,7 +31,7 @@ TEST(Nested, Void) {
         co_await t;
         co_return;
     }(a());
-    ca::run(b);
+    ca::run(std::move(b));
 }
 
 TEST(Nested, Int) {
@@ -40,7 +40,35 @@ TEST(Nested, Int) {
         auto v = co_await t;
         co_return 2 + v;
     }(a());
-    auto res = ca::run(b);
+    auto res = ca::run(std::move(b));
     ASSERT_EQ(res, 3);
 }
 
+TEST(Launch, One) {
+    size_t counter = 0;
+    auto root = [](size_t* counter) -> ca::Task<void> {
+        auto child = [](size_t* counter) -> ca::Task<void> {
+            ++*counter;
+            co_return;
+        };
+        co_await ca::launch(child(counter));
+    }(&counter);
+    ca::run(std::move(root));
+    ASSERT_EQ(counter, 1);
+}
+
+TEST(Launch, Multiple) {
+    size_t counter = 0;
+    auto root = [](size_t* counter) -> ca::Task<void> {
+        auto child = [](size_t* counter) -> ca::Task<void> {
+            ++*counter;
+            co_return;
+        };
+        co_await ca::launch(child(counter));
+        co_await ca::launch(child(counter));
+        co_await ca::launch(child(counter));
+        co_await ca::launch(child(counter));
+    };
+    ca::run(root(&counter));
+    ASSERT_EQ(counter, 4);
+}
