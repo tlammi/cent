@@ -3,7 +3,7 @@
 
 namespace cent::async {
 
-struct Yielder {
+struct [[nodiscard]] Yielder {
     constexpr bool await_ready() const noexcept { return false; }
     constexpr void await_suspend(
         std::coroutine_handle<> /*unused*/) const noexcept {}

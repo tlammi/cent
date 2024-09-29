@@ -72,3 +72,4 @@ TEST(Launch, Multiple) {
     ca::run(root(&counter));
     ASSERT_EQ(counter, 4);
 }
+

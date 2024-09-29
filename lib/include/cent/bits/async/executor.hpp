@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cent/bits/async/task.hpp>
+#include <cent/time.hpp>
 #include <cent/util.hpp>
 #include <list>
 
@@ -33,9 +34,13 @@ class Executor {
 
     size_t task_count() const noexcept;
 
+    void sleep_current_until(time::Point tp) noexcept;
+
  private:
     std::list<Task<void>> m_active{};
     std::list<Task<void>> m_inactive{};
+    std::list<std::pair<time::Point, Task<void>>> m_sleepers{};
+    time::Point m_scheduled_sleep{};
 };
 
 }  // namespace cent::async

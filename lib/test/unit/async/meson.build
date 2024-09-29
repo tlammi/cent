@@ -8,6 +8,11 @@ TESTS += {
   'deps': libcent_dep
 }
 
+TESTS += {
+  'srcs': files('sleep.cpp'),
+  'deps': libcent_dep,
+}
+
 # TESTS += {
 #   'srcs': files('executor.cpp'),
 #   'deps': libcent_dep
