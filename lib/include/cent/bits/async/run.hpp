@@ -18,4 +18,10 @@ T run(Task<T> t) {
     }
 }
 
+template <std::same_as<Task<void>>... Ts>
+void run_all(Ts&&... ts) {
+    auto e = Executor(std::forward<Ts>(ts)...);
+    while (!e.done()) e.resume();
+}
+
 }  // namespace cent::async

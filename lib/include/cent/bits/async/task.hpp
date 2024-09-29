@@ -75,7 +75,8 @@ class Task {
     constexpr auto done() const noexcept { return m_h.done(); }
     constexpr void resume() const { m_h.resume(); }
 
-    constexpr auto& promise() const { return m_h.promise(); }
+    constexpr auto& promise() const noexcept { return m_h.promise(); }
+    constexpr auto handle() const noexcept { return m_h; }
 
  private:
     std::coroutine_handle<TaskPromise<T>> m_h{};

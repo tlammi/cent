@@ -13,6 +13,9 @@ void Executor::resume() {
         m_active.front().resume();
         if (m_active.front().done()) {
             m_active.pop_front();
+        } else if (m_deactivation_requested) {
+            m_inactive.splice(m_inactive.end(), m_active, m_active.begin());
+            m_deactivation_requested = false;
         } else if (m_scheduled_sleep != time::Point()) {
             auto iter = std::find_if(m_sleepers.begin(), m_sleepers.end(),
                                      [&](const auto& pair) {
@@ -21,6 +24,7 @@ void Executor::resume() {
             m_sleepers.emplace(iter, m_scheduled_sleep,
                                std::move(m_active.front()));
             m_active.pop_front();
+            m_scheduled_sleep = time::Point();
         } else {
             m_active.splice(m_active.end(), m_active, m_active.begin());
         }
@@ -37,4 +41,18 @@ size_t Executor::task_count() const noexcept {
 void Executor::sleep_current_until(time::Point tp) noexcept {
     m_scheduled_sleep = tp;
 }
+
+auto Executor::deactivate_current() -> DeactivatedHandle {
+    m_deactivation_requested = true;
+    return m_active.front().handle();
+}
+
+void Executor::reactivate(DeactivatedHandle handle) {
+    auto iter =
+        std::find_if(m_inactive.begin(), m_inactive.end(),
+                     [&](const auto& item) { return item.handle() == handle; });
+    CENT_ASSERT(iter != m_inactive.end());
+    m_active.splice(m_active.end(), m_inactive, iter);
+}
+
 }  // namespace cent::async
