@@ -3,6 +3,7 @@
  * */
 #pragma once
 
+#include <cent/time.hpp>
 #include <coroutine>
 #include <memory>
 #include <stack>
@@ -40,6 +41,8 @@ class ExecCtx {
     virtual bool done() = 0;
 
     virtual Stack& current_stack() noexcept = 0;
+
+    virtual void sleep_current_until(time::Point tp) = 0;
 };
 
 std::unique_ptr<ExecCtx> make_exec_ctx();
