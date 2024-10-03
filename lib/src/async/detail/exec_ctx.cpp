@@ -29,11 +29,16 @@ class ExecCtxImpl final : public ExecCtx {
                 m_active.pop_front();
             }
             return;
+        } else if (m_deactivation_requested) {
+            m_inactive.splice(m_inactive.end(), m_active, m_active.begin());
+            m_deactivation_requested = false;
+            return;
         } else if (m_sleep_requested != time::Point()) {
             m_sleepers.emplace_back(m_sleep_requested,
                                     std::move(m_active.front()));
             m_active.pop_front();
             m_sleep_requested = time::Point();
+            return;
         }
         m_active.splice(m_active.end(), m_active, m_active.begin());
     }
@@ -41,6 +46,25 @@ class ExecCtxImpl final : public ExecCtx {
     Stack& current_stack() noexcept final { return m_active.front().stack; }
 
     void sleep_current_until(time::Point tp) final {}
+
+    DeactivatedHandle* deactivate_current() final {
+        m_deactivation_requested = true;
+        return static_cast<DeactivatedHandle*>(
+            m_active.front().task.handle().address());
+    }
+
+    void reactivate(DeactivatedHandle* handle) final {
+        void* ptr = static_cast<void*>(handle);
+        auto iter = m_inactive.begin();
+        while (iter != m_inactive.end()) {
+            if (ptr == iter->task.handle().address()) {
+                m_active.splice(m_active.end(), m_inactive, iter);
+                return;
+            }
+            ++iter;
+        }
+        CENT_ASSERT(false);
+    }
 
  private:
     void check_sleepers() {
@@ -69,6 +93,7 @@ class ExecCtxImpl final : public ExecCtx {
 
     std::list<SleepPair> m_sleepers{};
     time::Point m_sleep_requested{};
+    bool m_deactivation_requested{};
 };
 
 std::unique_ptr<ExecCtx> make_exec_ctx() {

@@ -46,15 +46,13 @@ class [[nodiscard]] Mutex {
     constexpr bool await_ready() const noexcept { return !m_locked; }
 
     template <class T>
-    std::coroutine_handle<> await_suspend(
-        std::coroutine_handle<TaskPromise<T>> h) {
+    void await_suspend(std::coroutine_handle<TaskPromise<T>> h) {
         if (!m_locked) {
             m_locked = true;
-            return h;
+            return;
         }
         auto* exec = h.promise().executor();
         m_queue.emplace_back(exec, exec->deactivate_current());
-        return std::noop_coroutine();
     }
 
     constexpr auto await_resume() noexcept { return Lock{this}; }
@@ -70,7 +68,8 @@ class [[nodiscard]] Mutex {
         m_queue.pop_front();
     }
 
-    using Pair = std::pair<Executor*, Executor::DeactivatedHandle>;
+    using Pair =
+        std::pair<detail::ExecCtx*, detail::ExecCtx::DeactivatedHandle*>;
     std::list<Pair> m_queue{};
     bool m_locked{false};
 };

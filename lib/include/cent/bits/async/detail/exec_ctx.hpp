@@ -25,6 +25,8 @@ class ExecCtx {
     using Stack = std::stack<std::coroutine_handle<>,
                              std::vector<std::coroutine_handle<>>>;
 
+    struct DeactivatedHandle;
+
     constexpr ExecCtx() noexcept = default;
     ExecCtx(const ExecCtx&) = delete;
     ExecCtx& operator=(const ExecCtx&) = delete;
@@ -43,6 +45,9 @@ class ExecCtx {
     virtual Stack& current_stack() noexcept = 0;
 
     virtual void sleep_current_until(time::Point tp) = 0;
+
+    virtual DeactivatedHandle* deactivate_current() = 0;
+    virtual void reactivate(DeactivatedHandle* handle) = 0;
 };
 
 std::unique_ptr<ExecCtx> make_exec_ctx();
