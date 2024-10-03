@@ -44,6 +44,35 @@ TEST(Nested, Int) {
     ASSERT_EQ(res, 3);
 }
 
+TEST(Throw, Begin) {
+    auto a = [] -> ca::Task<void> { throw std::exception(); };
+    ASSERT_ANY_THROW(ca::run(a()));
+}
+
+TEST(Throw, Middle) {
+    auto a = [] -> ca::Task<void> {
+        co_await ca::yield();
+        throw std::exception();
+    };
+    ASSERT_ANY_THROW(ca::run(a()));
+}
+
+TEST(Throw, Nested) {
+    auto a = [] -> ca::Task<void> {
+        auto b = []() -> ca::Task<void> {
+            std::println("start b");
+            co_await ca::yield();
+            std::println("throwing");
+            throw std::exception();
+        };
+        co_await b();
+        std::println("after b");
+        co_return;
+    };
+
+    ASSERT_ANY_THROW(ca::run(a()));
+}
+
 TEST(Launch, One) {
     size_t counter = 0;
     auto root = [](size_t* counter) -> ca::Task<void> {

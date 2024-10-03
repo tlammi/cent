@@ -1,11 +1,17 @@
 #pragma once
 
+#include <cent/bits/async/detail/exec_ctx.hpp>
+#include <cent/util.hpp>
 #include <coroutine>
 #include <exception>
-#include <optional>
+#include <print>
 #include <utility>
+#include <variant>
 
 namespace cent::async {
+namespace task_detail {
+struct unused {};
+}  // namespace task_detail
 
 class Executor;
 
@@ -25,10 +31,13 @@ class Task {
      public:
         constexpr Awaitable(coro_handle h) noexcept : m_h(std::move(h)) {}
         auto await_ready() const noexcept -> bool { return !m_h || m_h.done(); }
-        auto await_suspend(std::coroutine_handle<> awaiting_coroutine) noexcept
-            -> std::coroutine_handle<> {
-            m_h.promise().continuation(awaiting_coroutine);
-            return m_h;
+        template <class C>
+        void await_suspend(
+            std::coroutine_handle<C> awaiting_coroutine) noexcept {
+            auto* exec = awaiting_coroutine.promise().executor();
+            CENT_ASSERT(exec);
+            exec->current_stack().push(m_h);
+            m_h.promise().executor(exec);
         }
 
      protected:
@@ -56,8 +65,9 @@ class Task {
     auto operator co_await() const& noexcept {
         struct Impl : public Awaitable {
             auto await_resume() -> decltype(auto) {
-                if constexpr (!std::same_as<T, void>)
-                    return this->m_h.promise().value();
+                std::println("await_resume");
+                this->m_h.promise().rethrow();
+                return this->m_h.promise().value();
             }
         };
         return Impl{m_h};
@@ -66,6 +76,8 @@ class Task {
     auto operator co_await() const&& noexcept {
         struct Impl : public Awaitable {
             auto await_resume() -> decltype(auto) {
+                std::println("await_resume");
+                this->m_h.promise().rethrow();
                 return std::move(this->m_h.promise()).value();
             }
         };
@@ -90,12 +102,8 @@ class TaskPromiseBase {
         constexpr auto await_ready() const noexcept { return false; }
 
         template <class P>
-        constexpr std::coroutine_handle<> await_suspend(
-            std::coroutine_handle<P> coro) noexcept {
-            auto& p = coro.promise();
-            if (p.m_cont) { return p.m_cont; }
-            return std::noop_coroutine();
-        }
+        constexpr void await_suspend(
+            std::coroutine_handle<P> coro) const noexcept {}
 
         constexpr auto await_resume() noexcept {}
     };
@@ -107,23 +115,19 @@ class TaskPromiseBase {
         return {};
     }
 
-    constexpr auto final_suspend() const noexcept { return FinalAvaitable(); }
-
-    void unhandled_exception() const noexcept { std::terminate(); }
-
-    constexpr void continuation(std::coroutine_handle<> cont) noexcept {
-        m_cont = cont;
+    constexpr auto final_suspend() const noexcept {
+        std::println("final suspend");
+        return FinalAvaitable();
     }
 
-    constexpr Executor* executor() const noexcept { return m_exec; }
-    constexpr void executor(Executor* exec) noexcept { m_exec = exec; }
+    constexpr detail::ExecCtx* executor() const noexcept { return m_exec; }
+    constexpr void executor(detail::ExecCtx* exec) noexcept { m_exec = exec; }
 
  protected:
     constexpr ~TaskPromiseBase() = default;
 
  private:
-    std::coroutine_handle<> m_cont{};
-    Executor* m_exec{};
+    detail::ExecCtx* m_exec{};
 };
 
 template <class T>
@@ -132,25 +136,51 @@ class TaskPromise : public TaskPromiseBase<TaskPromise<T>> {
     using task_type = Task<T>;
     template <class V>
     constexpr void return_value(V&& v) noexcept {
-        m_val.emplace(std::forward<V>(v));
+        m_val.template emplace<T>(std::forward<V>(v));
     }
 
     template <class Self>
     decltype(auto) value(this Self&& self) noexcept {
-        return *(std::forward<Self>(self).m_val);
+        return std::get<T>(std::forward<Self>(self).m_val);
+    }
+
+    void unhandled_exception() noexcept {
+        m_val.template emplace<std::exception_ptr>(std::current_exception());
+    }
+
+    void rethrow() const {
+        if (std::holds_alternative<std::exception_ptr>(m_val)) {
+            std::rethrow_exception(std::get<std::exception_ptr>(m_val));
+        }
     }
 
  private:
-    std::optional<T> m_val{};
+    std::variant<task_detail::unused, T, std::exception_ptr> m_val{};
 };
 
 template <>
 class TaskPromise<void> : public TaskPromiseBase<TaskPromise<void>> {
  public:
     using task_type = Task<void>;
-    constexpr void return_void() const noexcept {}
+    constexpr void return_void() const noexcept { std::println("return void"); }
+
+    void unhandled_exception() noexcept {
+        std::println("set exception");
+        m_val.template emplace<std::exception_ptr>(std::current_exception());
+    }
+
+    void rethrow() const {
+        std::println("check rethrow");
+        if (std::holds_alternative<std::exception_ptr>(m_val)) {
+            std::rethrow_exception(std::get<std::exception_ptr>(m_val));
+        }
+        std::println("did not throw");
+    }
+
+    void value() const noexcept {}
 
  private:
+    std::variant<task_detail::unused, std::exception_ptr> m_val{};
 };
 
 }  // namespace cent::async

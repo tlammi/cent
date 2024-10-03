@@ -2,7 +2,7 @@
 SANITIZE_ADDRESS ?= 0
 
 
-MESON_OPTS = 
+MESON_OPTS = -Dbuildtype=debug --debug -Ddefault_library=static
 
 ifeq ($(SANITIZE_ADDRESS), 1)
 	MESON_OPTS += -Db_sanitize=address

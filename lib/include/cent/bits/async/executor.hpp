@@ -1,14 +1,20 @@
 #pragma once
 
+#include <cent/bits/async/detail/exec_ctx.hpp>
 #include <cent/bits/async/task.hpp>
 #include <cent/time.hpp>
 #include <cent/util.hpp>
 #include <list>
+#include <stack>
+#include <vector>
 
 namespace cent::async {
 
 class Executor {
  public:
+    using Stack = std::stack<std::coroutine_handle<>,
+                             std::vector<std::coroutine_handle<>>>;
+
     using DeactivatedHandle = std::coroutine_handle<TaskPromise<void>>;
 
     constexpr Executor() noexcept = default;
@@ -16,8 +22,8 @@ class Executor {
     Executor(const Executor&) = delete;
     Executor& operator=(const Executor&) = delete;
 
-    Executor(Executor&&) = delete;
-    Executor& operator=(Executor&&) = delete;
+    constexpr Executor(Executor&&) = default;
+    constexpr Executor& operator=(Executor&&) = default;
 
     ~Executor() = default;
 
@@ -26,27 +32,24 @@ class Executor {
         (schedule(std::forward<Ts>(ts)), ...);
     }
 
-    void schedule(Task<void> t) {
-        m_active.push_back(std::move(t));
-        m_active.back().promise().executor(this);
+    void schedule(Task<void> t) { m_ctx->schedule(std::move(t)); }
+
+    bool done() const noexcept { return m_ctx->done(); }
+    void resume() {
+        CENT_ASSERT(m_ctx);
+        m_ctx->resume();
     }
 
-    bool done() const noexcept;
-    void resume();
+    // void sleep_current_until(time::Point tp) noexcept;
 
-    size_t task_count() const noexcept;
+    // DeactivatedHandle deactivate_current();
+    ////void reactivate(DeactivatedHandle handle);
 
-    void sleep_current_until(time::Point tp) noexcept;
-
-    DeactivatedHandle deactivate_current();
-    void reactivate(DeactivatedHandle handle);
+    const detail::ExecCtx* context() const noexcept { return m_ctx.get(); }
+    detail::ExecCtx* context() noexcept { return m_ctx.get(); }
 
  private:
-    std::list<Task<void>> m_active{};
-    std::list<Task<void>> m_inactive{};
-    std::list<std::pair<time::Point, Task<void>>> m_sleepers{};
-    time::Point m_scheduled_sleep{};
-    bool m_deactivation_requested{false};
+    std::unique_ptr<detail::ExecCtx> m_ctx{detail::make_exec_ctx()};
 };
-
 }  // namespace cent::async
+

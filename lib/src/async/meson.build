@@ -4,3 +4,5 @@ SRCS += files(
   'launch.cpp',
   'sleep.cpp',
 )
+
+subdir('detail')
