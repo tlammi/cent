@@ -5,7 +5,7 @@ compile: build
 	cd build && meson compile
 
 build:
-	meson build
+	meson setup build
 
 run: compile
 	cd build && bin/cent
