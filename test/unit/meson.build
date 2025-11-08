@@ -1,6 +1,6 @@
 
 gtest_dep = [dependency('gtest'), dependency('gtest_main')]
-test_deps = gtest_dep + libcent_core_dep
+test_deps = gtest_dep + libcent_dep
 
 TESTS = files(
   'exceptions.cpp',

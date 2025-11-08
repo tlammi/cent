@@ -30,6 +30,8 @@ class MessagedException : public Exception {
 
 EX(PermissionDenied, "Permission denied");
 
+#undef EX
+
 template <class Ex, class... Ts>
     requires(sizeof...(Ts) > 0)
 [[noreturn]] constexpr void raise(std::format_string<Ts...> fmt, Ts&&... ts) {

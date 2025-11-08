@@ -1,0 +1,56 @@
+#pragma once
+
+#include <cstddef>
+#include <cstring>
+#include <string>
+#include <string_view>
+#include <utility>
+
+namespace cent {
+namespace const_str_detail {
+
+inline std::string_view dupstr(std::string_view str) {
+    return {::strdup(str.data()), str.size()};
+}
+}  // namespace const_str_detail
+
+class ConstStr {
+ public:
+    template <std::size_t S>
+    explicit consteval ConstStr(const char (&s)[S])
+        : m_str(s, S - 1), m_alloc(false) {}
+
+    explicit ConstStr(const std::string& str)
+        : m_str{const_str_detail::dupstr(str)}, m_alloc(true) {}
+
+    constexpr ConstStr(const ConstStr& other)
+        : m_str(other.m_alloc ? const_str_detail::dupstr(other.m_str)
+                              : other.m_str),
+          m_alloc(other.m_alloc) {}
+
+    constexpr ConstStr& operator=(const ConstStr& other) {
+        std::destroy_at(this);
+        std::construct_at(this, other);
+        return *this;
+    }
+
+    constexpr ConstStr(ConstStr&& other) noexcept
+        : m_str(other.m_str), m_alloc(std::exchange(other.m_alloc, false)) {}
+
+    constexpr ConstStr& operator=(ConstStr&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
+    constexpr ~ConstStr() {
+        if (m_alloc) delete m_str.data();
+    }
+
+    constexpr operator std::string_view() const noexcept { return m_str; }
+
+ private:
+    std::string_view m_str;
+    bool m_alloc;
+};
+}  // namespace cent
