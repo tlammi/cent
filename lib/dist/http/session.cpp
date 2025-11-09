@@ -136,8 +136,9 @@ void Session::set_url(const Url& url) {
 
 void Session::get() {
     CURL_SET(m_handle, CURLOPT_HTTPGET, 1);
-    if (curl_easy_perform(m_handle) != CURLE_OK)
-        raise(ErrorCode::Generic, "curl_easy_perform()");
+    if (auto code = curl_easy_perform(m_handle); code != CURLE_OK)
+        raise(ErrorCode::Generic, "curl_easy_perform(): {}",
+              curl_easy_strerror(code));
 }
 
 }  // namespace cent::dist::http

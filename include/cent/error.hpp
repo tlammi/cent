@@ -3,6 +3,7 @@
 #include <cent/const_str.hpp>
 #include <cent/exception.hpp>
 #include <cent/static_str.hpp>
+#include <format>
 
 namespace cent {
 
@@ -26,8 +27,15 @@ class Error {
     ConstStr m_what{};
 };
 
-[[noreturn]] void raise(ErrorCode ec, StaticStr s) {
+[[noreturn]] inline void raise(ErrorCode ec, StaticStr s) {
     Error(ec, ConstStr(s)).raise();
+}
+
+template <class... Ts>
+    requires(sizeof...(Ts) > 0)
+[[noreturn]] void raise(ErrorCode ec, std::format_string<Ts...> fmt,
+                        Ts&&... ts) {
+    Error(ec, ConstStr(std::format(fmt, std::forward<Ts>(ts)...))).raise();
 }
 
 }  // namespace cent

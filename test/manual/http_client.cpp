@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
     auto sess = http::Session();
     auto data_sink = DataSink();
     sess.data_sink(&data_sink);
-    sess.set_url(http::Url("http://www.google.com"));
+    if (argc != 2) exit(1);
+    sess.set_url(http::Url(argv[1]));
     sess.get();
 }
