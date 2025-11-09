@@ -23,7 +23,7 @@ class DataSink {
 
 class DataSrc {
  public:
-    virtual bool on_read(std::span<char> buf) noexcept = 0;
+    virtual std::span<char> on_read(std::span<char> buf) noexcept = 0;
 
  protected:
     ~DataSrc() = default;
@@ -60,7 +60,7 @@ class Session {
 
     void set_header(std::string_view key, std::string_view val);
 
-    void set_url(UrlView url);
+    void set_url(const Url& url);
 
     void get();
 

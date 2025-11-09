@@ -14,3 +14,7 @@ debug: compile
 
 test: build
 	cd build && meson test
+
+.PHONY: clean
+clean:
+	rm -rf build

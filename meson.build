@@ -11,11 +11,12 @@ subdir('lib')
 
 libdeps = [
   dependency('libcurl'),
+  dependency('boost', modules: ['url']),
 ]
 
 libcent = library('cent', SRCS, include_directories: incdir, dependencies: libdeps)
 
-libcent_dep = declare_dependency(include_directories: incdir, link_with: libcent)
+libcent_dep = declare_dependency(include_directories: incdir, link_with: libcent, dependencies: libdeps)
 
 subdir('test')
 
