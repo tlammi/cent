@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstddef>
+#include <cent/static_str.hpp>
 #include <cstring>
 #include <string>
 #include <string_view>
@@ -16,9 +16,10 @@ inline std::string_view dupstr(std::string_view str) {
 
 class ConstStr {
  public:
-    template <std::size_t S>
-    explicit consteval ConstStr(const char (&s)[S])
-        : m_str(s, S - 1), m_alloc(false) {}
+    constexpr ConstStr() noexcept = default;
+
+    explicit constexpr ConstStr(StaticStr str)
+        : m_str(str.string_view()), m_alloc(false) {}
 
     explicit ConstStr(const std::string& str)
         : m_str{const_str_detail::dupstr(str)}, m_alloc(true) {}
@@ -49,8 +50,10 @@ class ConstStr {
 
     constexpr operator std::string_view() const noexcept { return m_str; }
 
+    constexpr const char* c_str() const noexcept { return m_str.data(); }
+
  private:
-    std::string_view m_str;
-    bool m_alloc;
+    std::string_view m_str{};
+    bool m_alloc{};
 };
 }  // namespace cent

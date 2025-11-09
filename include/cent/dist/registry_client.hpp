@@ -4,8 +4,6 @@
 
 namespace cent::dist {
 
-struct Placeholder {};
-
 class RegistryClient {
  public:
     constexpr virtual ~RegistryClient() = default;

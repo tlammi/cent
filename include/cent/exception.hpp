@@ -28,4 +28,8 @@ class Exception<T, void> : public std::exception {
  private:
     T m_t;
 };
+
+template <class T>
+Exception(T) -> Exception<T, void>;
+
 }  // namespace cent
