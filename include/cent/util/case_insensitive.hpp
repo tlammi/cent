@@ -3,7 +3,7 @@
 #include <ranges>
 #include <string_view>
 
-namespace cent {
+namespace cent::util {
 
 class CaseInsensitive {
  public:
@@ -24,4 +24,4 @@ class CaseInsensitive {
  private:
     std::string_view m_s{};
 };
-}  // namespace cent
+}  // namespace cent::util

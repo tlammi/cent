@@ -1,6 +1,6 @@
-#include <cent/case_insensitive.hpp>
 #include <cent/dist/http/smart_session.hpp>
 #include <cent/error.hpp>
+#include <cent/util/case_insensitive.hpp>
 #include <cent/util/split.hpp>
 #include <cent/util/strip.hpp>
 #include <print>
@@ -20,7 +20,7 @@ struct ChallengeData {
 
 constexpr const std::string& find_www_auth(const auto& hdrs) {
     auto it = std::ranges::find_if(hdrs, [&](const auto& pair) {
-        return CaseInsensitive(pair.first) == "www-authenticate";
+        return util::CaseInsensitive(pair.first) == "www-authenticate";
     });
     if (it == hdrs.end())
         raise(ErrorCode::Internal, "www-auth header disappeared");
@@ -36,11 +36,11 @@ constexpr ChallengeData parse_challenge(
         key = util::strip(key);
         val = util::strip(val);
         val = util::strip(val, '"');
-        if (CaseInsensitive(key) == "bearer realm") {
+        if (util::CaseInsensitive(key) == "bearer realm") {
             out.realm = val;
-        } else if (CaseInsensitive(key) == "service") {
+        } else if (util::CaseInsensitive(key) == "service") {
             out.service = val;
-        } else if (CaseInsensitive(key) == "scope") {
+        } else if (util::CaseInsensitive(key) == "scope") {
             out.scope = val;
         }
     }
@@ -74,7 +74,7 @@ struct PrimaryDataSink final : public DataSink {
         using enum State;
         switch (state) {
             case Buffering:
-                if (CaseInsensitive(key) == "www-authenticate") {
+                if (util::CaseInsensitive(key) == "www-authenticate") {
                     state = Challenge;
                 }
                 [[fallthrough]];
