@@ -9,6 +9,7 @@ namespace cent {
 
 enum class ErrorCode {
     Generic,
+    Internal,
 };
 
 class Error {

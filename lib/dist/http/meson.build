@@ -1,1 +1,1 @@
-SRCS += files('session.cpp')
+SRCS += files('session.cpp', 'smart_session.cpp')

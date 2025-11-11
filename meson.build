@@ -1,4 +1,4 @@
-project('cent', 'cpp', default_options: ['cpp_std=c++23'], version: '>=1.3.0')
+project('cent', 'cpp', default_options: ['cpp_std=c++23'], meson_version: '>=1.3.0')
 
 add_project_arguments('-fno-rtti', '-Wfatal-errors', language: 'cpp')
 
