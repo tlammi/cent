@@ -12,7 +12,8 @@ subdir('lib')
 libdeps = [
   dependency('libcurl'),
   dependency('boost', modules: ['url']),
-  dependency('reflect-cpp', fallback: ['reflect-cpp','reflectcpp_dep'], include_type: 'system')
+  dependency('reflect-cpp', fallback: ['reflect-cpp','reflectcpp_dep'], include_type: 'system'),
+  dependency('magic_enum', fallback: ['magic_enum', 'magic_enum_dep']),
 ]
 
 # TODO: Change to library(). Need patching reflect-cpp first

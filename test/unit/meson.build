@@ -6,6 +6,8 @@ TESTS = files(
   #'exceptions.cpp',
 )
 
+subdir('util')
+
 fs = import('fs')
 
 foreach t: TESTS
