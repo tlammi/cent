@@ -7,6 +7,7 @@ TESTS = files(
 )
 
 subdir('util')
+subdir('data')
 
 fs = import('fs')
 
