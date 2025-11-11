@@ -4,6 +4,7 @@
 #include <cent/util/split.hpp>
 #include <cent/util/strip.hpp>
 #include <print>
+#include <rfl/json.hpp>
 
 namespace cent::dist::http {
 using namespace std::literals;
@@ -138,7 +139,32 @@ void SmartSession::get() {
         auto url = Url(std::format("{}?service={}&scope={}", challenge.realm,
                                    challenge.service, challenge.scope));
         secondary.set_url(url);
+        struct Sink final : DataSink {
+            std::string buffer{};
+            bool on_status(StatusCode /*code*/) noexcept override {
+                return true;
+            }
+            bool on_header(std::string_view /*key*/,
+                           std::string_view /*val*/) noexcept override {
+                return true;
+            }
+            bool on_write(std::string_view data) noexcept override {
+                // TODO: catch and gracefully handle
+                buffer.append(data);
+                return true;
+            }
+        };
+        auto sink = Sink();
+        secondary.data_sink(&sink);
         secondary.get();
+        struct WithToken {
+            std::string token;
+        };
+        auto res = rfl::json::read<WithToken>(sink.buffer);
+        if (!res) raise(ErrorCode::Generic, "{}", res.error().what());
+        m_impl->primary.set_header("Authorization",
+                                   std::format("Bearer {}", res->token));
+        m_impl->primary.get();
     }
 }
 

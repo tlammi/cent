@@ -12,9 +12,11 @@ subdir('lib')
 libdeps = [
   dependency('libcurl'),
   dependency('boost', modules: ['url']),
+  dependency('reflect-cpp', fallback: ['reflect-cpp','reflectcpp_dep'], include_type: 'system')
 ]
 
-libcent = library('cent', SRCS, include_directories: incdir, dependencies: libdeps)
+# TODO: Change to library(). Need patching reflect-cpp first
+libcent = static_library('cent', SRCS, include_directories: incdir, dependencies: libdeps)
 
 libcent_dep = declare_dependency(include_directories: incdir, link_with: libcent, dependencies: libdeps)
 
