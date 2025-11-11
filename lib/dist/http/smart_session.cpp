@@ -108,8 +108,8 @@ struct PrimaryDataSink final : public DataSink {
 struct SmartSession::Impl {
     PrimaryDataSink data_sink{};
     Session primary{};
-    Session secondary{};
 };
+
 SmartSession::SmartSession() : m_impl(new Impl{}) {}
 SmartSession::~SmartSession() = default;
 
