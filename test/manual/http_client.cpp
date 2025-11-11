@@ -5,6 +5,7 @@ namespace http = cent::dist::http;
 
 class DataSink final : public http::DataSink {
  public:
+    std::string buffer{};
     bool on_status(http::StatusCode code) noexcept override {
         std::println(stderr, "status code: {}", code);
         return true;
@@ -15,7 +16,7 @@ class DataSink final : public http::DataSink {
         return true;
     }
     bool on_write(std::string_view buf) noexcept override {
-        std::println("{}", buf);
+        buffer.append(buf);
         return true;
     }
 };
@@ -27,4 +28,5 @@ int main(int argc, char** argv) {
     if (argc != 2) exit(1);
     sess.set_url(http::Url(argv[1]));
     sess.get();
+    std::println("{}", data_sink.buffer);
 }
