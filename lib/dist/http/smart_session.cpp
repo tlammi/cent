@@ -108,31 +108,28 @@ struct PrimaryDataSink final : public DataSink {
 
 struct SmartSession::Impl {
     PrimaryDataSink data_sink{};
-    Session primary{};
+    Session* primary{};
 };
 
-SmartSession::SmartSession() : m_impl(new Impl{}) {}
+SmartSession::SmartSession(Session& sess)
+    : m_impl(new Impl{.primary = &sess}) {}
+
 SmartSession::~SmartSession() = default;
 
 void SmartSession::data_sink(DataSink* sink) {
     m_impl->data_sink.child_sink = sink;
     if (sink)
-        m_impl->primary.data_sink(&m_impl->data_sink);
+        m_impl->primary->data_sink(&m_impl->data_sink);
     else
-        m_impl->primary.data_sink(nullptr);
+        m_impl->primary->data_sink(nullptr);
 }
 
-void SmartSession::data_src(DataSrc* src) { m_impl->primary.data_src(src); }
+void SmartSession::data_src(DataSrc* src) { m_impl->primary->data_src(src); }
 
-void SmartSession::progress_sink(ProgressSink* prog) {
-    // TODO: need wrapper
-    m_impl->primary.progress_sink(prog);
-}
-
-void SmartSession::set_url(const Url& url) { m_impl->primary.set_url(url); }
+void SmartSession::set_url(const Url& url) { m_impl->primary->set_url(url); }
 
 void SmartSession::get() {
-    m_impl->primary.get();
+    m_impl->primary->get();
     if (m_impl->data_sink.state == State::Challenge) {
         auto challenge = parse_challenge(m_impl->data_sink.header_buffer);
         auto secondary = Session();
@@ -162,9 +159,9 @@ void SmartSession::get() {
         };
         auto res = rfl::json::read<WithToken>(sink.buffer);
         if (!res) raise(ErrorCode::Generic, "{}", res.error().what());
-        m_impl->primary.set_header("Authorization",
-                                   std::format("Bearer {}", res->token));
-        m_impl->primary.get();
+        m_impl->primary->set_header("Authorization",
+                                    std::format("Bearer {}", res->token));
+        m_impl->primary->get();
     }
 }
 

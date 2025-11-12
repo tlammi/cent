@@ -1,12 +1,11 @@
 #pragma once
 
-#include <cent/dist/transport.hpp>
+#include <cent/data/image_index.hpp>
 
 namespace cent::dist {
 
 class RegistryClient {
  public:
-    constexpr virtual ~RegistryClient() = default;
+ private:
 };
-
 }  // namespace cent::dist

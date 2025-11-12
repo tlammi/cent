@@ -44,7 +44,16 @@ class ProgressSink {
     ~ProgressSink() = default;
 };
 
-class Session {
+class AnySession {
+ public:
+    virtual void data_sink(DataSink* sink) = 0;
+    virtual void data_src(DataSrc* src) = 0;
+
+ protected:
+    ~AnySession() = default;
+};
+
+class Session final : public AnySession {
  public:
     Session();
     Session(const Session&) = delete;
@@ -54,8 +63,8 @@ class Session {
     Session& operator=(Session&& other) noexcept;
     ~Session();
 
-    void data_sink(DataSink* sink);
-    void data_src(DataSrc* src);
+    void data_sink(DataSink* sink) override;
+    void data_src(DataSrc* src) override;
     void progress_sink(ProgressSink* prog);
 
     void set_header(std::string_view key, std::string_view val);
