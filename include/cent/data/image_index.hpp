@@ -40,7 +40,7 @@ struct ImageIdxMsg {
 
 using ImageIdx = std::vector<ImageIdxEntry>;
 
-inline ImageIdx parse_manifest(std::string_view data) {
+inline ImageIdx parse_image_index(std::string_view data) {
     auto res = rfl::json::read<ImageIdxMsg>(data);
     if (!res) raise(ErrorCode::FormatError, "{}", res.error().what());
     return res->manifests;

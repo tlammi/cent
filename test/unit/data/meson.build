@@ -1,1 +1,1 @@
-TESTS += files('mime.cpp', 'image_index.cpp')
+TESTS += files('mime.cpp', 'image_index.cpp','manifest.cpp')

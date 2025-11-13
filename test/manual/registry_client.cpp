@@ -11,7 +11,7 @@ void run(int argc, char** argv) {
     auto smart_sess = cent::dist::http::SmartSession(raw_sess);
     auto client = cent::dist::RegistryClient(smart_sess);
     auto res = client.manifest(argv[1]);
-    std::println("{}", rfl::json::write(res));
+    std::println("{}", rfl::json::write(res, true));
 }
 
 int main(int argc, char** argv) {

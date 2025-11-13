@@ -9,6 +9,8 @@ namespace cent::data {
 enum class Mime {
     OciImageIndex,
     OciImageManifest,
+    OciImageConfig,
+    OciImageLayer,
 };
 
 template <auto>
@@ -24,13 +26,25 @@ struct mime_value<Mime::OciImageManifest> {
     using literal = rfl::Literal<"application/vnd.oci.image.manifest.v1+json">;
 };
 
+template <>
+struct mime_value<Mime::OciImageConfig> {
+    using literal = rfl::Literal<"application/vnd.oci.image.config.v1+json">;
+};
+
+template <>
+struct mime_value<Mime::OciImageLayer> {
+    using literal = rfl::Literal<"application/vnd.oci.image.layer.v1.tar+gzip">;
+};
+
 namespace detail {
 consteval auto mk_mime_arr() noexcept {
     using P = std::pair<Mime, StaticStr>;
     using enum Mime;
     return util::make_array<StaticStr, Mime>(
         P{OciImageIndex, "application/vnd.oci.image.index.v1+json"},
-        P{OciImageManifest, "application/vnd.oci.image.manifest.v1+json"});
+        P{OciImageManifest, "application/vnd.oci.image.manifest.v1+json"},
+        P{OciImageConfig, "application/vnd.oci.image.config.v1+json"},
+        P{OciImageLayer, "application/vnd.oci.image.layer.v1.tar+gzip"});
 }
 }  // namespace detail
 
