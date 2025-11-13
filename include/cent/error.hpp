@@ -11,6 +11,7 @@ enum class ErrorCode {
     Generic,
     Internal,
     FormatError,
+    MissingArgument,
 };
 
 class Error {

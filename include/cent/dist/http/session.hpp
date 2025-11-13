@@ -49,6 +49,9 @@ class AnySession {
     virtual void data_sink(DataSink* sink) = 0;
     virtual void data_src(DataSrc* src) = 0;
 
+    virtual void set_url(const Url& url) = 0;
+    virtual void get() = 0;
+
  protected:
     ~AnySession() = default;
 };
@@ -69,9 +72,9 @@ class Session final : public AnySession {
 
     void set_header(std::string_view key, std::string_view val);
 
-    void set_url(const Url& url);
+    void set_url(const Url& url) override;
 
-    void get();
+    void get() override;
 
  private:
     CURL* m_handle;
