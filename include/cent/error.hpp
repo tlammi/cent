@@ -10,6 +10,7 @@ namespace cent {
 enum class ErrorCode {
     Generic,
     Internal,
+    InvalidArgument,
     FormatError,
     MissingArgument,
 };

@@ -10,21 +10,26 @@ namespace cent::data {
 
 struct ManifestMsg {
     rfl::Validator<size_t, rfl::EqualTo<2>> schemaVersion{2};
-    mime_value<Mime::OciImageManifest>::literal mediaType{};
-    struct Config {
-        mime_value<Mime::OciImageConfig>::literal mediaType{};
+    Mime mediaType{};
+    struct Reference {
+        Mime mediaType{};
         std::string digest;
         size_t size;
     };
-    Config config;
+    struct Config {
+        Mime mediaType{};
+        std::string digest;
+        size_t size;
+    };
+    Reference config;
 
     struct Layer {
-        mime_value<Mime::OciImageLayer>::literal mediaType{};
+        Mime mediaType{};
         std::string digest;
         size_t size;
     };
 
-    std::vector<Layer> layers;
+    std::vector<Reference> layers;
 
     std::map<std::string, std::string> annotations{};
 };
@@ -42,6 +47,9 @@ struct Manifest {
 inline Manifest parse_manifest(std::string_view str) {
     auto res = rfl::json::read<ManifestMsg>(str);
     if (!res) raise(ErrorCode::FormatError, "{}", res.error().what());
+    if (res->config.mediaType != mimes::oci_image_config)
+        raise(ErrorCode::InvalidArgument, "wrong MIME: {}",
+              res->config.mediaType.full());
     return {
         .config =
             {
@@ -49,6 +57,9 @@ inline Manifest parse_manifest(std::string_view str) {
                 .size = res->config.size,
             },
         .layers = std::move(res->layers) | std::views::transform([](auto v) {
+                      if (v.mediaType != mimes::oci_image_layer)
+                          raise(ErrorCode::InvalidArgument, "wrong MIME: {}",
+                                v.mediaType.full());
                       return Manifest::Reference{
                           .digest = std::move(v.digest),
                           .size = v.size,

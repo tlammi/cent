@@ -7,13 +7,12 @@
 #include <string>
 
 namespace cent::data {
-namespace msgs {}  // namespace msgs
 
 struct ImageIdxEntryMsg {
     std::map<std::string, std::string> annotations{};
     // TODO: Special type for digest
     std::string digest{};
-    mime_value<Mime::OciImageManifest>::literal mediaType{};
+    Mime mediaType{};
     struct {
         std::string architecture;
         std::string os;
@@ -34,7 +33,7 @@ struct ImageIdxEntry {
 
 struct ImageIdxMsg {
     std::vector<ImageIdxEntry> manifests{};
-    mime_value<Mime::OciImageIndex>::literal mediaType{};
+    Mime mediaType{};
     rfl::Validator<size_t, rfl::EqualTo<2>> schemaVersion{2};
 };
 
@@ -43,6 +42,8 @@ using ImageIdx = std::vector<ImageIdxEntry>;
 inline ImageIdx parse_image_index(std::string_view data) {
     auto res = rfl::json::read<ImageIdxMsg>(data);
     if (!res) raise(ErrorCode::FormatError, "{}", res.error().what());
+    if (res->mediaType != mimes::oci_image_index)
+        raise(ErrorCode::FormatError, "wrong MIME: {}", res->mediaType.full());
     return res->manifests;
 }
 
@@ -53,8 +54,11 @@ template <>
 class Reflector<cent::data::ImageIdxEntry> {
  public:
     using ReflType = cent::data::ImageIdxEntryMsg;
-    static cent::data::ImageIdxEntry to(ReflType in) noexcept {
-        return {
+    static rfl::Result<cent::data::ImageIdxEntry> to(ReflType in) noexcept {
+        if (in.mediaType != cent::data::mimes::oci_image_manifest)
+            return rfl::error(
+                std::format("wrong MIME: {}", in.mediaType.full()));
+        return cent::data::ImageIdxEntry{
             .annotations = std::move(in.annotations),
             .digest = std::move(in.digest),
             .platform =
