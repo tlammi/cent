@@ -10,6 +10,16 @@ TEST(Init, Default) {
     ASSERT_EQ(list.size(), 0);
 }
 
+TEST(Init, InitListPair) {
+    auto list = HeaderList{{"foo", "bar"}, {"bar", "baz"}};
+    ASSERT_EQ(list.size(), 2);
+}
+
+TEST(Init, InitListVals) {
+    auto list = HeaderList{"foo: bar", "bar: baz", "baz: asd"};
+    ASSERT_EQ(list.size(), 3);
+}
+
 TEST(Add, Simple) {
     auto list = HeaderList();
     list.add("foo", "bar");
@@ -44,4 +54,24 @@ TEST(Clear, NonEmpty) {
     list.add("bar", "baz");
     list.clear();
     ASSERT_TRUE(list.empty());
+}
+
+TEST(Erase, None) {
+    auto l = HeaderList();
+    auto count = l.erase("foo");
+    ASSERT_EQ(count, 0);
+}
+
+TEST(Erase, One) {
+    auto l = HeaderList{{"foo", "bar"}, {"bar", "baz"}};
+    auto count = l.erase("foo");
+    ASSERT_EQ(count, 1);
+    ASSERT_EQ(l.size(), 1);
+}
+
+TEST(Erase, Some) {
+    auto l = HeaderList{{"foo", "bar"}, {"foo", "baz"}};
+    auto count = l.erase("foo");
+    ASSERT_EQ(count, 2);
+    ASSERT_EQ(l.size(), 0);
 }

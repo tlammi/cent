@@ -30,6 +30,14 @@ auto HeaderList::iterator::operator*() const noexcept -> value_type {
     return m_ptr->data;
 }
 
+HeaderList::HeaderList(std::initializer_list<HeaderPair> hdrs) {
+    for (auto [k, v] : hdrs) { add(k, v); }
+}
+
+HeaderList::HeaderList(std::initializer_list<CStr> hdrs) {
+    for (auto h : hdrs) { add(h); }
+}
+
 HeaderList::~HeaderList() { clear(); }
 
 auto HeaderList::find(std::string_view key) const -> iterator {

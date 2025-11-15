@@ -40,6 +40,10 @@ class HeaderList {
 
     constexpr HeaderList() noexcept = default;
 
+    using HeaderPair = std::pair<std::string_view, std::string_view>;
+    explicit HeaderList(std::initializer_list<HeaderPair> hdrs);
+    explicit HeaderList(std::initializer_list<CStr> hdrs);
+
     HeaderList(const HeaderList&) = delete;
     HeaderList& operator=(const HeaderList&) = delete;
 
