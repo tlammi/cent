@@ -31,8 +31,17 @@ class Error {
     ConstStr m_what{};
 };
 
+inline auto make_error(ErrorCode ec, StaticStr s) {
+    return Error(ec, ConstStr(s));
+}
+
 [[noreturn]] inline void raise(ErrorCode ec, StaticStr s) {
     Error(ec, ConstStr(s)).raise();
+}
+template <class... Ts>
+    requires(sizeof...(Ts) > 0)
+Error make_error(ErrorCode ec, std::format_string<Ts...> fmt, Ts&&... ts) {
+    return Error(ec, ConstStr(std::format(fmt, std::forward<Ts>(ts)...)));
 }
 
 template <class... Ts>

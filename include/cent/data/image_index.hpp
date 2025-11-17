@@ -3,6 +3,7 @@
 #include <cent/data/mime.hpp>
 #include <cent/error.hpp>
 #include <cent/platform.hpp>
+#include <cent/result.hpp>
 #include <map>
 #include <rfl/json.hpp>
 #include <string>
@@ -37,11 +38,13 @@ struct ImageIdxMsg {
 
 using ImageIdx = std::vector<ImageIdxEntry>;
 
-inline ImageIdx parse_image_index(std::string_view data) {
+inline Result<ImageIdx> parse_image_index(std::string_view data) noexcept {
     auto res = rfl::json::read<ImageIdxMsg>(data);
-    if (!res) raise(ErrorCode::FormatError, "{}", res.error().what());
+    if (!res)
+        return make_error(ErrorCode::FormatError, "{}", res.error().what());
     if (res->mediaType != mimes::oci_image_index)
-        raise(ErrorCode::FormatError, "wrong MIME: {}", res->mediaType.full());
+        make_error(ErrorCode::FormatError, "wrong MIME: {}",
+                   res->mediaType.full());
     return res->manifests;
 }
 

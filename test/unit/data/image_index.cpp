@@ -61,7 +61,7 @@ constexpr auto SAMPLE_DATA = R"({
 })"sv;
 
 TEST(ImageIndex, Parse) {
-    auto res = cent::data::parse_image_index(SAMPLE_DATA);
+    auto res = cent::data::parse_image_index(SAMPLE_DATA).unpack();
     ASSERT_EQ(res.size(), 1);
     ASSERT_EQ(res[0].platform.arch, "amd64");
 }
