@@ -16,19 +16,7 @@ struct ManifestMsg {
         std::string digest;
         size_t size;
     };
-    struct Config {
-        Mime mediaType{};
-        std::string digest;
-        size_t size;
-    };
     Reference config;
-
-    struct Layer {
-        Mime mediaType{};
-        std::string digest;
-        size_t size;
-    };
-
     std::vector<Reference> layers;
 
     std::map<std::string, std::string> annotations{};
