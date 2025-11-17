@@ -2,6 +2,7 @@
 
 #include <cent/data/mime.hpp>
 #include <cent/error.hpp>
+#include <cent/result.hpp>
 #include <ranges>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -32,13 +33,14 @@ struct Manifest {
     std::map<std::string, std::string> annotations{};
 };
 
-inline Manifest parse_manifest(std::string_view str) {
+inline Result<Manifest> parse_manifest(std::string_view str) {
     auto res = rfl::json::read<ManifestMsg>(str);
-    if (!res) raise(ErrorCode::FormatError, "{}", res.error().what());
+    if (!res)
+        return make_error(ErrorCode::FormatError, "{}", res.error().what());
     if (res->config.mediaType != mimes::oci_image_config)
-        raise(ErrorCode::InvalidArgument, "wrong MIME: {}",
-              res->config.mediaType.full());
-    return {
+        return make_error(ErrorCode::InvalidArgument, "wrong MIME: {}",
+                          res->config.mediaType.full());
+    return Manifest{
         .config =
             {
                 .digest = std::move(res->config.digest),
