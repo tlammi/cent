@@ -2,6 +2,7 @@
 
 #include <cent/data/mime.hpp>
 #include <cent/error.hpp>
+#include <cent/platform.hpp>
 #include <map>
 #include <rfl/json.hpp>
 #include <string>
@@ -24,10 +25,7 @@ struct ImageIdxEntry {
     std::map<std::string, std::string> annotations{};
     // TODO: Special type for digest
     std::string digest{};
-    struct {
-        std::string architecture;
-        std::string os;
-    } platform;
+    Platform platform;
     size_t size;
 };
 
@@ -63,8 +61,8 @@ class Reflector<cent::data::ImageIdxEntry> {
             .digest = std::move(in.digest),
             .platform =
                 {
-                    .architecture = std::move(in.platform.architecture),
                     .os = std::move(in.platform.os),
+                    .arch = std::move(in.platform.architecture),
                 },
             .size = std::move(in.size),
         };

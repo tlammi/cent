@@ -32,7 +32,7 @@ TEST(Parse, Entry) {
         res->digest,
         "sha256:"
         "85f2b723e106c34644cd5851d7e81ee87da98ac54672b29947c052a45d31dc2f");
-    ASSERT_EQ(res->platform.architecture, "amd64");
+    ASSERT_EQ(res->platform.arch, "amd64");
 }
 
 constexpr auto SAMPLE_DATA = R"({
@@ -63,5 +63,5 @@ constexpr auto SAMPLE_DATA = R"({
 TEST(ImageIndex, Parse) {
     auto res = cent::data::parse_image_index(SAMPLE_DATA);
     ASSERT_EQ(res.size(), 1);
-    ASSERT_EQ(res[0].platform.architecture, "amd64");
+    ASSERT_EQ(res[0].platform.arch, "amd64");
 }
