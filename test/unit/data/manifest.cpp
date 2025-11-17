@@ -32,7 +32,7 @@ constexpr auto DATA = R"({
 })"sv;
 
 TEST(Parse, Sample) {
-    auto res = cent::data::parse_manifest(DATA).unpack();
+    auto res = cent::data::parse_manifest(DATA).unwrap();
     ASSERT_EQ(res.layers.size(), 1);
     ASSERT_EQ(res.annotations.size(), 7);
     ASSERT_EQ(

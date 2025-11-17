@@ -41,7 +41,7 @@ data::ImageIdx RegistryClient::manifest(UrlView url) {
     m_sess->get();
     auto range = sink.chunks | std::views::join;
     return data::parse_image_index(std::string(range.begin(), range.end()))
-        .unpack();
+        .unwrap();
 }
 
 }  // namespace cent::dist

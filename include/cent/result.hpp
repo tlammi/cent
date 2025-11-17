@@ -30,7 +30,7 @@ class Result {
     }
 
     template <class S>
-    decltype(auto) unpack(this S&& self) {
+    decltype(auto) unwrap(this S&& self) {
         self.try_throw();
         return *std::forward<S>(self);
     }
