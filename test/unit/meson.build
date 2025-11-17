@@ -3,7 +3,7 @@ gtest_dep = [dependency('gtest'), dependency('gtest_main')]
 test_deps = gtest_dep + libcent_dep
 
 TESTS = files(
-  #'exceptions.cpp',
+  'name.cpp',
 )
 
 subdir('util')

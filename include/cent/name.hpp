@@ -12,6 +12,8 @@ namespace cent {
  * Name is something like docker.io/library/alpine:latest. This object does not
  * do any automatic deduction like "docker.io/alpine" ->
  * "docker.io/alpine:latest". That has to be done beforehand.
+ *
+ * The default reference is "latest" if none are specified.
  * */
 template <class T>
 class BasicName {
@@ -19,12 +21,11 @@ class BasicName {
     constexpr BasicName() noexcept = default;
     constexpr explicit BasicName(T v) : m_v(std::move(v)) {
         m_reg_end = m_v.find('/');
-        if (m_repo_end == T::npos)
+        if (m_reg_end == T::npos)
             raise(ErrorCode::FormatError, "Invalid OCI reference '{}'", m_v);
-        auto m_repo_end = m_v.rfind('@');
-        if (m_repo_end == T::npos) m_repo_end = m_v.rfind(':');
-        if (m_repo_end == T::npos)
-            raise(ErrorCode::FormatError, "Invalid OCI reference '{}'", m_v);
+        auto it = std::ranges::find_if(
+            m_v, [](char c) { return c == '@' || c == ':'; });
+        m_repo_end = it - m_v.begin();
     }
 
     constexpr BasicName(const BasicName&) = default;
@@ -42,25 +43,39 @@ class BasicName {
     }
 
     constexpr std::string_view repository() const noexcept {
+        if (m_v.empty()) return {};
         auto start = m_reg_end + 1;
         auto len = m_repo_end - start;
-        return std::string_view().substr(start, len);
+        return string_view().substr(start, len);
     }
 
     constexpr std::string_view tag() const noexcept {
+        if (m_repo_end == std::string_view::npos)
+            return std::string_view("latest");
         if (m_v[m_repo_end] == ':') return string_view().substr(m_repo_end + 1);
         return {};
     }
 
     constexpr std::string_view digest() const noexcept {
+        if (m_repo_end == std::string_view::npos) return {};
         if (m_v[m_repo_end] == '@') return string_view().substr(m_repo_end + 1);
         return {};
     }
 
+    constexpr std::string_view suffix() const noexcept {
+        if (m_repo_end == std::string_view::npos) return "latest";
+        return string_view().substr(m_repo_end + 1);
+    }
+
+    constexpr bool has_tag() const noexcept {
+        if (m_repo_end == std::string_view::npos) return true;
+        return m_v[m_repo_end] == ':';
+    }
+
  private:
     T m_v{};
-    size_t m_reg_end{};
-    size_t m_repo_end{};
+    size_t m_reg_end{std::string_view::npos};
+    size_t m_repo_end{std::string_view::npos};
 };
 
 using Name = BasicName<std::string>;
