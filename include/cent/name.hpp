@@ -27,7 +27,10 @@ class BasicName {
             raise(ErrorCode::FormatError, "Invalid OCI reference '{}'", m_v);
         auto it = std::ranges::find_if(
             m_v, [](char c) { return c == '@' || c == ':'; });
-        m_repo_end = it - m_v.begin();
+        if (it == m_v.end())
+            m_repo_end = std::string_view::npos;
+        else
+            m_repo_end = it - m_v.begin();
     }
 
     constexpr BasicName(T v, size_t reg_end, size_t repo_end) noexcept
