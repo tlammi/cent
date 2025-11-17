@@ -18,8 +18,10 @@ namespace cent {
 template <class T>
 class BasicName {
  public:
+    static constexpr bool is_view = std::same_as<T, std::string_view>;
+
     constexpr BasicName() noexcept = default;
-    constexpr explicit BasicName(T v) : m_v(std::move(v)) {
+    constexpr explicit(!is_view) BasicName(T v) : m_v(std::move(v)) {
         m_reg_end = m_v.find('/');
         if (m_reg_end == T::npos)
             raise(ErrorCode::FormatError, "Invalid OCI reference '{}'", m_v);
@@ -46,7 +48,7 @@ class BasicName {
     }
 
     constexpr operator BasicName<std::string_view>() const noexcept
-        requires(std::same_as<T, std::string>)
+        requires(!is_view)
     {
         return {m_v, m_reg_end, m_repo_end};
     }
