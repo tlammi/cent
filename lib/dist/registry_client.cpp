@@ -33,13 +33,17 @@ struct DataSink final : public http::DataSink {
 RegistryClient::RegistryClient(http::AnySession& sess) noexcept
     : m_sess(&sess) {}
 
-data::ImageIdx RegistryClient::manifest(UrlView url) {
+std::variant<data::ImageIdx, data::Manifest> RegistryClient::manifest(
+    UrlView url) {
     auto sink = DataSink();
     m_sess->data_sink(&sink);
     auto cleanup = util::Defer([&] { m_sess->data_sink(nullptr); });
     m_sess->set_url(url);
     m_sess->get();
     auto range = sink.chunks | std::views::join;
+    auto str = std::string(range.begin(), range.end());
+    auto res = data::parse_image_index(str);
+    if (!res) { return data::parse_manifest(str).unwrap(); }
     return data::parse_image_index(std::string(range.begin(), range.end()))
         .unwrap();
 }

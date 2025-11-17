@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cent/data/image_index.hpp>
+#include <cent/data/manifest.hpp>
 #include <cent/dist/http/session.hpp>
 
 namespace cent::dist {
@@ -9,7 +10,7 @@ class RegistryClient {
  public:
     explicit RegistryClient(http::AnySession& sess) noexcept;
 
-    data::ImageIdx manifest(UrlView url);
+    std::variant<data::ImageIdx, data::Manifest> manifest(UrlView url);
 
  private:
     http::AnySession* m_sess;
