@@ -1,3 +1,3 @@
 subdir('http')
 
-SRCS += files('registry_client.cpp')
+SRCS += files('registry_client.cpp', 'url.cpp')

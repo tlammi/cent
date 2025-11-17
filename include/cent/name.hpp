@@ -28,6 +28,9 @@ class BasicName {
         m_repo_end = it - m_v.begin();
     }
 
+    constexpr BasicName(T v, size_t reg_end, size_t repo_end) noexcept
+        : m_v(std::move(v)), m_reg_end(reg_end), m_repo_end(repo_end) {}
+
     constexpr BasicName(const BasicName&) = default;
     constexpr BasicName& operator=(const BasicName&) = default;
 
@@ -40,6 +43,12 @@ class BasicName {
 
     constexpr std::string_view registry() const noexcept {
         return string_view().substr(0, m_reg_end);
+    }
+
+    constexpr operator BasicName<std::string_view>() const noexcept
+        requires(std::same_as<T, std::string>)
+    {
+        return {m_v, m_reg_end, m_repo_end};
     }
 
     constexpr std::string_view repository() const noexcept {
