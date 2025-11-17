@@ -1,6 +1,7 @@
 #include <cent/dist/http/smart_session.hpp>
 #include <print>
 
+namespace dist = cent::dist;
 namespace http = cent::dist::http;
 
 class DataSink final : public http::DataSink {
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
     auto data_sink = DataSink();
     sess.data_sink(&data_sink);
     if (argc != 2) exit(1);
-    sess.set_url(http::Url(argv[1]));
+    sess.set_url(dist::Url(argv[1]));
     sess.get();
     std::println("{}", data_sink.buffer);
 }

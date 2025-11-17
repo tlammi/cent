@@ -9,7 +9,7 @@ class RegistryClient {
  public:
     explicit RegistryClient(http::AnySession& sess) noexcept;
 
-    data::ImageIdx manifest(http::UrlView url);
+    data::ImageIdx manifest(UrlView url);
 
  private:
     http::AnySession* m_sess;

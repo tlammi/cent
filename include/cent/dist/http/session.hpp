@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cent/dist/http/status.hpp>
-#include <cent/dist/http/url.hpp>
+#include <cent/dist/url.hpp>
 #include <span>
 #include <string_view>
 

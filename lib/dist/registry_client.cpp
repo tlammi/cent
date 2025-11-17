@@ -33,7 +33,7 @@ struct DataSink final : public http::DataSink {
 RegistryClient::RegistryClient(http::AnySession& sess) noexcept
     : m_sess(&sess) {}
 
-data::ImageIdx RegistryClient::manifest(http::UrlView url) {
+data::ImageIdx RegistryClient::manifest(UrlView url) {
     auto sink = DataSink();
     m_sess->data_sink(&sink);
     auto cleanup = util::Defer([&] { m_sess->data_sink(nullptr); });
