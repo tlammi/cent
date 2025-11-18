@@ -77,6 +77,7 @@ std::variant<data::ImageIdx, data::Manifest> RegistryClient::manifest(
 void RegistryClient::layer(UrlView url, LayerStream& stream) {
     auto sink = LayerSink();
     sink.stream = &stream;
+    m_sess->data_sink(&sink);
     auto cleanup = util::Defer([&] { m_sess->data_sink(nullptr); });
     m_sess->set_url(url);
     m_sess->get();
