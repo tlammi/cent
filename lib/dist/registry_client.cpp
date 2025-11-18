@@ -32,7 +32,7 @@ struct LayerSink final : public http::DataSink {
     LayerStream* stream{};
     std::exception_ptr ex{};
     bool on_status(http::StatusCode code) noexcept override {
-        return code == 200;
+        return code == 200 || code == 307;
     }
     bool on_header(std::string_view key,
                    std::string_view val) noexcept override {
