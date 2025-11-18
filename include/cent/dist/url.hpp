@@ -9,5 +9,6 @@ using Url = boost::urls::url;
 using UrlView = boost::urls::url_view;
 
 Url manifest_url(NameView nm);
+Url blob_url(NameView nm);
 
 }  // namespace cent::dist

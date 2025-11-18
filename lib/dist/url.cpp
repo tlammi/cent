@@ -9,4 +9,11 @@ Url manifest_url(NameView nm) {
     return Url(std::format("https://{}/v2/{}/manifests/{}", reg, repo, ref));
 }
 
+Url blob_url(NameView nm) {
+    auto reg = nm.registry();
+    auto repo = nm.repository();
+    auto ref = nm.digest();
+    return Url(std::format("https://{}/v2/{}/blogs/{}", reg, repo, ref));
+}
+
 }  // namespace cent::dist
