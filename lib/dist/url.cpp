@@ -13,7 +13,7 @@ Url blob_url(NameView nm) {
     auto reg = nm.registry();
     auto repo = nm.repository();
     auto ref = nm.digest();
-    return Url(std::format("https://{}/v2/{}/blogs/{}", reg, repo, ref));
+    return Url(std::format("https://{}/v2/{}/blobs/{}", reg, repo, ref));
 }
 
 }  // namespace cent::dist
