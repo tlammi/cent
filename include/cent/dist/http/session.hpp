@@ -44,6 +44,16 @@ class ProgressSink {
     ~ProgressSink() = default;
 };
 
+class LogSink {
+ public:
+    virtual void on_info(std::string_view data) noexcept {}
+    virtual void on_header_in(std::string_view data) noexcept {}
+    virtual void on_header_out(std::string_view data) noexcept {}
+
+ protected:
+    constexpr ~LogSink() = default;
+};
+
 class AnySession {
  public:
     virtual void data_sink(DataSink* sink) = 0;
@@ -69,6 +79,7 @@ class Session final : public AnySession {
     void data_sink(DataSink* sink) override;
     void data_src(DataSrc* src) override;
     void progress_sink(ProgressSink* prog);
+    void log_sink(LogSink* sink);
 
     void set_header(std::string_view key, std::string_view val);
 

@@ -71,6 +71,20 @@ int curl_progress_fn(void* clientp, curl_off_t dltotal, curl_off_t dlnow,
     auto* ptr = static_cast<ProgressSink*>(clientp);
     return ptr->on_progress(prog) ? 0 : 1;
 }
+
+int curl_debug_fn(CURL* handle, curl_infotype type, char* data, size_t len,
+                  void* clientp) noexcept {
+    (void)handle;
+    auto* ptr = static_cast<LogSink*>(clientp);
+    auto view = std::string_view(data, len);
+    switch (type) {
+        case CURLINFO_TEXT: ptr->on_info(view); break;
+        case CURLINFO_HEADER_IN: ptr->on_header_in(view); break;
+        case CURLINFO_HEADER_OUT: ptr->on_header_out(view); break;
+        default: break;
+    }
+    return 0;
+}
 }
 }  // namespace
 
@@ -120,6 +134,13 @@ void Session::progress_sink(ProgressSink* prog) {
     else
         CURL_SET(m_handle, CURLOPT_XFERINFOFUNCTION, &curl_progress_fn);
     CURL_SET(m_handle, CURLOPT_XFERINFODATA, prog);
+}
+void Session::log_sink(LogSink* sink) {
+    if (!sink)
+        CURL_SET(m_handle, CURLOPT_DEBUGFUNCTION, nullptr);
+    else
+        CURL_SET(m_handle, CURLOPT_DEBUGFUNCTION, &curl_debug_fn);
+    CURL_SET(m_handle, CURLOPT_DEBUGDATA, sink);
 }
 
 void Session::set_header(std::string_view key, std::string_view val) {
