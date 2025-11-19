@@ -81,6 +81,7 @@ void RegistryClient::layer(UrlView url, LayerStream& stream) {
     auto cleanup = util::Defer([&] { m_sess->data_sink(nullptr); });
     m_sess->set_url(url);
     m_sess->get();
+    if (sink.ex) std::rethrow_exception(sink.ex);
 }
 
 }  // namespace cent::dist
