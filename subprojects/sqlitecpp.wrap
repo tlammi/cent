@@ -1,0 +1,4 @@
+[wrap-git]
+url = https://github.com/SRombauts/SQLiteCpp.git
+revision = 3.3.3
+depth = 1

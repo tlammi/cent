@@ -9,6 +9,7 @@ TESTS = files(
 subdir('util')
 subdir('data')
 subdir('dist')
+subdir('strg')
 
 fs = import('fs')
 
