@@ -62,3 +62,16 @@ TEST(BlobWrite, Simple) {
     auto view = std::string_view(reinterpret_cast<const char*>(data.data()), 6);
     ASSERT_EQ(view, "foobar");
 }
+
+TEST(BlobRead, Empty) {
+    auto s = in_memory_storage();
+    s->write_full_blob("foo", "barbaz");
+    {
+        auto stream = BlobReadStream(*s, "foo");
+        auto res = stream.read();
+        ASSERT_EQ(res.size(), 6);
+        auto sv = std::string_view(reinterpret_cast<const char*>(res.data()),
+                                   res.size());
+        ASSERT_EQ(sv, "barbaz");
+    }
+}

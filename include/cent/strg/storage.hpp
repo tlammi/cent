@@ -23,11 +23,25 @@ class Storage {
 
     virtual void set_config(std::string_view digest, std::string_view data) = 0;
 
-    virtual BlobStream* open_blob(std::string_view digest, size_t bytes) = 0;
+    virtual BlobStream* open_blob_write(std::string_view digest,
+                                        size_t bytes) = 0;
+    virtual BlobStream* open_blob_read(std::string_view digest) = 0;
     virtual void write_blob(BlobStream* handle, size_t blob_offset,
                             std::span<const std::byte> data) = 0;
+
+    virtual void read_blob(BlobStream* handle, size_t blob_offset,
+                           std::span<std::byte> buffer) = 0;
+
     virtual void close_blob(BlobStream* stream) = 0;
 
+    void write_full_blob(std::string_view digest, std::string_view data) {
+        write_full_blob(
+            digest,
+            std::span<const std::byte>(
+                reinterpret_cast<const std::byte*>(data.data()), data.size()));
+    }
+    virtual void write_full_blob(std::string_view digest,
+                                 std::span<const std::byte> blob) = 0;
     virtual std::vector<std::byte> read_full_blob(std::string_view digest) = 0;
 
     virtual bool has_blob(std::string_view digest) = 0;
@@ -63,7 +77,7 @@ class BlobWriteStream {
  public:
     constexpr explicit BlobWriteStream(Storage& s, std::string_view digest,
                                        size_t bytes)
-        : m_s(&s), m_handle(m_s->open_blob(digest, bytes)) {}
+        : m_s(&s), m_handle(m_s->open_blob_write(digest, bytes)) {}
 
     BlobWriteStream(const BlobWriteStream&) = delete;
     BlobWriteStream& operator=(const BlobWriteStream&) = delete;
@@ -97,6 +111,30 @@ class BlobWriteStream {
     Storage* m_s{};
     Storage::BlobStream* m_handle{};
     int m_offset{};
+};
+
+class BlobReadStream {
+ public:
+    constexpr explicit BlobReadStream(Storage& s, std::string_view digest)
+        : m_s(&s), m_handle(m_s->open_blob_read(digest)) {}
+
+    ~BlobReadStream() {
+        if (m_s) m_s->close_blob(m_handle);
+    }
+
+    std::vector<std::byte> read() {
+        // TODO: Need to read how much space is available in the blob
+        static constexpr auto buf_size = 1024;
+        std::vector<std::byte> out(buf_size);
+        m_s->read_blob(m_handle, 0, out);
+        m_offset += buf_size;
+        return out;
+    }
+
+ private:
+    Storage* m_s;
+    Storage::BlobStream* m_handle;
+    int m_offset{0};
 };
 
 std::unique_ptr<Storage> in_memory_storage();

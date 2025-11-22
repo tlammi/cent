@@ -88,7 +88,8 @@ class StorageImpl final : public Storage {
         insert_config(m_db, digest, data);
     }
 
-    BlobStream* open_blob(std::string_view digest, size_t bytes) override {
+    BlobStream* open_blob_write(std::string_view digest,
+                                size_t bytes) override {
         sqlite3_stmt* stmt{};
         static constexpr auto query =
             "INSERT OR REPLACE INTO blobs VALUES(?, ?);"sv;
@@ -117,6 +118,21 @@ class StorageImpl final : public Storage {
         return reinterpret_cast<BlobStream*>(handle);
     }
 
+    BlobStream* open_blob_read(std::string_view digest) override {
+        auto rowid_stmt = SQLite::Statement(
+            m_db, "SELECT rowid FROM blobs WHERE (digest = ?);");
+        rowid_stmt.bind(1, digest.data(), digest.size());
+        rowid_stmt.executeStep();
+        auto rowid = rowid_stmt.getColumn(0).getUInt();
+        sqlite3_blob* handle = nullptr;
+        static constexpr auto open_ro = 0;
+        auto res = sqlite3_blob_open(m_db.getHandle(), "main", "blobs", "data",
+                                     rowid, open_ro, &handle);
+        if (res != SQLITE_OK)
+            raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
+        return reinterpret_cast<BlobStream*>(handle);
+    }
+
     void write_blob(BlobStream* handle, size_t blob_offset,
                     std::span<const std::byte> data) override {
         auto res = sqlite3_blob_write(reinterpret_cast<sqlite3_blob*>(handle),
@@ -125,9 +141,21 @@ class StorageImpl final : public Storage {
             raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
     }
 
+    void read_blob(BlobStream* handle, size_t blob_offset,
+                   std::span<std::byte> buffer) override {}
+
     void close_blob(BlobStream* stream) override {
         auto* handle = reinterpret_cast<sqlite3_blob*>(stream);
         sqlite3_blob_close(handle);
+    }
+
+    void write_full_blob(std::string_view digest,
+                         std::span<const std::byte> blob) override {
+        auto stmt = SQLite::Statement(
+            m_db, "INSERT OR REPLACE INTO blobs VALUES(?, ?);");
+        stmt.bind(1, digest.data(), digest.size());
+        stmt.bind(2, blob.data(), blob.size());
+        stmt.executeStep();
     }
 
     std::vector<std::byte> read_full_blob(std::string_view digest) override {
