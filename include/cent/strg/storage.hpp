@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <utility>
+#include <vector>
 
 namespace cent::strg {
 
@@ -26,6 +27,8 @@ class Storage {
     virtual void write_blob(BlobStream* handle, size_t blob_offset,
                             std::span<const std::byte> data) = 0;
     virtual void close_blob(BlobStream* stream) = 0;
+
+    virtual std::vector<std::byte> read_full_blob(std::string_view digest) = 0;
 
     virtual bool has_blob(std::string_view digest) = 0;
 };
@@ -66,7 +69,9 @@ class BlobWriteStream {
     BlobWriteStream& operator=(const BlobWriteStream&) = delete;
 
     BlobWriteStream(BlobWriteStream&& other) noexcept
-        : m_s(std::exchange(other.m_s, nullptr)), m_handle(other.m_handle) {}
+        : m_s(std::exchange(other.m_s, nullptr)),
+          m_handle(other.m_handle),
+          m_offset(other.m_offset) {}
 
     BlobWriteStream& operator=(BlobWriteStream&& other) noexcept {
         std::destroy_at(this);
@@ -83,11 +88,15 @@ class BlobWriteStream {
                         data.size()));
     }
 
-    void write(std::span<const std::byte> data) {}
+    void write(std::span<const std::byte> data) {
+        m_s->write_blob(m_handle, m_offset, data);
+        m_offset += data.size();
+    }
 
  private:
     Storage* m_s{};
     Storage::BlobStream* m_handle{};
+    int m_offset{};
 };
 
 std::unique_ptr<Storage> in_memory_storage();

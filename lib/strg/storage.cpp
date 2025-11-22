@@ -108,19 +108,38 @@ class StorageImpl final : public Storage {
         auto rowid = rowid_stmt.getColumn(0).getUInt();
         assert(!rowid_stmt.executeStep());
         sqlite3_blob* handle = nullptr;
+
+        static constexpr auto open_rw = 1;
         res = sqlite3_blob_open(m_db.getHandle(), "main", "blobs", "data",
-                                rowid, 0, &handle);
+                                rowid, open_rw, &handle);
         if (res != SQLITE_OK)
             raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
         return reinterpret_cast<BlobStream*>(handle);
     }
 
     void write_blob(BlobStream* handle, size_t blob_offset,
-                    std::span<const std::byte> data) override {}
+                    std::span<const std::byte> data) override {
+        auto res = sqlite3_blob_write(reinterpret_cast<sqlite3_blob*>(handle),
+                                      data.data(), data.size(), blob_offset);
+        if (res != SQLITE_OK)
+            raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
+    }
 
     void close_blob(BlobStream* stream) override {
         auto* handle = reinterpret_cast<sqlite3_blob*>(stream);
         sqlite3_blob_close(handle);
+    }
+
+    std::vector<std::byte> read_full_blob(std::string_view digest) override {
+        auto stmt = SQLite::Statement(
+            m_db, "SELECT data FROM blobs WHERE (digest = ?)");
+        stmt.bind(1, digest.data(), digest.size());
+        stmt.executeStep();
+        size_t count = stmt.getColumn(0).getBytes();
+        const auto* data = stmt.getColumn(0).getBlob();
+        auto span = std::span<const std::byte>(
+            static_cast<const std::byte*>(data), count);
+        return std::vector<std::byte>(span.begin(), span.end());
     }
 
     bool has_blob(std::string_view digest) override {

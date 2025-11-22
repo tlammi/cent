@@ -48,3 +48,17 @@ TEST(BlobWrite, Empty) {
     { auto stream = BlobWriteStream(*s, "foo", 0); }
     ASSERT_TRUE(s->has_blob("foo"));
 }
+
+TEST(BlobWrite, Simple) {
+    auto s = in_memory_storage();
+    {
+        auto stream = BlobWriteStream(*s, "foo", 10);
+        stream.write("foo");
+        stream.write("bar");
+    }
+
+    auto data = s->read_full_blob("foo");
+    ASSERT_EQ(data.size(), 10);
+    auto view = std::string_view(reinterpret_cast<const char*>(data.data()), 6);
+    ASSERT_EQ(view, "foobar");
+}
