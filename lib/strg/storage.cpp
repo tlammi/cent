@@ -189,4 +189,12 @@ class StorageImpl final : public Storage {
 std::unique_ptr<Storage> in_memory_storage() {
     return std::make_unique<StorageImpl>(":memory:");
 }
+
+std::unique_ptr<Storage> open_storage(const std::filesystem::path& path) {
+    return std::make_unique<StorageImpl>(path.native().c_str());
+}
+std::unique_ptr<Storage> create_storage(const std::filesystem::path& path) {
+    // TODO: Implement
+    return open_storage(path);
+}
 }  // namespace cent::strg
