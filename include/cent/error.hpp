@@ -13,6 +13,7 @@ enum class ErrorCode {
     InvalidArgument,
     FormatError,
     MissingArgument,
+    DoesNotExist,
 };
 
 class Error {

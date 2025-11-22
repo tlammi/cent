@@ -13,8 +13,10 @@ class Storage {
     virtual void transaction_commit() = 0;
     virtual void transaction_cancel() = 0;
 
-    virtual void add_manifest(std::string_view digest,
+    virtual void set_manifest(std::string_view digest,
                               std::string_view data) = 0;
+    virtual bool has_manifest(std::string_view digest) = 0;
+    virtual std::string manifest(std::string_view digest) = 0;
     virtual void add_config(std::string_view digest, std::string_view data) = 0;
 };
 

@@ -9,4 +9,9 @@ TEST(Init, InMemory) {
     ASSERT_TRUE(s);
 }
 
-TEST(Insert, Manifest) {}
+TEST(Insert, Manifest) {
+    auto s = in_memory_storage();
+    s->set_manifest("foo", "bar");
+    ASSERT_TRUE(s->has_manifest("foo"));
+    ASSERT_EQ(s->manifest("foo"), "bar");
+}
