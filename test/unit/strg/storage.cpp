@@ -23,3 +23,22 @@ TEST(Insert, ExistingManifest) {
     ASSERT_TRUE(s->has_manifest("foo"));
     ASSERT_EQ(s->manifest("foo"), "baz");
 }
+
+TEST(Transaction, Cancel) {
+    auto s = in_memory_storage();
+    {
+        auto t = Transaction(*s);
+        s->set_manifest("foo", "bar");
+    }
+    ASSERT_FALSE(s->has_manifest("foo"));
+}
+
+TEST(Transaction, Commit) {
+    auto s = in_memory_storage();
+    {
+        auto t = Transaction(*s);
+        s->set_manifest("foo", "bar");
+        t.commit();
+    }
+    ASSERT_EQ(s->manifest("foo"), "bar");
+}

@@ -58,9 +58,9 @@ class StorageImpl final : public Storage {
         setup_tables(m_db);
     }
 
-    void transaction_begin() override {}
-    void transaction_commit() override {}
-    void transaction_cancel() override {}
+    void transaction_begin() override { m_db.exec("BEGIN TRANSACTION"); }
+    void transaction_commit() override { m_db.exec("COMMIT TRANSACTION"); }
+    void transaction_cancel() override { m_db.exec("ROLLBACK TRANSACTION"); }
 
     void set_manifest(std::string_view digest, std::string_view data) override {
         insert_manifest(m_db, digest, data);
