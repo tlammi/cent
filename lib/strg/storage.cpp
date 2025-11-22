@@ -142,7 +142,12 @@ class StorageImpl final : public Storage {
     }
 
     void read_blob(BlobStream* handle, size_t blob_offset,
-                   std::span<std::byte> buffer) override {}
+                   std::span<std::byte> buffer) override {
+        auto res = sqlite3_blob_read(reinterpret_cast<sqlite3_blob*>(handle),
+                                     buffer.data(), buffer.size(), blob_offset);
+        if (res != SQLITE_OK)
+            raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
+    }
 
     void close_blob(BlobStream* stream) override {
         auto* handle = reinterpret_cast<sqlite3_blob*>(stream);
@@ -168,6 +173,10 @@ class StorageImpl final : public Storage {
         auto span = std::span<const std::byte>(
             static_cast<const std::byte*>(data), count);
         return std::vector<std::byte>(span.begin(), span.end());
+    }
+
+    size_t blob_size(BlobStream* handle) const override {
+        return sqlite3_blob_bytes(reinterpret_cast<sqlite3_blob*>(handle));
     }
 
     bool has_blob(std::string_view digest) override {

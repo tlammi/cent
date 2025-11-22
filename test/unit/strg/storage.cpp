@@ -65,13 +65,23 @@ TEST(BlobWrite, Simple) {
 
 TEST(BlobRead, Empty) {
     auto s = in_memory_storage();
-    s->write_full_blob("foo", "barbaz");
+    s->write_full_blob("foo", "");
+    {
+        auto stream = BlobReadStream(*s, "foo");
+        auto res = stream.read();
+        ASSERT_EQ(res.size(), 0);
+    }
+}
+
+TEST(BlobRead, Simple) {
+    auto s = in_memory_storage();
+    s->write_full_blob("foo", "foobar");
     {
         auto stream = BlobReadStream(*s, "foo");
         auto res = stream.read();
         ASSERT_EQ(res.size(), 6);
         auto sv = std::string_view(reinterpret_cast<const char*>(res.data()),
                                    res.size());
-        ASSERT_EQ(sv, "barbaz");
+        ASSERT_EQ(sv, "foobar");
     }
 }

@@ -32,6 +32,8 @@ class Storage {
     virtual void read_blob(BlobStream* handle, size_t blob_offset,
                            std::span<std::byte> buffer) = 0;
 
+    virtual size_t blob_size(BlobStream* handle) const = 0;
+
     virtual void close_blob(BlobStream* stream) = 0;
 
     void write_full_blob(std::string_view digest, std::string_view data) {
@@ -116,17 +118,18 @@ class BlobWriteStream {
 class BlobReadStream {
  public:
     constexpr explicit BlobReadStream(Storage& s, std::string_view digest)
-        : m_s(&s), m_handle(m_s->open_blob_read(digest)) {}
+        : m_s(&s),
+          m_handle(m_s->open_blob_read(digest)),
+          m_tot_size(m_s->blob_size(m_handle)) {}
 
     ~BlobReadStream() {
         if (m_s) m_s->close_blob(m_handle);
     }
 
     std::vector<std::byte> read() {
-        // TODO: Need to read how much space is available in the blob
-        static constexpr auto buf_size = 1024;
+        const auto buf_size = std::min<size_t>(m_tot_size - m_offset, 1024);
         std::vector<std::byte> out(buf_size);
-        m_s->read_blob(m_handle, 0, out);
+        m_s->read_blob(m_handle, m_offset, out);
         m_offset += buf_size;
         return out;
     }
@@ -134,6 +137,7 @@ class BlobReadStream {
  private:
     Storage* m_s;
     Storage::BlobStream* m_handle;
+    size_t m_tot_size;
     int m_offset{0};
 };
 
