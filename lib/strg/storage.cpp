@@ -1,9 +1,12 @@
 #include <SQLiteCpp/SQLiteCpp.h>
+#include <sqlite3.h>
 
 #include <cent/error.hpp>
 #include <cent/strg/storage.hpp>
+#include <cent/util/defer.hpp>
 
 namespace cent::strg {
+using namespace std::literals;
 namespace {
 
 void simple_stmt(auto& db, const auto& str) {
@@ -20,6 +23,7 @@ auto setup_tables(SQLite::Database& db) {
     create_tbl(db, "manifests", "digest TEXT UNIQUE, data TEXT");
     create_tbl(db, "configs", "digest TEXT UNIQUE, data TEXT");
     create_tbl(db, "images", "name TEXT UNIQUE, digest TEXT");
+    create_tbl(db, "blobs", "digest TEXT UNIQUE, data BLOB");
 }
 
 void insert_manifest(auto& db, std::string_view nm, std::string_view dt) {
@@ -82,6 +86,45 @@ class StorageImpl final : public Storage {
 
     void set_config(std::string_view digest, std::string_view data) override {
         insert_config(m_db, digest, data);
+    }
+
+    BlobStream* open_blob(std::string_view digest, size_t bytes) override {
+        sqlite3_stmt* stmt{};
+        static constexpr auto query =
+            "INSERT OR REPLACE INTO blobs VALUES(?, ?);"sv;
+        auto res = sqlite3_prepare_v2(m_db.getHandle(), query.data(),
+                                      query.size(), &stmt, nullptr);
+        if (res != SQLITE_OK)
+            raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
+        // Blob here since sqlitecpp uses that under the hood :(
+        sqlite3_bind_blob(stmt, 1, digest.data(), digest.size(), nullptr);
+        sqlite3_bind_zeroblob(stmt, 2, bytes);
+        while (sqlite3_step(stmt) != SQLITE_DONE);
+        sqlite3_finalize(stmt);
+        auto rowid_stmt = SQLite::Statement(
+            m_db, "SELECT rowid FROM blobs WHERE (digest = ?);");
+        rowid_stmt.bind(1, digest.data(), digest.size());
+        assert(rowid_stmt.executeStep());
+        auto rowid = rowid_stmt.getColumn(0).getUInt();
+        assert(!rowid_stmt.executeStep());
+        sqlite3_blob* handle = nullptr;
+        res = sqlite3_blob_open(m_db.getHandle(), "main", "blobs", "data",
+                                rowid, 0, &handle);
+        if (res != SQLITE_OK)
+            raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
+        return reinterpret_cast<BlobStream*>(handle);
+    }
+
+    void write_blob(BlobStream* handle, size_t blob_offset,
+                    std::span<const std::byte> data) override {}
+
+    void close_blob(BlobStream* stream) override {
+        auto* handle = reinterpret_cast<sqlite3_blob*>(stream);
+        sqlite3_blob_close(handle);
+    }
+
+    bool has_blob(std::string_view digest) override {
+        return contains(m_db, "blobs", "digest", digest);
     }
 
  private:

@@ -14,7 +14,8 @@ libdeps = [
   dependency('boost', modules: ['url']),
   dependency('reflect-cpp', fallback: ['reflect-cpp','reflectcpp_dep'], include_type: 'system'),
   dependency('magic_enum', fallback: ['magic_enum', 'magic_enum_dep']),
-  dependency('sqlitecpp', fallback: ['sqlitecpp', 'sqlitecpp_dep'])
+  dependency('sqlitecpp', fallback: ['sqlitecpp', 'sqlitecpp_dep']),
+  dependency('sqlite3'),
 ]
 
 # TODO: Change to library(). Need patching reflect-cpp first

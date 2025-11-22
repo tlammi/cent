@@ -42,3 +42,9 @@ TEST(Transaction, Commit) {
     }
     ASSERT_EQ(s->manifest("foo"), "bar");
 }
+
+TEST(BlobWrite, Empty) {
+    auto s = in_memory_storage();
+    { auto stream = BlobWriteStream(*s, "foo", 0); }
+    ASSERT_TRUE(s->has_blob("foo"));
+}
