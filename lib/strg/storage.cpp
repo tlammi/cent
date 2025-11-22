@@ -11,24 +11,43 @@ void simple_stmt(auto& db, const auto& str) {
     while (stmt.executeStep());
 }
 
+void create_tbl(auto& db, std::string_view tbl, std::string_view cols) {
+    simple_stmt(db,
+                std::format("CREATE TABLE IF NOT EXISTS {} ({});", tbl, cols));
+}
+
 auto setup_tables(SQLite::Database& db) {
-    simple_stmt(db,
-                "CREATE TABLE IF NOT EXISTS manifests (digest TEXT UNIQUE, "
-                "data TEXT);");
-    simple_stmt(db,
-                "CREATE TABLE IF NOT EXISTS configs (digest TEXT UNIQUE, "
-                "data TEXT);");
-    simple_stmt(
-        db,
-        "CREATE TABLE IF NOT EXISTS images (name TEXT UNIQUE, digest TEXT);");
+    create_tbl(db, "manifests", "digest TEXT UNIQUE, data TEXT");
+    create_tbl(db, "configs", "digest TEXT UNIQUE, data TEXT");
+    create_tbl(db, "images", "name TEXT UNIQUE, digest TEXT");
 }
 
 void insert_manifest(auto& db, std::string_view nm, std::string_view dt) {
-    auto stmt = SQLite::Statement(db, "INSERT INTO manifests VALUES(?, ?)");
+    auto stmt =
+        SQLite::Statement(db, "INSERT OR REPLACE INTO manifests VALUES(?, ?)");
     stmt.bind(1, nm.data(), nm.size());
     stmt.bind(2, dt.data(), dt.size());
     while (stmt.executeStep());
 }
+
+void insert_config(auto& db, std::string_view nm, std::string_view dt) {
+    auto stmt =
+        SQLite::Statement(db, "INSERT OR REPLACE INTO configs VALUES(?, ?)");
+    stmt.bind(1, nm.data(), nm.size());
+    stmt.bind(2, dt.data(), dt.size());
+    while (stmt.executeStep());
+}
+
+bool contains(auto& db, std::string_view tbl, std::string_view col,
+              std::string_view val) {
+    auto stmt = SQLite::Statement(
+        db,
+        std::format("SELECT EXISTS (SELECT 1 FROM {} WHERE {} = ?)", tbl, col));
+    stmt.bind(1, val.data(), val.size());
+    assert(stmt.executeStep());
+    return stmt.getColumn(0).getInt() != 0;
+}
+
 }  // namespace
 
 Storage::~Storage() = default;
@@ -48,13 +67,7 @@ class StorageImpl final : public Storage {
     }
 
     bool has_manifest(std::string_view digest) override {
-        auto stmt = SQLite::Statement(
-            m_db, "SELECT EXISTS (SELECT 1 FROM manifests WHERE digest = ?);");
-        stmt.bind(1, digest.data(), digest.size());
-        stmt.executeStep();
-        bool match = stmt.getColumn(0).getInt() != 0;
-        assert(!stmt.executeStep());
-        return match;
+        return contains(m_db, "manifests", "digest", digest);
     }
 
     std::string manifest(std::string_view digest) override {
@@ -67,7 +80,9 @@ class StorageImpl final : public Storage {
         return std::string(stmt.getColumn(0));
     }
 
-    void add_config(std::string_view digest, std::string_view data) override {}
+    void set_config(std::string_view digest, std::string_view data) override {
+        insert_config(m_db, digest, data);
+    }
 
  private:
     SQLite::Database m_db;

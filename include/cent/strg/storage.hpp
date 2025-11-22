@@ -17,7 +17,8 @@ class Storage {
                               std::string_view data) = 0;
     virtual bool has_manifest(std::string_view digest) = 0;
     virtual std::string manifest(std::string_view digest) = 0;
-    virtual void add_config(std::string_view digest, std::string_view data) = 0;
+
+    virtual void set_config(std::string_view digest, std::string_view data) = 0;
 };
 
 class Transaction {
