@@ -1,5 +1,6 @@
+grove_dep = dependency('grove', fallback: ['grove', 'grove_dep'])
 
 
-cli11_dep = dependency('CLI11', fallback: ['cli11', 'CLI11_dep'])
+srcs = files('main.cpp', 'cli.cpp')
 
-cent = executable('cent', 'main.cpp', dependencies: [libcent_dep, cli11_dep])
+cent = executable('cent', srcs, dependencies: [libcent_dep, grove_dep])
