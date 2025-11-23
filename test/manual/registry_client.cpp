@@ -1,6 +1,5 @@
 #include <cent/dist/client.hpp>
 #include <cent/dist/http/smart_session.hpp>
-#include <cent/dist/registry_client.hpp>
 #include <cent/exception.hpp>
 #include <print>
 
