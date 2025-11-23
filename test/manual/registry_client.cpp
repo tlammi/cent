@@ -37,7 +37,7 @@ void run(int argc, char** argv) {
         std::fputs(stream.str.c_str(), stdout);
     } else {
         cent::raise(cent::ErrorCode::InvalidArgument,
-                    "usage: {} manifest|layer URL", argv[0]);
+                    "usage: {} manifest|layer|config URL", argv[0]);
     }
 }
 
