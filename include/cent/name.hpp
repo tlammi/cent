@@ -86,6 +86,24 @@ class BasicName {
         return m_v[m_repo_end] == ':';
     }
 
+    constexpr void set_tag(std::string_view new_tag)
+        requires(!is_view)
+    {
+        if (m_repo_end != std::string_view::npos) m_v.resize(m_repo_end);
+        m_repo_end = std::string_view::npos;
+        if (!new_tag.empty()) {
+            m_v.push_back(':');
+            m_repo_end = m_v.size() - 1;
+            m_v.append(new_tag);
+        }
+    }
+
+    template <class U>
+    constexpr auto operator==(const BasicName<U>& other) const noexcept {
+        return registry() == other.registry() &&
+               repository() == other.repository() && suffix() == other.suffix();
+    }
+
  private:
     T m_v{};
     size_t m_reg_end{std::string_view::npos};
@@ -94,5 +112,11 @@ class BasicName {
 
 using Name = BasicName<std::string>;
 using NameView = BasicName<std::string_view>;
+
+namespace literals {
+constexpr auto operator""_nm(const char* ptr, std::size_t len) {
+    return NameView(std::string_view(ptr, len));
+}
+}  // namespace literals
 
 }  // namespace cent

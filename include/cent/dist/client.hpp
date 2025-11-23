@@ -1,7 +1,10 @@
 #pragma once
 
+#include <cent/core/img_config.hpp>
+#include <cent/core/manifest.hpp>
 #include <cent/dist/http/session_pool.hpp>
 #include <cent/dist/url.hpp>
+#include <cent/platform.hpp>
 #include <memory>
 
 namespace cent::dist {
@@ -24,5 +27,54 @@ class Client {
 
 std::unique_ptr<Client> client(http::SessionPool& session_pool);
 std::unique_ptr<Client> client();
+
+/**
+ * \brief Callbacks invoked when pulling an image
+ *
+ * The methods are called in order manifest -> config -> layers...
+ * */
+class PullConsumer {
+    struct Deleter {
+        PullConsumer* consumer;
+        void operator()(BlobStream* stream) {
+            consumer->free_layer_stream(stream);
+        }
+    };
+
+ public:
+    using BlobStreamPtr = std::unique_ptr<BlobStream, Deleter>;
+
+    /**
+     * \brief Consume the received manifest
+     * */
+    virtual void on_manifest(Manifest mfest) = 0;
+    /**
+     * \brief Consume the received image config
+     * */
+    virtual void on_config(ImgConfig cfg) = 0;
+
+    template <class... Ts>
+    BlobStreamPtr layer_stream(Ts&&... ts) {
+        return BlobStreamPtr{get_layer_stream(std::forward<Ts>(ts)...),
+                             Deleter{this}};
+    }
+
+ protected:
+    ~PullConsumer() = default;
+
+ private:
+    /**
+     * \brief Consume one of the image layers
+     * */
+    virtual BlobStream* get_layer_stream(std::string_view digest) = 0;
+    virtual void free_layer_stream(BlobStream* stream) = 0;
+};
+
+struct PullArgs {
+    NameView reference;
+    PlatformView platform = DEFAULT_PLATFORM;
+};
+
+void pull(Client& client, PullConsumer& consumer, const PullArgs& args);
 
 }  // namespace cent::dist

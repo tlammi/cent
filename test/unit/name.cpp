@@ -4,6 +4,8 @@
 
 using cent::Name;
 
+using namespace cent::literals;
+
 TEST(Ctor, Default) {
     auto nm = Name();
     ASSERT_TRUE(nm.registry().empty());
@@ -36,4 +38,25 @@ TEST(Ctor, Digest) {
         nm.digest(),
         "sha256:"
         "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b");
+}
+
+TEST(ReplaceSuffix, TagToTag) {
+    auto nm = Name("docker.io/foo/bar:baz");
+    nm.set_tag("asd");
+    ASSERT_EQ(nm, "docker.io/foo/bar:asd"_nm)
+        << nm.registry() << '|' << nm.repository() << '|' << nm.suffix();
+}
+
+TEST(ReplaceSuffix, NoneToTag) {
+    auto nm = Name("docker.io/foo/bar");
+    nm.set_tag("baz");
+    ASSERT_EQ(nm, "docker.io/foo/bar:baz"_nm)
+        << nm.registry() << '|' << nm.repository() << '|' << nm.suffix();
+}
+
+TEST(ReplaceSuffix, TagToNone) {
+    auto nm = Name("docker.io/foo/bar:baz");
+    nm.set_tag("");
+    ASSERT_EQ(nm, "docker.io/foo/bar:latest"_nm)
+        << nm.registry() << '|' << nm.repository() << '|' << nm.suffix();
 }

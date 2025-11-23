@@ -16,6 +16,7 @@ libdeps = [
   dependency('magic_enum', fallback: ['magic_enum', 'magic_enum_dep']),
   dependency('sqlitecpp', fallback: ['sqlitecpp', 'sqlitecpp_dep']),
   dependency('sqlite3'),
+  dependency('simdjson'),
 ]
 
 # TODO: Change to library(). Need patching reflect-cpp first

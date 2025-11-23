@@ -1,3 +1,6 @@
+#include <simdjson.h>
+
+#include <cent/data/mime.hpp>
 #include <cent/dist/client.hpp>
 #include <cent/dist/http/smart_session.hpp>
 #include <cent/util/defer.hpp>
@@ -53,6 +56,17 @@ struct LayerSink final : public http::DataSink {
         return true;
     }
 };
+
+std::string find_manifest_ref(auto& image_index, PlatformView plat) {
+    auto arr = simdjson::ondemand::array(image_index["manifests"]);
+    for (simdjson::ondemand::object v : arr) {
+        auto doc_plat = v["platform"];
+        if (doc_plat["architecture"] == plat.arch && doc_plat["os"] == plat.os)
+            return std::string(doc_plat["digest"]);
+    }
+    raise(ErrorCode::DoesNotExist, "Could not find manifest for platform {}-{}",
+          plat.arch, plat.os);
+}
 }  // namespace
 
 class ClientImpl final : public Client {
@@ -102,4 +116,13 @@ std::unique_ptr<Client> client(http::SessionPool& session_pool) {
 }
 std::unique_ptr<Client> client() { return std::make_unique<DefaultClient>(); }
 
+void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
+    auto url = manifest_url(args.reference);
+    auto resp = client.manifest(url);
+    auto json_parser = simdjson::ondemand::parser();
+    auto doc = json_parser.iterate(resp);
+    if (doc["mediaType"] == data::mimes::oci_image_index.string_view()) {
+        auto manifest_digest = find_manifest_ref(doc, args.platform);
+    }
+}
 }  // namespace cent::dist
