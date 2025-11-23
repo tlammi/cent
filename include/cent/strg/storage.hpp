@@ -22,6 +22,8 @@ class Storage {
     virtual std::string manifest(std::string_view digest) = 0;
 
     virtual void set_config(std::string_view digest, std::string_view data) = 0;
+    virtual bool has_config(std::string_view digest) = 0;
+    virtual std::string config(std::string_view digest) = 0;
 
     virtual BlobStream* open_blob_write(std::string_view digest,
                                         size_t bytes) = 0;

@@ -88,6 +88,20 @@ class StorageImpl final : public Storage {
         insert_config(m_db, digest, data);
     }
 
+    bool has_config(std::string_view digest) override {
+        return contains(m_db, "configs", "digest", digest);
+    }
+
+    std::string config(std::string_view digest) override {
+        auto stmt = SQLite::Statement(
+            m_db, "SELECT data from configs WHERE digest = ?;");
+        stmt.bind(1, digest.data(), digest.size());
+        auto has_data = stmt.executeStep();
+        if (!has_data)
+            raise(ErrorCode::DoesNotExist, "Storage::config({})", digest);
+        return std::string(stmt.getColumn(0));
+    }
+
     BlobStream* open_blob_write(std::string_view digest,
                                 size_t bytes) override {
         sqlite3_stmt* stmt{};
