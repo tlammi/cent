@@ -17,6 +17,9 @@ namespace cent {
  * */
 template <class T>
 class BasicName {
+    template <class U>
+    friend class BasicName;
+
  public:
     static constexpr bool is_view = std::same_as<T, std::string_view>;
 
@@ -35,6 +38,12 @@ class BasicName {
 
     constexpr BasicName(T v, size_t reg_end, size_t repo_end) noexcept
         : m_v(std::move(v)), m_reg_end(reg_end), m_repo_end(repo_end) {}
+
+    template <class U>
+        requires(!std::same_as<U, T>)
+    constexpr explicit BasicName(BasicName<U> view)
+        requires(!is_view)
+        : BasicName(T{view.m_v}, view.m_reg_end, view.m_repo_end) {}
 
     constexpr BasicName(const BasicName&) = default;
     constexpr BasicName& operator=(const BasicName&) = default;

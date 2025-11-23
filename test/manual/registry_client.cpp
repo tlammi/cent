@@ -14,10 +14,27 @@ struct TextStream final : public cent::dist::BlobStream {
     }
 };
 
+struct Consumer final : public cent::dist::PullConsumer {
+    void on_manifest(cent::Manifest mfest) override {
+        std::println("received manifest: {}", mfest.config);
+    }
+    /**
+     * \brief Consume the received image config
+     * */
+    void on_config(cent::ImgConfig cfg) override {}
+
+    cent::dist::BlobStream* get_layer_stream(std::string_view digest) override {
+        assert(false);
+    }
+    void free_layer_stream(cent::dist::BlobStream* stream) override {
+        assert(false);
+    }
+};
+
 void run(int argc, char** argv) {
     if (argc != 3)
         cent::raise(cent::ErrorCode::MissingArgument,
-                    "usage: {} manifest|layer|config URL", argv[0]);
+                    "usage: {} manifest|layer|config|pull URL", argv[0]);
 
     auto cmd = std::string_view(argv[1]);
     auto pool = cent::dist::http::SimpleSessionPool();
@@ -35,9 +52,13 @@ void run(int argc, char** argv) {
         auto stream = TextStream();
         client->blob(url, stream);
         std::fputs(stream.str.c_str(), stdout);
+    } else if (cmd == "pull") {
+        auto nm = cent::NameView(argv[2]);
+        auto consumer = Consumer();
+        cent::dist::pull(*client, consumer, {.reference = nm});
     } else {
         cent::raise(cent::ErrorCode::InvalidArgument,
-                    "usage: {} manifest|layer|config URL", argv[0]);
+                    "usage: {} manifest|layer|config|pull URL", argv[0]);
     }
 }
 

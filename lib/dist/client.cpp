@@ -62,7 +62,7 @@ std::string find_manifest_ref(auto& image_index, PlatformView plat) {
     for (simdjson::ondemand::object v : arr) {
         auto doc_plat = v["platform"];
         if (doc_plat["architecture"] == plat.arch && doc_plat["os"] == plat.os)
-            return std::string(doc_plat["digest"]);
+            return std::string(v["digest"]);
     }
     raise(ErrorCode::DoesNotExist, "Could not find manifest for platform {}-{}",
           plat.arch, plat.os);
@@ -121,8 +121,34 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
     auto resp = client.manifest(url);
     auto json_parser = simdjson::ondemand::parser();
     auto doc = json_parser.iterate(resp);
-    if (doc["mediaType"] == data::mimes::oci_image_index.string_view()) {
+    if (std::string_view(doc["mediaType"]) ==
+        data::mimes::oci_image_index.string_view()) {
         auto manifest_digest = find_manifest_ref(doc, args.platform);
+        auto manifest_nm = Name(args.reference);
+        manifest_nm.set_digest(manifest_digest);
+        resp = client.manifest(manifest_url(manifest_nm));
+        doc = json_parser.iterate(resp);
     }
+    if (doc["mediaType"] != data::mimes::oci_image_manifest.string_view())
+        raise(ErrorCode::FormatError, "unexpected MIME {}",
+              std::string_view(doc["mediaType"]));
+
+    auto layers = std::vector<std::string>();
+    for (simdjson::ondemand::object v :
+         simdjson::ondemand::array(doc["layers"])) {
+        layers.push_back(std::string(v["digest"]));
+    }
+    auto annotations = std::map<std::string, std::string>();
+    for (simdjson::ondemand::field field :
+         simdjson::ondemand::object(doc["annotations"])) {
+        annotations[std::string(field.key().raw())] =
+            std::string(field.value());
+    }
+    auto manifest = Manifest{
+        .config = std::string(doc["config"]["digest"]),
+        .layers = std::move(layers),
+        .annotations = std::move(annotations),
+    };
+    consumer.on_manifest(std::move(manifest));
 }
 }  // namespace cent::dist
