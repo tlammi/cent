@@ -5,6 +5,7 @@
 
 namespace cent {
 
+using namespace std::literals;
 std::string sha256(std::span<const std::byte> data) {
     auto buf = std::array<uint8_t, SHA256_DIGEST_LENGTH>{};
     auto* ctx = EVP_MD_CTX_new();
@@ -13,9 +14,10 @@ std::string sha256(std::span<const std::byte> data) {
     unsigned int digest_len{};
     EVP_DigestFinal_ex(ctx, buf.data(), &digest_len);
     EVP_MD_CTX_free(ctx);
-    std::string out{};
-    out.resize(SHA256_DIGEST_LENGTH * 2);
-    auto it = out.begin();
+    static constexpr auto prefix = "sha256:"sv;
+    std::string out{prefix};
+    out.resize(out.size() + SHA256_DIGEST_LENGTH * 2);
+    auto it = out.begin() + prefix.size();
     for (auto byte : buf) { it = std::format_to(it, "{:02x}", byte); }
     return out;
 }
