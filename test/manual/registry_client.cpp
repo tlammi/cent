@@ -15,7 +15,14 @@ struct TextStream final : public cent::dist::BlobStream {
     }
 };
 
+struct BlobStream final : public cent::dist::BlobStream {
+    void on_chunk(std::span<const std::byte> data) override {
+        std::println("received layer chunk: {}bytes", data.size());
+    }
+};
+
 struct Consumer final : public cent::dist::PullConsumer {
+    BlobStream stream{};
     void on_manifest(cent::Manifest mfest) override {
         std::println("manifest: {}", rfl::json::write(mfest));
     }
@@ -27,10 +34,12 @@ struct Consumer final : public cent::dist::PullConsumer {
     }
 
     cent::dist::BlobStream* get_layer_stream(std::string_view digest) override {
-        assert(false);
+        std::println("setting up layer stream");
+        return &stream;
     }
     void free_layer_stream(cent::dist::BlobStream* stream) override {
-        assert(false);
+        std::println("freeing layer stream");
+        (void)stream;
     }
 };
 

@@ -162,7 +162,7 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
     }
     auto manifest = Manifest{
         .config = std::string(doc["config"]["digest"]),
-        .layers = std::move(layers),
+        .layers = layers,
         .annotations = std::move(annotations),
     };
     auto config_nm = Name(args.reference);
@@ -195,5 +195,11 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
             },
     };
     consumer.on_config(std::move(cfg));
+    auto layer_nm = Name(args.reference);
+    for (const auto& layer : layers) {
+        auto stream = consumer.layer_stream(layer);
+        layer_nm.set_digest(layer);
+        client.blob(blob_url(layer_nm), *stream);
+    }
 }
 }  // namespace cent::dist
