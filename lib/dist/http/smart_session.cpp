@@ -65,6 +65,7 @@ struct PrimaryDataSink final : public DataSink {
             state = State::Buffering;
             return true;
         }
+        if (code == 307) { return true; }
         state = State::PassThrough;
         return child_sink->on_status(code);
     }
@@ -108,11 +109,12 @@ struct PrimaryDataSink final : public DataSink {
 
 struct SmartSession::Impl {
     PrimaryDataSink data_sink{};
-    Session* primary{};
+    SessionPool* pool{};
+    SessionPool::Ptr primary{pool->session()};
 };
 
-SmartSession::SmartSession(Session& sess)
-    : m_impl(new Impl{.primary = &sess}) {}
+SmartSession::SmartSession(SessionPool& sess_pool)
+    : m_impl(new Impl{.pool = &sess_pool}) {}
 
 SmartSession::~SmartSession() = default;
 
@@ -126,16 +128,20 @@ void SmartSession::data_sink(DataSink* sink) {
 
 void SmartSession::data_src(DataSrc* src) { m_impl->primary->data_src(src); }
 
+void SmartSession::set_header(std::string_view key, std::string_view val) {
+    m_impl->primary->set_header(key, val);
+}
+
 void SmartSession::set_url(const Url& url) { m_impl->primary->set_url(url); }
 
 void SmartSession::get() {
     m_impl->primary->get();
     if (m_impl->data_sink.state == State::Challenge) {
         auto challenge = parse_challenge(m_impl->data_sink.header_buffer);
-        auto secondary = Session();
+        auto secondary = m_impl->pool->session();
         auto url = Url(std::format("{}?service={}&scope={}", challenge.realm,
                                    challenge.service, challenge.scope));
-        secondary.set_url(url);
+        secondary->set_url(url);
         struct Sink final : DataSink {
             std::string buffer{};
             bool on_status(StatusCode /*code*/) noexcept override {
@@ -152,8 +158,8 @@ void SmartSession::get() {
             }
         };
         auto sink = Sink();
-        secondary.data_sink(&sink);
-        secondary.get();
+        secondary->data_sink(&sink);
+        secondary->get();
         struct WithToken {
             std::string token;
         };

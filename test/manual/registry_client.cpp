@@ -1,29 +1,41 @@
+#include <cent/dist/client.hpp>
 #include <cent/dist/http/smart_session.hpp>
 #include <cent/dist/registry_client.hpp>
 #include <cent/exception.hpp>
 #include <print>
 
-struct VoidLayerStream final : public cent::dist::LayerStream {
+struct VoidStream final : public cent::dist::BlobStream {
     void on_chunk(std::span<const std::byte> data) override {}
+};
+
+struct TextStream final : public cent::dist::BlobStream {
+    std::string str{};
+    void on_chunk(std::span<const std::byte> data) override {
+        str.append(reinterpret_cast<const char*>(data.data()), data.size());
+    }
 };
 
 void run(int argc, char** argv) {
     if (argc != 3)
         cent::raise(cent::ErrorCode::MissingArgument,
-                    "usage: {} manifest|layer URL", argv[0]);
+                    "usage: {} manifest|layer|config URL", argv[0]);
 
     auto cmd = std::string_view(argv[1]);
-    auto raw_sess = cent::dist::http::Session();
-    auto smart_sess = cent::dist::http::SmartSession(raw_sess);
-    auto client = cent::dist::RegistryClient(smart_sess);
+    auto pool = cent::dist::http::SimpleSessionPool();
+    auto client = cent::dist::client(pool);
     if (cmd == "manifest") {
         auto url = cent::dist::manifest_url(std::string_view(argv[2]));
-        auto res = client.manifest(url);
-        std::println("{}", rfl::json::write(res, true));
+        auto res = client->manifest(url);
+        std::fputs(res.c_str(), stdout);
     } else if (cmd == "layer") {
         auto url = cent::dist::blob_url(std::string_view(argv[2]));
-        auto stream = VoidLayerStream();
-        client.layer(url, stream);
+        auto stream = VoidStream();
+        client->blob(url, stream);
+    } else if (cmd == "config") {
+        auto url = cent::dist::blob_url(std::string_view(argv[2]));
+        auto stream = TextStream();
+        client->blob(url, stream);
+        std::fputs(stream.str.c_str(), stdout);
     } else {
         cent::raise(cent::ErrorCode::InvalidArgument,
                     "usage: {} manifest|layer URL", argv[0]);

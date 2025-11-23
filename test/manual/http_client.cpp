@@ -23,8 +23,8 @@ class DataSink final : public http::DataSink {
 };
 
 int main(int argc, char** argv) {
-    auto raw_sess = http::Session();
-    auto sess = http::SmartSession(raw_sess);
+    auto pool = http::SimpleSessionPool();
+    auto sess = http::SmartSession(pool);
     auto data_sink = DataSink();
     sess.data_sink(&data_sink);
     if (argc != 2) exit(1);

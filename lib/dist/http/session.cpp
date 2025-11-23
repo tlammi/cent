@@ -89,7 +89,6 @@ int curl_debug_fn(CURL* handle, curl_infotype type, char* data, size_t len,
 }  // namespace
 
 Session::Session() : m_handle(curl_easy_init()) {
-    // TODO: throw
     if (!m_handle) { raise(ErrorCode::Generic, "curl_easy_init()"); }
     CURL_SET(m_handle, CURLOPT_FOLLOWLOCATION, 1L);
 }

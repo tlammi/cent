@@ -59,6 +59,7 @@ class AnySession {
     virtual void data_sink(DataSink* sink) = 0;
     virtual void data_src(DataSrc* src) = 0;
 
+    virtual void set_header(std::string_view key, std::string_view val) = 0;
     virtual void set_url(const Url& url) = 0;
     virtual void get() = 0;
 
@@ -81,7 +82,7 @@ class Session final : public AnySession {
     void progress_sink(ProgressSink* prog);
     void log_sink(LogSink* sink);
 
-    void set_header(std::string_view key, std::string_view val);
+    void set_header(std::string_view key, std::string_view val) override;
 
     void set_url(const Url& url) override;
 
