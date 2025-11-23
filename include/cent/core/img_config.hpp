@@ -6,7 +6,7 @@
 
 namespace cent {
 struct ImgConfig {
-    std::string digest;
+    std::string digest{};
     Platform platform{};
     struct {
         std::map<std::string, std::string> env{};

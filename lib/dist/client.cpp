@@ -170,6 +170,8 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
         .layers = layers,
         .annotations = std::move(annotations),
     };
+    // TODO: Validate
+    auto cfg_digest = manifest.config;
     auto config_nm = Name(args.reference);
     config_nm.set_digest(manifest.config);
     consumer.on_manifest(std::move(manifest));
@@ -191,6 +193,7 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
     auto env = env_to_map(doc["config"]["Env"]);
     auto cmd = to_vec(doc["config"]["Cmd"]);
     auto cfg = ImgConfig{
+        .digest = std::move(cfg_digest),
         .platform = std::move(plat),
         .config =
             {
