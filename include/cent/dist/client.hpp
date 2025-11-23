@@ -23,6 +23,18 @@ class Client {
 
     virtual std::string manifest(UrlView dst) = 0;
     virtual void blob(UrlView dst, BlobStream& stream) = 0;
+
+    [[nodiscard]] std::vector<std::byte> blob(UrlView dst) {
+        struct Stream final : BlobStream {
+            std::vector<std::byte> res{};
+            void on_chunk(std::span<const std::byte> data) override {
+                res.append_range(data);
+            }
+        };
+        Stream s{};
+        blob(dst, s);
+        return std::move(s).res;
+    }
 };
 
 std::unique_ptr<Client> client(http::SessionPool& session_pool);

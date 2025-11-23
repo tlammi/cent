@@ -4,6 +4,7 @@
 #include <cent/dist/client.hpp>
 #include <cent/dist/http/smart_session.hpp>
 #include <cent/util/defer.hpp>
+#include <cent/util/split.hpp>
 #include <ranges>
 
 namespace cent::dist {
@@ -66,6 +67,21 @@ std::string find_manifest_ref(auto& image_index, PlatformView plat) {
     }
     raise(ErrorCode::DoesNotExist, "Could not find manifest for platform {}-{}",
           plat.arch, plat.os);
+}
+
+std::map<std::string, std::string> env_to_map(simdjson::ondemand::array arr) {
+    std::map<std::string, std::string> out{};
+    for (auto field : arr) {
+        auto [k, v] = util::split_first(field.value(), '=');
+        out[std::string(k)] = std::string(v);
+    }
+    return out;
+}
+
+std::vector<std::string> to_vec(simdjson::ondemand::array arr) {
+    std::vector<std::string> out{};
+    for (auto field : arr) { out.push_back(std::string(field.value())); }
+    return out;
 }
 }  // namespace
 
@@ -149,6 +165,35 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
         .layers = std::move(layers),
         .annotations = std::move(annotations),
     };
+    auto config_nm = Name(args.reference);
+    config_nm.set_digest(manifest.config);
     consumer.on_manifest(std::move(manifest));
+
+    auto cfg_blob = client.blob(blob_url(config_nm));
+    auto orig_size = cfg_blob.size();
+    auto required_size = orig_size + simdjson::SIMDJSON_PADDING;
+    cfg_blob.reserve(required_size);
+    while (cfg_blob.size() < required_size) cfg_blob.push_back(std::byte{});
+    auto cfg_view = std::string_view(
+        reinterpret_cast<const char*>(cfg_blob.data()), orig_size);
+    doc = json_parser.iterate(cfg_view, required_size);
+
+    auto plat = Platform{
+        .os = std::string(doc["os"]),
+        .arch = std::string(doc["architecture"]),
+
+    };
+    auto env = env_to_map(doc["config"]["Env"]);
+    auto cmd = to_vec(doc["config"]["Cmd"]);
+    auto cfg = ImgConfig{
+        .platform = std::move(plat),
+        .config =
+            {
+                .env = std::move(env),
+                .cmd = std::move(cmd),
+                .working_dir = std::string(doc["config"]["WorkingDir"]),
+            },
+    };
+    consumer.on_config(std::move(cfg));
 }
 }  // namespace cent::dist

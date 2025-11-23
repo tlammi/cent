@@ -2,6 +2,7 @@
 #include <cent/dist/http/smart_session.hpp>
 #include <cent/exception.hpp>
 #include <print>
+#include <rfl/json.hpp>
 
 struct VoidStream final : public cent::dist::BlobStream {
     void on_chunk(std::span<const std::byte> data) override {}
@@ -16,12 +17,14 @@ struct TextStream final : public cent::dist::BlobStream {
 
 struct Consumer final : public cent::dist::PullConsumer {
     void on_manifest(cent::Manifest mfest) override {
-        std::println("received manifest: {}", mfest.config);
+        std::println("manifest: {}", rfl::json::write(mfest));
     }
     /**
      * \brief Consume the received image config
      * */
-    void on_config(cent::ImgConfig cfg) override {}
+    void on_config(cent::ImgConfig cfg) override {
+        std::println("config: {}", rfl::json::write(cfg));
+    }
 
     cent::dist::BlobStream* get_layer_stream(std::string_view digest) override {
         assert(false);
