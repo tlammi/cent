@@ -1,5 +1,6 @@
 #include <simdjson.h>
 
+#include <cent/core/crypto.hpp>
 #include <cent/data/mime.hpp>
 #include <cent/dist/client.hpp>
 #include <cent/dist/http/smart_session.hpp>
@@ -149,6 +150,9 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
         raise(ErrorCode::FormatError, "unexpected MIME {}",
               std::string_view(doc["mediaType"]));
 
+    // TODO: Validate
+    auto digest = sha256(resp);
+
     auto layers = std::vector<std::string>();
     for (simdjson::ondemand::object v :
          simdjson::ondemand::array(doc["layers"])) {
@@ -161,6 +165,7 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
             std::string(field.value());
     }
     auto manifest = Manifest{
+        .digest = std::move(digest),
         .config = std::string(doc["config"]["digest"]),
         .layers = layers,
         .annotations = std::move(annotations),
