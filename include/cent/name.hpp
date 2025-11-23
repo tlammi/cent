@@ -89,12 +89,25 @@ class BasicName {
     constexpr void set_tag(std::string_view new_tag)
         requires(!is_view)
     {
+        // TODO: Exceptions might corrupt
         if (m_repo_end != std::string_view::npos) m_v.resize(m_repo_end);
         m_repo_end = std::string_view::npos;
         if (!new_tag.empty()) {
             m_v.push_back(':');
             m_repo_end = m_v.size() - 1;
             m_v.append(new_tag);
+        }
+    }
+    constexpr void set_digest(std::string_view new_digest)
+        requires(!is_view)
+    {
+        // TODO: Exceptions might corrupt
+        if (m_repo_end != std::string_view::npos) m_v.resize(m_repo_end);
+        m_repo_end = std::string_view::npos;
+        if (!new_digest.empty()) {
+            m_v.push_back('@');
+            m_repo_end = m_v.size() - 1;
+            m_v.append(new_digest);
         }
     }
 

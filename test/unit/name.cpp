@@ -60,3 +60,33 @@ TEST(ReplaceSuffix, TagToNone) {
     ASSERT_EQ(nm, "docker.io/foo/bar:latest"_nm)
         << nm.registry() << '|' << nm.repository() << '|' << nm.suffix();
 }
+
+TEST(ReplaceSuffix, DigestToDigest) {
+    auto nm = Name("docker.io/foo/bar@baz:asdf");
+    nm.set_digest("foo:bar");
+    ASSERT_EQ(nm, "docker.io/foo/bar@foo:bar"_nm);
+}
+
+TEST(ReplaceSuffix, NoneToDigest) {
+    auto nm = Name("docker.io/foo/bar");
+    nm.set_digest("foo:bar");
+    ASSERT_EQ(nm, "docker.io/foo/bar@foo:bar"_nm);
+}
+
+TEST(ReplaceSuffix, DigestToNone) {
+    auto nm = Name("docker.io/foo/bar@foo:bar");
+    nm.set_digest("");
+    ASSERT_EQ(nm, "docker.io/foo/bar:latest"_nm);
+}
+
+TEST(ReplaceSuffix, TagToDigest) {
+    auto nm = Name("docker.io/foo/bar:baz");
+    nm.set_digest("asd:ghj");
+    ASSERT_EQ(nm, "docker.io/foo/bar@asd:ghj"_nm);
+}
+
+TEST(ReplaceSuffix, DigestToTag) {
+    auto nm = Name("docker.io/foo/bar@baz:asd");
+    nm.set_tag("tag");
+    ASSERT_EQ(nm, "docker.io/foo/bar:tag"_nm);
+}
