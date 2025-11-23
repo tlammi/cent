@@ -10,6 +10,7 @@ subdir('util')
 subdir('data')
 subdir('dist')
 subdir('strg')
+subdir('core')
 
 fs = import('fs')
 

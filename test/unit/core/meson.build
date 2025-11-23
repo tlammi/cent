@@ -1,0 +1,1 @@
+TESTS += files('crypto.cpp')

@@ -17,6 +17,7 @@ libdeps = [
   dependency('sqlitecpp', fallback: ['sqlitecpp', 'sqlitecpp_dep']),
   dependency('sqlite3'),
   dependency('simdjson'),
+  dependency('openssl'),
 ]
 
 # TODO: Change to library(). Need patching reflect-cpp first
