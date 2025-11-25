@@ -25,6 +25,8 @@ libcent = static_library('cent', SRCS, include_directories: incdir, dependencies
 
 libcent_dep = declare_dependency(include_directories: incdir, link_with: libcent, dependencies: libdeps)
 
+lib_incdir = include_directories('lib')
+
 subdir('bin')
 
 subdir('test')

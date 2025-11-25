@@ -19,7 +19,7 @@ foreach t: TESTS
   n = fs.replace_suffix(n, '')
   n = n.replace('/', '.')
   n = '@0@.test'.format(n)
-  e = executable(n, t, dependencies: test_deps)
+  e = executable(n, t, dependencies: test_deps, include_directories: lib_incdir)
   test(n, e)
 endforeach
 

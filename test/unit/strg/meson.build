@@ -1,1 +1,1 @@
-TESTS += files('storage.cpp')
+TESTS += files('storage.cpp', 'sqlite.cpp')

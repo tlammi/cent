@@ -1,1 +1,1 @@
-SRCS += files('storage.cpp')
+SRCS += files('storage.cpp', 'sqlite.cpp')
