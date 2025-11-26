@@ -139,6 +139,8 @@ BlobIn::BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row) {
     check(res);
 }
 
+BlobIn::~BlobIn() { sqlite3_blob_close(m_b); }
+
 BlobIn& BlobIn::operator>>(std::vector<std::byte>& out) {
     assert(out.size() <= std::numeric_limits<int>::max());
     auto res = sqlite3_blob_read(m_b, out.data(), out.size(), m_offset);

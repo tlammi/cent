@@ -202,6 +202,19 @@ class BlobOut {
 class BlobIn {
  public:
     BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
+    BlobIn(const BlobIn&) = delete;
+    BlobIn& operator=(const BlobIn&) = delete;
+
+    constexpr BlobIn(BlobIn&& other) noexcept
+        : m_b(std::exchange(other.m_b, nullptr)), m_offset(other.m_offset) {}
+
+    BlobIn& operator=(BlobIn&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
+    ~BlobIn();
 
     BlobIn& operator>>(std::vector<std::byte>& out);
 
