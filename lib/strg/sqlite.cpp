@@ -11,38 +11,8 @@ void check(int code) {
         raise(ErrorCode::Generic, "{}", sqlite3_errstr(code));
 }
 
-template <class T>
-constexpr size_t flattened_size(const auto& v) {
-    if constexpr (std::convertible_to<decltype(v), T>)
-        return 1;
-    else
-        return v.size();
-}
-
-template <class T>
-void flatten_apply(std::vector<T>& vec, auto&& v) {
-    if constexpr (std::convertible_to<decltype(v), T>) {
-        vec.push_back(std::forward<decltype(v)>(v));
-    } else {
-        for (auto&& value : std::forward<decltype(v)>(v)) {
-            vec.push_back(std::forward<decltype(value)>(value));
-        }
-    }
-}
-
-template <class T, class... Ts>
-std::vector<T> flatten(Ts&&... ts) {
-    size_t vec_size = (flattened_size(ts) + ...);
-    auto out = std::vector<T>();
-    out.reserve(vec_size);
-    (flatten_apply(out, std::forward<Ts>(ts)), ...);
-    return out;
-}
-
-template <class... Ts>
-std::string flatten_join(Ts&&... ts) {
-    return flatten<std::string_view>(std::forward<Ts>(ts)...) |
-           std::views::join_with(" "sv) | std::ranges::to<std::string>();
+auto join(std::span<std::string_view> span) {
+    return span | std::views::join_with(" "sv) | std::ranges::to<std::string>();
 }
 
 }  // namespace
@@ -59,6 +29,15 @@ template <>
 std::string column(sqlite3_stmt* stmt, int col) {
     const auto* data = sqlite3_column_text(stmt, col);
     return std::string(reinterpret_cast<const char*>(data));
+}
+
+template <>
+std::vector<std::byte> column(sqlite3_stmt* stmt, int col) {
+    const auto* data = sqlite3_column_blob(stmt, col);
+    auto bytes = sqlite3_column_bytes(stmt, col);
+    auto span = std::span<const std::byte>(
+        reinterpret_cast<const std::byte*>(data), bytes);
+    return {span.begin(), span.end()};
 }
 
 bool step_query(sqlite3_stmt* stmt) {
@@ -82,6 +61,12 @@ void bind(sqlite3_stmt* stmt, int idx, std::string_view val) {
     auto res = sqlite3_bind_text(stmt, idx, val.data(), val.size(), nullptr);
     check(res);
 }
+void bind(sqlite3_stmt* stmt, int idx, Zeros val) {
+    assert(idx > 0);
+    assert(val.count <= std::numeric_limits<int>::max());
+    auto res = sqlite3_bind_zeroblob(stmt, idx, val.count);
+    check(res);
+}
 
 }  // namespace detail
 
@@ -102,6 +87,14 @@ Stmt::Stmt(Connection& c, std::string_view stmt) {
         sqlite3_prepare_v2(c.raw(), stmt.data(), stmt.size(), &m_s, nullptr);
     check(res);
 }
+
+Stmt::Stmt(Connection& c, std::span<std::string_view> words) {
+    auto joined = join(words);
+    auto res = sqlite3_prepare_v2(c.raw(), joined.data(), joined.size(), &m_s,
+                                  nullptr);
+    check(res);
+}
+
 Stmt::~Stmt() { sqlite3_finalize(m_s); }
 
 void Stmt::execute() {
@@ -116,6 +109,21 @@ void Stmt::execute() {
                 raise(ErrorCode::Generic, "{}", sqlite3_errstr(res));
         }
     }
+}
+BlobOut::BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row) {
+    static constexpr int open_rw = 1;
+    auto res = sqlite3_blob_open(c.raw(), db.c_str(), tbl.c_str(),
+                                 column.c_str(), row, open_rw, &m_b);
+    check(res);
+}
+BlobOut::~BlobOut() { sqlite3_blob_close(m_b); }
+
+BlobOut& BlobOut::operator<<(std::span<const std::byte> data) {
+    assert(data.size() <= std::numeric_limits<int>::max());
+    auto res = sqlite3_blob_write(m_b, data.data(), data.size(), m_offset);
+    check(res);
+    m_offset += data.size();
+    return *this;
 }
 
 }  // namespace cent::strg::sqlite

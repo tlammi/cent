@@ -11,6 +11,11 @@
 #include <vector>
 
 namespace cent::strg::sqlite {
+
+struct Zeros {
+    size_t count;
+};
+
 namespace detail {
 // Specialized in sqlite.cpp
 template <class T>
@@ -32,6 +37,7 @@ bool step_query(sqlite3_stmt* stmt);
 
 void bind(sqlite3_stmt* stmt, int idx, int64_t val);
 void bind(sqlite3_stmt* stmt, int idx, std::string_view val);
+void bind(sqlite3_stmt* stmt, int idx, Zeros val);
 
 template <int Idx, class T, class... Ts>
 void bind_recurse(sqlite3_stmt* stmt, T&& t, Ts&&... ts) {
@@ -131,6 +137,7 @@ class Stmt {
  public:
     constexpr Stmt() noexcept = default;
     Stmt(Connection& c, std::string_view stmt);
+    Stmt(Connection& c, std::span<std::string_view> words);
 
     Stmt(const Stmt&) = delete;
     Stmt& operator=(const Stmt&) = delete;
@@ -161,6 +168,41 @@ class Stmt {
 
  private:
     sqlite3_stmt* m_s{};
+};
+
+inline void execute(Connection& c, std::string_view stmt) {
+    Stmt(c, stmt).execute();
+}
+
+class BlobOut {
+ public:
+    BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
+    BlobOut(const BlobOut&) = delete;
+    BlobOut& operator=(const BlobOut&) = delete;
+
+    constexpr BlobOut(BlobOut&& other) noexcept
+        : m_b(std::exchange(other.m_b, nullptr)), m_offset(other.m_offset) {}
+
+    BlobOut& operator=(BlobOut&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
+    ~BlobOut();
+
+    BlobOut& operator<<(std::span<const std::byte> data);
+
+ private:
+    sqlite3_blob* m_b{};
+    int m_offset{};
+};
+
+class BlobIn {
+ public:
+    BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
+
+ private:
 };
 
 }  // namespace cent::strg::sqlite
