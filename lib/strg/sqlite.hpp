@@ -38,10 +38,11 @@ bool step_query(sqlite3_stmt* stmt);
 void bind(sqlite3_stmt* stmt, int idx, int64_t val);
 void bind(sqlite3_stmt* stmt, int idx, std::string_view val);
 void bind(sqlite3_stmt* stmt, int idx, Zeros val);
+void bind(sqlite3_stmt* stmt, int idx, std::span<const std::byte> val);
 
 template <int Idx, class T, class... Ts>
 void bind_recurse(sqlite3_stmt* stmt, T&& t, Ts&&... ts) {
-    bind(stmt, Idx, std::forward<T>(t));
+    ::cent::strg::sqlite::detail::bind(stmt, Idx, std::forward<T>(t));
     if constexpr (sizeof...(Ts)) {
         bind_recurse<Idx + 1>(stmt, std::forward<Ts>(ts)...);
     }
@@ -202,7 +203,11 @@ class BlobIn {
  public:
     BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
 
+    BlobIn& operator>>(std::vector<std::byte>& out);
+
  private:
+    sqlite3_blob* m_b{};
+    int m_offset{};
 };
 
 }  // namespace cent::strg::sqlite

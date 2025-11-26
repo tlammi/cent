@@ -83,4 +83,13 @@ TEST(Blob, Read) {
     execute(conn, "CREATE TABLE tbl (data BLOB)");
     auto data = mk_vec(0x01, 0x02, 0x03, 0x04);
     Stmt(conn, "INSERT INTO tbl VALUES(?)").bind(data).execute();
+    auto v =
+        Stmt(conn, "SELECT data FROM tbl").query<std::vector<std::byte>>() |
+        std::ranges::to<std::vector>();
+    std::cerr << v.size() << '\n';
+    std::cerr << std::get<0>(v[0]).size() << '\n';
+    auto stream = BlobIn(conn, "main", "tbl", "data", 1);
+    auto out = std::vector<std::byte>(10);
+    stream >> out;
+    ASSERT_EQ(out, data);
 }

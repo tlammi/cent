@@ -67,6 +67,12 @@ void bind(sqlite3_stmt* stmt, int idx, Zeros val) {
     auto res = sqlite3_bind_zeroblob(stmt, idx, val.count);
     check(res);
 }
+void bind(sqlite3_stmt* stmt, int idx, std::span<const std::byte> val) {
+    assert(idx > 0);
+    assert(val.size() <= std::numeric_limits<int>::max());
+    auto res = sqlite3_bind_blob(stmt, idx, val.data(), val.size(), nullptr);
+    check(res);
+}
 
 }  // namespace detail
 
@@ -123,6 +129,25 @@ BlobOut& BlobOut::operator<<(std::span<const std::byte> data) {
     auto res = sqlite3_blob_write(m_b, data.data(), data.size(), m_offset);
     check(res);
     m_offset += data.size();
+    return *this;
+}
+
+BlobIn::BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row) {
+    static constexpr int open_ro = 0;
+    auto res = sqlite3_blob_open(c.raw(), db.c_str(), tbl.c_str(),
+                                 column.c_str(), row, open_ro, &m_b);
+    check(res);
+}
+
+BlobIn& BlobIn::operator>>(std::vector<std::byte>& out) {
+    assert(out.size() <= std::numeric_limits<int>::max());
+    auto res = sqlite3_blob_read(m_b, out.data(), out.size(), m_offset);
+    if (res == SQLITE_ERROR) {
+        auto bytes = sqlite3_blob_bytes(m_b);
+        out.resize(bytes);
+        return operator>>(out);
+    }
+    check(res);
     return *this;
 }
 
