@@ -175,51 +175,66 @@ inline void execute(Connection& c, std::string_view stmt) {
     Stmt(c, stmt).execute();
 }
 
+namespace detail {
+
+class BlobHandle {
+ public:
+    BlobHandle(Connection& c, CStr db, CStr tbl, CStr column, int64_t row,
+               bool readwrite);
+    BlobHandle(const BlobHandle&) = delete;
+    BlobHandle& operator=(const BlobHandle&) = delete;
+
+    BlobHandle(BlobHandle&& other) noexcept
+        : m_b(std::exchange(other.m_b, nullptr)) {};
+    BlobHandle& operator=(BlobHandle&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
+    ~BlobHandle();
+
+    sqlite3_blob* raw() const noexcept { return m_b; }
+
+ private:
+    sqlite3_blob* m_b;
+};
+
+}  // namespace detail
+
 class BlobOut {
  public:
     BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
     BlobOut(const BlobOut&) = delete;
     BlobOut& operator=(const BlobOut&) = delete;
 
-    constexpr BlobOut(BlobOut&& other) noexcept
-        : m_b(std::exchange(other.m_b, nullptr)), m_offset(other.m_offset) {}
+    BlobOut(BlobOut&& other) noexcept = default;
 
-    BlobOut& operator=(BlobOut&& other) noexcept {
-        std::destroy_at(this);
-        std::construct_at(this, std::move(other));
-        return *this;
-    }
-
-    ~BlobOut();
+    BlobOut& operator=(BlobOut&& other) noexcept = default;
+    ~BlobOut() = default;
 
     BlobOut& operator<<(std::span<const std::byte> data);
 
  private:
-    sqlite3_blob* m_b{};
+    detail::BlobHandle m_b;
     int m_offset{};
 };
 
 class BlobIn {
  public:
     BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
+
     BlobIn(const BlobIn&) = delete;
     BlobIn& operator=(const BlobIn&) = delete;
 
-    constexpr BlobIn(BlobIn&& other) noexcept
-        : m_b(std::exchange(other.m_b, nullptr)), m_offset(other.m_offset) {}
-
-    BlobIn& operator=(BlobIn&& other) noexcept {
-        std::destroy_at(this);
-        std::construct_at(this, std::move(other));
-        return *this;
-    }
-
-    ~BlobIn();
+    BlobIn(BlobIn&& other) noexcept = default;
+    BlobIn& operator=(BlobIn&& other) noexcept = default;
+    ~BlobIn() = default;
 
     BlobIn& operator>>(std::vector<std::byte>& out);
 
  private:
-    sqlite3_blob* m_b{};
+    detail::BlobHandle m_b;
     int m_offset{};
 };
 

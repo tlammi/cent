@@ -116,36 +116,37 @@ void Stmt::execute() {
         }
     }
 }
-BlobOut::BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row) {
-    static constexpr int open_rw = 1;
+
+namespace detail {
+
+BlobHandle::BlobHandle(Connection& c, CStr db, CStr tbl, CStr column,
+                       int64_t row, bool readwrite) {
     auto res = sqlite3_blob_open(c.raw(), db.c_str(), tbl.c_str(),
-                                 column.c_str(), row, open_rw, &m_b);
+                                 column.c_str(), row, readwrite ? 1 : 0, &m_b);
     check(res);
 }
-BlobOut::~BlobOut() { sqlite3_blob_close(m_b); }
+BlobHandle::~BlobHandle() { sqlite3_blob_close(m_b); }
+}  // namespace detail
+BlobOut::BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row)
+    : m_b(c, db, tbl, column, row, true) {}
 
 BlobOut& BlobOut::operator<<(std::span<const std::byte> data) {
     assert(data.size() <= std::numeric_limits<int>::max());
-    auto res = sqlite3_blob_write(m_b, data.data(), data.size(), m_offset);
+    auto res =
+        sqlite3_blob_write(m_b.raw(), data.data(), data.size(), m_offset);
     check(res);
     m_offset += data.size();
     return *this;
 }
 
-BlobIn::BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row) {
-    static constexpr int open_ro = 0;
-    auto res = sqlite3_blob_open(c.raw(), db.c_str(), tbl.c_str(),
-                                 column.c_str(), row, open_ro, &m_b);
-    check(res);
-}
-
-BlobIn::~BlobIn() { sqlite3_blob_close(m_b); }
+BlobIn::BlobIn(Connection& c, CStr db, CStr tbl, CStr column, int64_t row)
+    : m_b(c, db, tbl, column, row, false) {}
 
 BlobIn& BlobIn::operator>>(std::vector<std::byte>& out) {
     assert(out.size() <= std::numeric_limits<int>::max());
-    auto res = sqlite3_blob_read(m_b, out.data(), out.size(), m_offset);
+    auto res = sqlite3_blob_read(m_b.raw(), out.data(), out.size(), m_offset);
     if (res == SQLITE_ERROR) {
-        auto bytes = sqlite3_blob_bytes(m_b);
+        auto bytes = sqlite3_blob_bytes(m_b.raw());
         out.resize(bytes);
         return operator>>(out);
     }
