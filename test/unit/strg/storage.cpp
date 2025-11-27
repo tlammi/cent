@@ -36,3 +36,17 @@ TEST(Layers, Write) {
     auto v = mk_vec(1, 2, 3, 4);
     blob << v;
 }
+
+TEST(Layers, Roundtrip) {
+    auto s = in_memory_storage();
+    auto l = s->layers();
+    auto data = mk_vec(1, 2, 3, 4);
+    {
+        auto out = l.write("foo", 100);
+        out << data;
+    }
+    auto in = l.read("foo");
+    auto res = std::vector<std::byte>(4, std::byte{});
+    in >> res;
+    ASSERT_EQ(res, data);
+}

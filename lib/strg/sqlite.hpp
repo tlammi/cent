@@ -160,6 +160,12 @@ class Stmt {
     }
 
     template <class... Ts>
+    auto query_first() {
+        for (auto v : query<Ts...>()) { return v; }
+        assert(false);
+    }
+
+    template <class... Ts>
     auto& bind(Ts&&... ts) {
         detail::bind_recurse<1>(m_s, std::forward<Ts>(ts)...);
         return *this;
@@ -238,6 +244,10 @@ class BlobIn {
     ~BlobIn() = default;
 
     BlobIn& operator>>(std::vector<std::byte>& out);
+
+    constexpr explicit operator bool() const noexcept {
+        return m_b.raw() != nullptr;
+    }
 
  private:
     detail::BlobHandle m_b;
