@@ -179,6 +179,7 @@ namespace detail {
 
 class BlobHandle {
  public:
+    constexpr BlobHandle() = default;
     BlobHandle(Connection& c, CStr db, CStr tbl, CStr column, int64_t row,
                bool readwrite);
     BlobHandle(const BlobHandle&) = delete;
@@ -197,13 +198,14 @@ class BlobHandle {
     sqlite3_blob* raw() const noexcept { return m_b; }
 
  private:
-    sqlite3_blob* m_b;
+    sqlite3_blob* m_b{};
 };
 
 }  // namespace detail
 
 class BlobOut {
  public:
+    constexpr BlobOut() = default;
     BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row);
     BlobOut(const BlobOut&) = delete;
     BlobOut& operator=(const BlobOut&) = delete;
@@ -215,8 +217,12 @@ class BlobOut {
 
     BlobOut& operator<<(std::span<const std::byte> data);
 
+    constexpr explicit operator bool() const noexcept {
+        return m_b.raw() != nullptr;
+    }
+
  private:
-    detail::BlobHandle m_b;
+    detail::BlobHandle m_b{};
     int m_offset{};
 };
 
