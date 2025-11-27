@@ -26,7 +26,9 @@ class StorageImpl final : public LayerBackend, public Storage {
  public:
     explicit StorageImpl(const char* path)
         : m_db(path, bitmask() | sqlite::OpenFlags::ReadWrite |
-                         sqlite::OpenFlags::Create) {}
+                         sqlite::OpenFlags::Create) {
+        sqlite::execute(m_db, "CREATE TABLE layers (data BLOB)");
+    }
 
     LayerBackend::Handle create_layer(std::string_view digest,
                                       size_t size) override {
@@ -51,7 +53,7 @@ class StorageImpl final : public LayerBackend, public Storage {
 
     void close(Handle h) override {}
 
-    Layers layers() override {}
+    Layers layers() override { return Layers{*this}; }
 
     void set_manifest(std::string_view digest,
                       const data::Manifest& mfest) override {}
