@@ -203,6 +203,8 @@ class BlobHandle {
 
     sqlite3_blob* raw() const noexcept { return m_b; }
 
+    void clear();
+
  private:
     sqlite3_blob* m_b{};
 };
@@ -226,6 +228,7 @@ class BlobOut {
     constexpr explicit operator bool() const noexcept {
         return m_b.raw() != nullptr;
     }
+    void clear() { m_b.clear(); }
 
  private:
     detail::BlobHandle m_b{};
@@ -248,6 +251,8 @@ class BlobIn {
     constexpr explicit operator bool() const noexcept {
         return m_b.raw() != nullptr;
     }
+
+    void clear() { m_b.clear(); }
 
  private:
     detail::BlobHandle m_b;

@@ -10,15 +10,17 @@ namespace cent::strg {
 
 class LayerBackend {
  public:
-    enum class Handle : std::uint32_t {};
+    enum class InHandle : std::uint32_t {};
+    enum class OutHandle : std::uint32_t {};
 
-    virtual Handle create_layer(std::string_view digest, size_t size) = 0;
-    virtual Handle open_layer(std::string_view digest) = 0;
+    virtual OutHandle create_layer(std::string_view digest, size_t size) = 0;
+    virtual InHandle open_layer(std::string_view digest) = 0;
 
-    virtual void write(Handle h, std::span<const std::byte> data) = 0;
-    virtual void read(Handle h, std::vector<std::byte>& data) = 0;
+    virtual void write(OutHandle h, std::span<const std::byte> data) = 0;
+    virtual void read(InHandle h, std::vector<std::byte>& data) = 0;
 
-    virtual void close(Handle h) = 0;
+    virtual void close(InHandle h) = 0;
+    virtual void close(OutHandle h) = 0;
 
  protected:
     ~LayerBackend() = default;
@@ -26,7 +28,7 @@ class LayerBackend {
 
 class LayerOut {
  public:
-    LayerOut(LayerBackend* backend, LayerBackend::Handle handle) noexcept
+    LayerOut(LayerBackend* backend, LayerBackend::OutHandle handle) noexcept
         : m_be(backend), m_h(handle) {}
     LayerOut(const LayerOut&) = delete;
     LayerOut& operator=(const LayerOut&) = delete;
@@ -51,12 +53,12 @@ class LayerOut {
 
  private:
     LayerBackend* m_be;
-    LayerBackend::Handle m_h;
+    LayerBackend::OutHandle m_h;
 };
 
 class LayerIn {
  public:
-    LayerIn(LayerBackend* backend, LayerBackend::Handle handle) noexcept
+    LayerIn(LayerBackend* backend, LayerBackend::InHandle handle) noexcept
         : m_be(backend), m_h(handle) {}
 
     LayerIn(const LayerIn&) = delete;
@@ -82,7 +84,7 @@ class LayerIn {
 
  private:
     LayerBackend* m_be;
-    LayerBackend::Handle m_h;
+    LayerBackend::InHandle m_h;
 };
 
 class Layers {

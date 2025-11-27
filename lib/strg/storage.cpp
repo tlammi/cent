@@ -36,47 +36,55 @@ class StorageImpl final : public LayerBackend, public Storage {
         sqlite::execute(m_db, "CREATE TABLE layers (digest TEXT, data BLOB)");
     }
 
-    LayerBackend::Handle create_layer(std::string_view digest,
-                                      size_t size) override {
+    LayerBackend::OutHandle create_layer(std::string_view digest,
+                                         size_t size) override {
         auto idx = zero_layer(m_db, digest, size);
         auto unused =
             std::ranges::find_if(m_blobs_out, [](const auto& v) { return !v; });
         if (unused != m_blobs_out.end()) {
             *unused = sqlite::BlobOut(m_db, "main", "layers", "data", idx);
             uint32_t diff = unused - m_blobs_out.begin();
-            return underlying_cast<LayerBackend::Handle>(diff);
+            return underlying_cast<LayerBackend::OutHandle>(diff);
         }
         m_blobs_out.push_back(
             sqlite::BlobOut(m_db, "main", "layers", "data", idx));
         uint32_t diff = m_blobs_out.size() - 1;
-        return underlying_cast<LayerBackend::Handle>(diff);
+        return underlying_cast<LayerBackend::OutHandle>(diff);
     }
 
-    LayerBackend::Handle open_layer(std::string_view digest) override {
+    LayerBackend::InHandle open_layer(std::string_view digest) override {
         auto idx = layer_idx(m_db, digest);
         auto unused =
             std::ranges::find_if(m_blobs_in, [](const auto& v) { return !v; });
         if (unused != m_blobs_in.end()) {
             *unused = sqlite::BlobIn(m_db, "main", "layers", "data", idx);
             uint32_t diff = unused - m_blobs_in.begin();
-            return underlying_cast<LayerBackend::Handle>(diff);
+            return underlying_cast<LayerBackend::InHandle>(diff);
         }
         m_blobs_in.push_back(
             sqlite::BlobIn(m_db, "main", "layers", "data", idx));
         uint32_t diff = m_blobs_in.size() - 1;
-        return underlying_cast<LayerBackend::Handle>(diff);
+        return underlying_cast<LayerBackend::InHandle>(diff);
     }
 
-    void write(Handle h, std::span<const std::byte> data) override {
+    void write(OutHandle h, std::span<const std::byte> data) override {
         auto offset = underlying_cast(h);
         m_blobs_out[offset] << data;
     }
-    void read(Handle h, std::vector<std::byte>& data) override {
+    void read(InHandle h, std::vector<std::byte>& data) override {
         auto offset = underlying_cast(h);
         m_blobs_in[offset] >> data;
     }
 
-    void close(Handle h) override {}
+    void close(OutHandle h) override {
+        auto offset = underlying_cast(h);
+        m_blobs_out[offset].clear();
+    }
+
+    void close(InHandle h) override {
+        auto offset = underlying_cast(h);
+        m_blobs_in[offset].clear();
+    }
 
     Layers layers() override { return Layers{*this}; }
 

@@ -126,6 +126,12 @@ BlobHandle::BlobHandle(Connection& c, CStr db, CStr tbl, CStr column,
     check(res);
 }
 BlobHandle::~BlobHandle() { sqlite3_blob_close(m_b); }
+
+void BlobHandle::clear() {
+    sqlite3_blob_close(m_b);
+    m_b = nullptr;
+}
+
 }  // namespace detail
 BlobOut::BlobOut(Connection& c, CStr db, CStr tbl, CStr column, int64_t row)
     : m_b(c, db, tbl, column, row, true) {}
