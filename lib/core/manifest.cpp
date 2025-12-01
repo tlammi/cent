@@ -18,6 +18,10 @@ class Impl {
 
     virtual std::string_view cfg_digest() = 0;
     virtual std::span<const std::string> layer_digests() = 0;
+    virtual std::span<const std::pair<std::string, std::string>>
+    annotations() = 0;
+
+    virtual std::string_view data() = 0;
 
  private:
 };
@@ -52,6 +56,15 @@ class Real final : public Impl {
         return m_data.layer_digests;
     }
 
+    std::span<const std::pair<std::string, std::string>> annotations()
+        override {
+        return m_data.annotations;
+    }
+
+    std::string_view data() override {
+        return {reinterpret_cast<const char*>(m_v.data()), m_v.size()};
+    }
+
  private:
     T m_v;
     simdjson::ondemand::parser m_parser{};
@@ -80,9 +93,11 @@ std::vector<std::string_view> Manifest2::layer_digests() {
 
 std::vector<std::pair<std::string_view, std::string_view>>
 Manifest2::annotations() {
-    assert(false);
+    return m_impl->annotations() |
+           std::ranges::to<
+               std::vector<std::pair<std::string_view, std::string_view>>>();
 }
 
-std::string_view Manifest2::data() noexcept { assert(false); }
+std::string_view Manifest2::data() noexcept { return m_impl->data(); }
 
 }  // namespace cent
