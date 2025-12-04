@@ -4,14 +4,18 @@
 
 using grove::Branch;
 using grove::Leaf;
+using grove::PosArg;
 using grove::SubCmd;
 
 template <>
 struct grove::meta_for<cent::bin::Pull> {
     static constexpr auto meta() {
         return Leaf{
-            .args = std::tuple{},
-            .help = "pull images",
+            .args =
+                std::tuple{
+                    PosArg{&cent::bin::Pull::image, "image", "Image to pull"},
+                },
+            .help = "pull an image",
         };
     }
 };

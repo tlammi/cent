@@ -26,7 +26,7 @@ struct Platform {
 struct ImageIndex {
     struct Entry {
         std::string digest;
-        std::string mediaType;
+        // std::string mediaType;
         Platform platform;
     };
     std::vector<Entry> manifests{};

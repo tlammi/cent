@@ -33,7 +33,8 @@ class StorageImpl final : public LayerBackend, public Storage {
         : m_db(path, bitmask() | sqlite::OpenFlags::ReadWrite |
                          sqlite::OpenFlags::Create) {
         // TODO: what if exists already?
-        sqlite::execute(m_db, "CREATE TABLE layers (digest TEXT, data BLOB)");
+        sqlite::execute(
+            m_db, "CREATE TABLE IF NOT EXISTS layers (digest TEXT, data BLOB)");
     }
 
     LayerBackend::OutHandle create_layer(std::string_view digest,
@@ -105,10 +106,11 @@ std::unique_ptr<Storage> in_memory_storage() {
 }
 
 std::unique_ptr<Storage> open_storage(const std::filesystem::path& path) {
-    return std::make_unique<StorageImpl>(path.native().c_str());
+    auto full_path = path / "cent.db";
+    return std::make_unique<StorageImpl>(full_path.native().c_str());
 }
 std::unique_ptr<Storage> create_storage(const std::filesystem::path& path) {
-    // TODO: Implement
+    std::filesystem::create_directories(path);
     return open_storage(path);
 }
 }  // namespace cent::strg
