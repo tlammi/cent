@@ -23,14 +23,14 @@ struct BlobStream final : public cent::dist::BlobStream {
 
 struct Consumer final : public cent::dist::PullConsumer {
     BlobStream stream{};
-    void on_manifest(cent::Manifest mfest) override {
-        std::println("manifest: {}", rfl::json::write(mfest));
+    void on_manifest(std::string_view mfest) override {
+        std::println("manifest: {}", mfest);
     }
     /**
      * \brief Consume the received image config
      * */
-    void on_config(cent::ImgConfig cfg) override {
-        std::println("config: {}", rfl::json::write(cfg));
+    void on_config(std::string_view cfg) override {
+        std::println("config: {}", cfg);
     }
 
     cent::dist::BlobStream* get_layer_stream(std::string_view digest) override {

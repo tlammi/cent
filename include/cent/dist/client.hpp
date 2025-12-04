@@ -59,11 +59,11 @@ class PullConsumer {
     /**
      * \brief Consume the received manifest
      * */
-    virtual void on_manifest(Manifest mfest) = 0;
+    virtual void on_manifest(std::string_view mfest) = 0;
     /**
      * \brief Consume the received image config
      * */
-    virtual void on_config(ImgConfig cfg) = 0;
+    virtual void on_config(std::string_view cfg) = 0;
 
     template <class... Ts>
     BlobStreamPtr layer_stream(Ts&&... ts) {

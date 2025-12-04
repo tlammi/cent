@@ -11,6 +11,65 @@
 namespace cent::dist {
 namespace {
 
+constexpr auto SCHEMA_VERSION = 2;
+
+struct Mimed {
+    std::string mediaType;
+    int schemaVersion;
+};
+
+struct Platform {
+    std::string architecture;
+    std::string os;
+};
+
+struct ImageIndex {
+    struct Entry {
+        std::string digest;
+        std::string mediaType;
+        Platform platform;
+    };
+    std::vector<Entry> manifests{};
+};
+
+struct Manifest {
+    struct Ref {
+        std::string digest;
+        // std::string mediaType;
+        size_t size;
+    };
+
+    Ref config;
+    std::vector<Ref> layers;
+};
+
+void check_rfl(auto& res) {
+    if (!res) raise(ErrorCode::FormatError, "{}", res.error().what());
+}
+void check_schema_ver(auto& mime) {
+    if (mime->schemaVersion != SCHEMA_VERSION)
+        raise(ErrorCode::FormatError, "invalid schema version {}",
+              mime->schemaVersion);
+}
+
+std::variant<ImageIndex, Manifest> parse_manifest(std::string_view msg) {
+    auto mime = rfl::json::read<Mimed>(msg);
+    check_rfl(mime);
+    if (mime->mediaType == data::mimes::oci_image_index) {
+        check_schema_ver(mime);
+        auto idx = rfl::json::read<ImageIndex>(msg);
+        check_rfl(idx);
+        return *std::move(idx);
+    }
+    if (mime->mediaType == data::mimes::oci_image_manifest) {
+        check_schema_ver(mime);
+        auto mfest = rfl::json::read<Manifest>(msg);
+        check_rfl(mfest);
+        return *std::move(mfest);
+    }
+    raise(ErrorCode::FormatError, "Invalid MIME: {}", mime->mediaType);
+}
+
 struct TextSink final : public http::DataSink {
     std::vector<std::vector<std::byte>> chunks{};
     bool on_status(http::StatusCode code) noexcept override {
@@ -60,30 +119,17 @@ struct LayerSink final : public http::DataSink {
 };
 
 std::string find_manifest_ref(auto& image_index, PlatformView plat) {
-    auto arr = simdjson::ondemand::array(image_index["manifests"]);
-    for (simdjson::ondemand::object v : arr) {
-        auto doc_plat = v["platform"];
-        if (doc_plat["architecture"] == plat.arch && doc_plat["os"] == plat.os)
-            return std::string(v["digest"]);
+    const auto& arr = image_index.manifests;
+    for (const auto& entry : arr) {
+        const auto& doc_plat = entry.platform;
+        if (doc_plat.architecture == plat.arch && doc_plat.os == plat.os) {
+            return entry.digest;
+        }
     }
     raise(ErrorCode::DoesNotExist, "Could not find manifest for platform {}-{}",
           plat.arch, plat.os);
 }
 
-std::map<std::string, std::string> env_to_map(simdjson::ondemand::array arr) {
-    std::map<std::string, std::string> out{};
-    for (auto field : arr) {
-        auto [k, v] = util::split_first(field.value(), '=');
-        out[std::string(k)] = std::string(v);
-    }
-    return out;
-}
-
-std::vector<std::string> to_vec(simdjson::ondemand::array arr) {
-    std::vector<std::string> out{};
-    for (auto field : arr) { out.push_back(std::string(field.value())); }
-    return out;
-}
 }  // namespace
 
 class ClientImpl final : public Client {
@@ -136,73 +182,35 @@ std::unique_ptr<Client> client() { return std::make_unique<DefaultClient>(); }
 void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
     auto url = manifest_url(args.reference);
     auto resp = client.manifest(url);
-    auto json_parser = simdjson::ondemand::parser();
-    auto doc = json_parser.iterate(resp);
-    if (std::string_view(doc["mediaType"]) ==
-        data::mimes::oci_image_index.string_view()) {
-        auto manifest_digest = find_manifest_ref(doc, args.platform);
+    auto manifest = parse_manifest(resp);
+    if (std::holds_alternative<ImageIndex>(manifest)) {
+        auto manifest_digest =
+            find_manifest_ref(std::get<ImageIndex>(manifest), args.platform);
         auto manifest_nm = Name(args.reference);
         manifest_nm.set_digest(manifest_digest);
         resp = client.manifest(manifest_url(manifest_nm));
-        doc = json_parser.iterate(resp);
+        manifest = parse_manifest(resp);
+        if (!std::holds_alternative<Manifest>(manifest))
+            raise(ErrorCode::FormatError, "Could not parse manifest: '{}'",
+                  resp);
     }
-    if (doc["mediaType"] != data::mimes::oci_image_manifest.string_view())
-        raise(ErrorCode::FormatError, "unexpected MIME {}",
-              std::string_view(doc["mediaType"]));
-
     // TODO: Validate
     auto digest = sha256(resp);
+    consumer.on_manifest(resp);
 
-    auto layers = std::vector<std::string>();
-    for (simdjson::ondemand::object v :
-         simdjson::ondemand::array(doc["layers"])) {
-        layers.push_back(std::string(v["digest"]));
-    }
-    auto annotations = std::map<std::string, std::string>();
-    for (simdjson::ondemand::field field :
-         simdjson::ondemand::object(doc["annotations"])) {
-        annotations[std::string(field.key().raw())] =
-            std::string(field.value());
-    }
-    auto manifest = Manifest{
-        .digest = std::move(digest),
-        .config = std::string(doc["config"]["digest"]),
-        .layers = layers,
-        .annotations = std::move(annotations),
-    };
-    // TODO: Validate
-    auto cfg_digest = manifest.config;
+    auto layers = std::get<Manifest>(manifest).layers |
+                  std::views::transform([](const auto& i) -> std::string_view {
+                      return i.digest;
+                  }) |
+                  std::ranges::to<std::vector>();
+
     auto config_nm = Name(args.reference);
-    config_nm.set_digest(manifest.config);
-    consumer.on_manifest(std::move(manifest));
+    config_nm.set_digest(std::get<Manifest>(manifest).config.digest);
 
     auto cfg_blob = client.blob(blob_url(config_nm));
-    auto orig_size = cfg_blob.size();
-    auto required_size = orig_size + simdjson::SIMDJSON_PADDING;
-    cfg_blob.reserve(required_size);
-    while (cfg_blob.size() < required_size) cfg_blob.push_back(std::byte{});
     auto cfg_view = std::string_view(
-        reinterpret_cast<const char*>(cfg_blob.data()), orig_size);
-    doc = json_parser.iterate(cfg_view, required_size);
-
-    auto plat = Platform{
-        .os = std::string(doc["os"]),
-        .arch = std::string(doc["architecture"]),
-
-    };
-    auto env = env_to_map(doc["config"]["Env"]);
-    auto cmd = to_vec(doc["config"]["Cmd"]);
-    auto cfg = ImgConfig{
-        .digest = std::move(cfg_digest),
-        .platform = std::move(plat),
-        .config =
-            {
-                .env = std::move(env),
-                .cmd = std::move(cmd),
-                .working_dir = std::string(doc["config"]["WorkingDir"]),
-            },
-    };
-    consumer.on_config(std::move(cfg));
+        reinterpret_cast<const char*>(cfg_blob.data()), cfg_blob.size());
+    consumer.on_config(cfg_view);
     auto layer_nm = Name(args.reference);
     for (const auto& layer : layers) {
         auto stream = consumer.layer_stream(layer);

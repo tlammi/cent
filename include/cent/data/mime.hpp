@@ -79,6 +79,10 @@ class BasicMime {
         return string_view() <=> other.string_view();
     }
 
+    constexpr bool operator==(std::string_view s) const noexcept {
+        return m_v == s;
+    }
+
  private:
     T m_v;
     size_type m_slash;
