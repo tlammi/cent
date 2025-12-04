@@ -109,8 +109,8 @@ class Storage {
     virtual Layers layers() = 0;
 
     virtual void set_manifest(std::string_view digest,
-                              const data::Manifest& mfest) = 0;
-    virtual data::Manifest manifest(std::string_view digest) = 0;
+                              std::string_view manifest) = 0;
+    virtual std::string manifest(std::string_view digest) = 0;
 
     virtual void set_config(std::string_view digest, const ImgConfig& cfg) = 0;
     virtual ImgConfig config(std::string_view digest) = 0;

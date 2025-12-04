@@ -35,6 +35,9 @@ class StorageImpl final : public LayerBackend, public Storage {
         // TODO: what if exists already?
         sqlite::execute(
             m_db, "CREATE TABLE IF NOT EXISTS layers (digest TEXT, data BLOB)");
+        sqlite::execute(m_db,
+                        "CREATE TABLE IF NOT EXISTS manifests (digest TEXT "
+                        "PRIMARY KEY UNIQUE, data TEXT)");
     }
 
     LayerBackend::OutHandle create_layer(std::string_view digest,
@@ -90,8 +93,22 @@ class StorageImpl final : public LayerBackend, public Storage {
     Layers layers() override { return Layers{*this}; }
 
     void set_manifest(std::string_view digest,
-                      const data::Manifest& mfest) override {}
-    data::Manifest manifest(std::string_view digest) override {}
+                      std::string_view manifest) override {
+        sqlite::Stmt(m_db, "INSERT OR REPLACE INTO manifests VALUES(?,?)")
+            .bind(digest, manifest)
+            .execute();
+    }
+
+    std::string manifest(std::string_view digest) override {
+        auto res =
+            sqlite::Stmt(m_db, "SELECT data FROM manifests WHERE digest=?")
+                .bind(digest)
+                .query<std::string>() |
+            std::ranges::to<std::vector>();
+        if (res.empty())
+            raise(ErrorCode::DoesNotExist, "No manifest {} found", digest);
+        return std::get<0>(res[0]);
+    }
 
     void set_config(std::string_view digest, const ImgConfig& cfg) override {}
     ImgConfig config(std::string_view digest) override {}
