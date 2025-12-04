@@ -112,8 +112,8 @@ class Storage {
                               std::string_view manifest) = 0;
     virtual std::string manifest(std::string_view digest) = 0;
 
-    virtual void set_config(std::string_view digest, const ImgConfig& cfg) = 0;
-    virtual ImgConfig config(std::string_view digest) = 0;
+    virtual void set_config(std::string_view digest, std::string_view cfg) = 0;
+    virtual std::string config(std::string_view digest) = 0;
 };
 
 std::unique_ptr<Storage> in_memory_storage();

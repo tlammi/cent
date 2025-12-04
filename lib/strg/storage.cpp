@@ -32,11 +32,14 @@ class StorageImpl final : public LayerBackend, public Storage {
     explicit StorageImpl(const char* path)
         : m_db(path, bitmask() | sqlite::OpenFlags::ReadWrite |
                          sqlite::OpenFlags::Create) {
-        // TODO: what if exists already?
-        sqlite::execute(
-            m_db, "CREATE TABLE IF NOT EXISTS layers (digest TEXT, data BLOB)");
+        sqlite::execute(m_db,
+                        "CREATE TABLE IF NOT EXISTS layers (digest TEXT "
+                        "PRIMARY KEY UNIQUE, data BLOB)");
         sqlite::execute(m_db,
                         "CREATE TABLE IF NOT EXISTS manifests (digest TEXT "
+                        "PRIMARY KEY UNIQUE, data TEXT)");
+        sqlite::execute(m_db,
+                        "CREATE TABLE IF NOT EXISTS configs (digest TEXT "
                         "PRIMARY KEY UNIQUE, data TEXT)");
     }
 
@@ -110,8 +113,21 @@ class StorageImpl final : public LayerBackend, public Storage {
         return std::get<0>(res[0]);
     }
 
-    void set_config(std::string_view digest, const ImgConfig& cfg) override {}
-    ImgConfig config(std::string_view digest) override {}
+    void set_config(std::string_view digest, std::string_view cfg) override {
+        sqlite::Stmt(m_db, "INSERT OR REPLACE INTO configs VALUES(?,?)")
+            .bind(digest, cfg)
+            .execute();
+    }
+
+    std::string config(std::string_view digest) override {
+        auto res = sqlite::Stmt(m_db, "SELECT data FROM configs WHERE digest=?")
+                       .bind(digest)
+                       .query<std::string>() |
+                   std::ranges::to<std::vector>();
+        if (res.empty())
+            raise(ErrorCode::DoesNotExist, "No config {} found", digest);
+        return std::get<0>(res[0]);
+    }
 
  private:
     sqlite::Connection m_db;

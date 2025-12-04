@@ -13,7 +13,10 @@ namespace cent::bin {
 namespace {
 
 struct BlobStream final : public dist::BlobStream {
-    void on_chunk(std::span<const std::byte> data) override {}
+    strg::LayerOut out;
+    explicit BlobStream(strg::LayerOut out) : out(std::move(out)) {}
+
+    void on_chunk(std::span<const std::byte> data) override { out << data; }
 };
 
 struct PullConsumer final : dist::PullConsumer {
@@ -23,15 +26,15 @@ struct PullConsumer final : dist::PullConsumer {
     explicit PullConsumer(strg::Storage* s) : store(s) {}
 
     void on_manifest(std::string_view mfest) override {
-        store->set_manifest("foo", {});
+        store->set_manifest("foo", mfest);
     }
 
     void on_config(std::string_view cfg) override {
-        store->set_config("bar", {});
+        store->set_config("bar", cfg);
     }
 
     dist::BlobStream* get_layer_stream(std::string_view digest) override {
-        streams.emplace_back();
+        streams.emplace_back(store->layers().write(digest, 1024 * 1024 * 10));
         return &streams.back();
     }
     void free_layer_stream(dist::BlobStream* stream) override {
@@ -46,7 +49,9 @@ struct PullConsumer final : dist::PullConsumer {
 struct Visitor {
     Cli* args;
     int operator()(Pull& p) {
-        auto store = strg::create_storage("/home/tlammi/.local/share/cent/");
+        auto path =
+            std::filesystem::path(std::getenv("HOME")) / ".local/share/cent/";
+        auto store = strg::create_storage(path);
         auto client = dist::client();
         auto nm = cent::NameView(p.image);
         auto consumer = PullConsumer{store.get()};
