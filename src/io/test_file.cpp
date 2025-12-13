@@ -9,6 +9,19 @@ TEST(Ctor, Default) {
     ASSERT_FALSE(f.handle());
 }
 
+TEST(Move, Ctor) {
+    auto buf = std::vector<std::byte>();
+    auto f = io::open_mem(buf);
+    auto f2 = std::move(f);
+}
+
+TEST(Move, Assign) {
+    auto buf = std::vector<std::byte>();
+    auto f = io::open_mem(buf);
+    auto f2 = io::open_mem(buf);
+    f2 = std::move(f);
+}
+
 TEST(Mem, Write) {
     auto buf = std::vector<std::byte>(64, std::byte{});
     {
@@ -43,9 +56,14 @@ TEST(Mem, ReadAll) {
 TEST(TmpFile, WriteRead) {
     auto input = std::string("foobar");
     auto output = std::string();
+    std::filesystem::path path{};
     {
-        auto f = io::tmpfile();
+        io::FileIO f{};
+        std::tie(path, f) = io::tmpfile();
         f.write(input);
+    }
+    {
+        auto f = io::open(path, io::openr);
         f.seek(0, io::SeekOrigin::Set);
         f >> output;
     }

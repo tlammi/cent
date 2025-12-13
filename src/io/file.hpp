@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <filesystem>
 #include <memory>
 #include <span>
@@ -19,7 +20,6 @@ struct openw_t {};
 constexpr openw_t openw{};
 
 struct openrw_t {};
-constexpr openrw_t openrw{};
 
 consteval openrw_t operator|(openr_t, openw_t) noexcept { return {}; }
 consteval openrw_t operator|(openw_t, openr_t) noexcept { return {}; }
@@ -27,7 +27,7 @@ consteval openrw_t operator|(openw_t, openr_t) noexcept { return {}; }
 class File {
  public:
     constexpr File() noexcept = default;
-    explicit File(FILE* stream) noexcept : m_str(stream) {}
+    explicit File(FILE* stream) noexcept : m_str(stream) { assert(stream); }
     File(const File&) = delete;
     File& operator=(const File&) = delete;
 
@@ -39,7 +39,7 @@ class File {
         return *this;
     }
 
-    ~File();
+    virtual ~File();
 
     FILE* handle() noexcept;
     int fd();
@@ -54,6 +54,18 @@ class File {
 class FileI : virtual public File {
  public:
     using File::File;
+
+    FileI(const FileI&) = delete;
+    FileI& operator=(const FileI&) = delete;
+
+    FileI(FileI&& other) noexcept = default;
+
+    FileI& operator=(FileI&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
     size_t read(std::span<std::byte> buf);
     size_t read(std::span<char> buf) {
         return read(std::span<std::byte>(
@@ -74,6 +86,17 @@ class FileO : virtual public File {
  public:
     using File::File;
 
+    FileO(const FileO&) = delete;
+    FileO& operator=(const FileO&) = delete;
+
+    FileO(FileO&& other) noexcept = default;
+
+    FileO& operator=(FileO&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
     void write(std::span<const std::byte> buf);
     void write(std::string_view buf) {
         return write(std::span<const std::byte>(
@@ -84,6 +107,16 @@ class FileO : virtual public File {
 class FileIO : public FileI, public FileO {
  public:
     using FileI::FileI;
+
+    FileIO(const FileIO&) = delete;
+    FileIO& operator=(const FileIO&) = delete;
+
+    FileIO(FileIO&& other) noexcept = default;
+    FileIO& operator=(FileIO&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
 };
 
 FileI open(const std::filesystem::path& path, openr_t);
@@ -92,7 +125,7 @@ FileIO open(const std::filesystem::path& path, openrw_t);
 
 FileIO open_mem(std::span<std::byte> buf);
 
-FileIO tmpfile();
+std::pair<std::filesystem::path, FileIO> tmpfile();
 
 inline FileIO open_mem(std::span<char> buf) {
     return open_mem(

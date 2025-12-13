@@ -58,8 +58,27 @@ size_t FileI::read(std::span<std::byte> buf) {
 }
 
 void FileO::write(std::span<const std::byte> buf) {
+    assert(handle());
     auto res = fwrite(buf.data(), sizeof(std::byte), buf.size(), handle());
     if (res < buf.size()) raise(ErrorCode::Generic, "fwrite()");
+}
+
+FileI open(const std::filesystem::path& path, openr_t) {
+    auto* stream = fopen(path.c_str(), "r");
+    if (!stream) raise_errno();
+    return FileI(stream);
+}
+
+FileO open(const std::filesystem::path& path, openw_t) {
+    auto* stream = fopen(path.c_str(), "w");
+    if (!stream) raise_errno();
+    return FileO(stream);
+}
+
+FileIO open(const std::filesystem::path& path, openrw_t) {
+    auto* stream = fopen(path.c_str(), "r+");
+    if (!stream) raise_errno();
+    return FileIO(stream);
 }
 
 FileIO open_mem(std::span<std::byte> buf) {
@@ -68,7 +87,7 @@ FileIO open_mem(std::span<std::byte> buf) {
     return FileIO(h);
 }
 
-FileIO tmpfile() {
+std::pair<std::filesystem::path, FileIO> tmpfile() {
     const char* envvar = ::getenv("TMPDIR");
     if (!envvar) envvar = "/tmp";
     auto template_ = std::format("{}/cent.XXXXXX", envvar);
@@ -78,7 +97,7 @@ FileIO tmpfile() {
     FILE* stream = fdopen(fd, "r+");
     if (!stream) raise_errno();
     cleanup.cancel();
-    return FileIO(stream);
+    return {std::filesystem::path(std::move(template_)), FileIO(stream)};
 }
 
 }  // namespace cent::io
