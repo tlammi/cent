@@ -52,6 +52,7 @@ int close_callback(::archive* a, void* userdata) {
 }  // namespace
 
 CStr Entry::path() const noexcept { return archive_entry_pathname(m_e); }
+size_t Entry::size() const noexcept { return archive_entry_size(m_e); }
 
 Entry& Entry::operator>>(std::span<std::byte>& buf) {
     auto read = archive_read_data(m_a, buf.data(), buf.size());

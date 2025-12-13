@@ -3,6 +3,7 @@
 #include <cent/core/img_config.hpp>
 #include <cent/data/manifest.hpp>
 #include <filesystem>
+#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -85,6 +86,52 @@ class LayerIn {
  private:
     LayerBackend* m_be;
     LayerBackend::InHandle m_h;
+};
+
+class LayerInRange {
+    static constexpr size_t buffer_size = 1024 * 1024;
+
+ public:
+    explicit LayerInRange(LayerIn layer) noexcept : m_layer(std::move(layer)) {}
+    class iterator {
+        friend LayerInRange;
+
+     public:
+        using value_type = std::span<const std::byte>;
+        using reference = value_type;
+        using difference_type = std::ptrdiff_t;
+        constexpr iterator() noexcept = default;
+
+        iterator& operator++() {
+            m_r->m_layer >> m_r->m_buf;
+            return *this;
+        }
+
+        iterator operator++(int) {
+            auto tmp = *this;
+            ++*this;
+            return tmp;
+        }
+
+        std::span<const std::byte> operator*() const noexcept {
+            return m_r->m_buf;
+        }
+
+        bool operator==(std::default_sentinel_t) const noexcept {
+            return m_r->m_buf.empty();
+        }
+
+     private:
+        explicit iterator(LayerInRange* range) noexcept : m_r(range) {}
+        LayerInRange* m_r{};
+    };
+
+    auto begin() noexcept { return iterator{this}; }
+    constexpr auto end() const noexcept { return std::default_sentinel; }
+
+ private:
+    LayerIn m_layer;
+    std::vector<std::byte> m_buf{buffer_size, std::byte{}};
 };
 
 class Layers {

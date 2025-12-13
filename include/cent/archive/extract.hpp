@@ -21,6 +21,7 @@ class Entry {
     ~Entry() = default;
 
     CStr path() const noexcept;
+    size_t size() const noexcept;
 
     Entry& operator>>(std::span<std::byte>& buf);
 

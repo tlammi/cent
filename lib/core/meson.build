@@ -1,1 +1,1 @@
-SRCS += files('crypto.cpp')
+SRCS += files('crypto.cpp', 'file.cpp')
