@@ -41,11 +41,13 @@ class File {
 
     virtual ~File();
 
-    FILE* handle() noexcept;
+    FILE* handle() const noexcept;
     int fd();
     void seek(int64_t offset, SeekOrigin orig);
     int64_t position() const;
     int64_t size();
+
+    void truncate(int64_t size);
 
  private:
     FILE* m_str{};
@@ -131,53 +133,5 @@ inline FileIO open_mem(std::span<char> buf) {
     return open_mem(
         std::span(reinterpret_cast<std::byte*>(buf.data()), buf.size()));
 }
-
-class MemMappedI {
- public:
-    explicit MemMappedI(const File& f);
-    MemMappedI(const MemMappedI&) = delete;
-    MemMappedI& operator=(const MemMappedI&) = delete;
-
-    MemMappedI(MemMappedI&& other) noexcept
-        : m_ptr(std::exchange(other.m_ptr, nullptr)), m_len(other.m_len) {}
-
-    MemMappedI& operator=(MemMappedI&& other) noexcept {
-        std::destroy_at(this);
-        std::construct_at(this, std::move(other));
-        return *this;
-    }
-
-    ~MemMappedI();
-
-    std::span<const std::byte> buffer();
-
- private:
-    void* m_ptr;
-    size_t m_len;
-};
-
-class MemMappedO {
- public:
-    explicit MemMappedO(const File& f);
-    MemMappedO(const MemMappedO&) = delete;
-    MemMappedO& operator=(const MemMappedO&) = delete;
-
-    MemMappedO(MemMappedO&& other) noexcept
-        : m_ptr(std::exchange(other.m_ptr, nullptr)), m_len(other.m_len) {}
-
-    MemMappedO& operator=(MemMappedO&& other) noexcept {
-        std::destroy_at(this);
-        std::construct_at(this, std::move(other));
-        return *this;
-    }
-
-    ~MemMappedO();
-
-    std::span<std::byte> buffer();
-
- private:
-    void* m_ptr;
-    size_t m_len;
-};
 
 }  // namespace cent::io

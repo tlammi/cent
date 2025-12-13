@@ -22,7 +22,7 @@ auto convert_orig(SeekOrigin orig) {
 File::~File() {
     if (m_str) fclose(m_str);
 }
-FILE* File::handle() noexcept { return m_str; }
+FILE* File::handle() const noexcept { return m_str; }
 
 int File::fd() {
     assert(m_str);
@@ -48,6 +48,10 @@ int64_t File::size() {
     auto last = position();
     seek(initial, SeekOrigin::Set);
     return last;
+}
+void File::truncate(int64_t size) {
+    auto res = ftruncate64(fd(), size);
+    if (res < 0) raise_errno();
 }
 
 size_t FileI::read(std::span<std::byte> buf) {
