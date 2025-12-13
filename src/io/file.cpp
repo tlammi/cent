@@ -2,7 +2,8 @@
 
 #include <cassert>
 
-#include "../error.hpp"
+#include "error.hpp"
+#include "util/defer.hpp"
 
 namespace cent::io {
 
@@ -65,6 +66,19 @@ FileIO open_mem(std::span<std::byte> buf) {
     auto h = fmemopen(buf.data(), buf.size(), "r+");
     if (!h) raise_errno();
     return FileIO(h);
+}
+
+FileIO tmpfile() {
+    const char* envvar = ::getenv("TMPDIR");
+    if (!envvar) envvar = "/tmp";
+    auto template_ = std::format("{}/cent.XXXXXX", envvar);
+    auto fd = mkstemp(template_.data());
+    if (fd < 0) raise_errno();
+    auto cleanup = util::Defer([&] { close(fd); });
+    FILE* stream = fdopen(fd, "r+");
+    if (!stream) raise_errno();
+    cleanup.cancel();
+    return FileIO(stream);
 }
 
 }  // namespace cent::io

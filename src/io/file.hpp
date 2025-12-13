@@ -92,6 +92,8 @@ FileIO open(const std::filesystem::path& path, openrw_t);
 
 FileIO open_mem(std::span<std::byte> buf);
 
+FileIO tmpfile();
+
 inline FileIO open_mem(std::span<char> buf) {
     return open_mem(
         std::span(reinterpret_cast<std::byte*>(buf.data()), buf.size()));

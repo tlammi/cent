@@ -39,3 +39,15 @@ TEST(Mem, ReadAll) {
     }
     ASSERT_EQ(out, "barfoo");
 }
+
+TEST(TmpFile, WriteRead) {
+    auto input = std::string("foobar");
+    auto output = std::string();
+    {
+        auto f = io::tmpfile();
+        f.write(input);
+        f.seek(0, io::SeekOrigin::Set);
+        f >> output;
+    }
+    ASSERT_EQ(input, output);
+}
