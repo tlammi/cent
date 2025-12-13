@@ -43,7 +43,9 @@ class File {
 
     FILE* handle() noexcept;
     int fd();
-    void seek(long offset, SeekOrigin orig);
+    void seek(int64_t offset, SeekOrigin orig);
+    int64_t position() const;
+    int64_t size();
 
  private:
     FILE* m_str{};
@@ -56,6 +58,15 @@ class FileI : virtual public File {
     size_t read(std::span<char> buf) {
         return read(std::span<std::byte>(
             reinterpret_cast<std::byte*>(buf.data()), buf.size()));
+    }
+
+    template <class T>
+    auto& operator>>(T& t) {
+        auto pos = position();
+        auto sz = size();
+        t.resize(sz - pos);
+        read(t);
+        return *this;
     }
 };
 
@@ -70,11 +81,21 @@ class FileO : virtual public File {
     }
 };
 
-class FileIO : public FileI, public FileO {};
+class FileIO : public FileI, public FileO {
+ public:
+    using FileI::FileI;
+};
 
 FileI open(const std::filesystem::path& path, openr_t);
 FileO open(const std::filesystem::path& path, openw_t);
 FileIO open(const std::filesystem::path& path, openrw_t);
+
+FileIO open_mem(std::span<std::byte> buf);
+
+inline FileIO open_mem(std::span<char> buf) {
+    return open_mem(
+        std::span(reinterpret_cast<std::byte*>(buf.data()), buf.size()));
+}
 
 class MemMappedI {
  public:
