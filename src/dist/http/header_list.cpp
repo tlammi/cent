@@ -1,9 +1,10 @@
+#include "header_list.hpp"
+
 #include <curl/curl.h>
 
-#include <cent/dist/http/header_list.hpp>
-#include <cent/error.hpp>
-#include <cent/util/split.hpp>
-#include <cent/util/strip.hpp>
+#include "error.hpp"
+#include "util/split.hpp"
+#include "util/strip.hpp"
 
 namespace cent::dist::http {
 namespace {
