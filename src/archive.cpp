@@ -19,6 +19,18 @@ namespace {
 }  // namespace
 
 CStr Entry::path() const noexcept { return archive_entry_pathname(m_e); }
+size_t Entry::size() const noexcept { return archive_entry_size(m_e); }
+size_t Entry::read(std::span<std::byte> buf) {
+    auto count = archive_read_data(m_a, buf.data(), buf.size());
+    switch (count) {
+        case ARCHIVE_FATAL:
+        case ARCHIVE_WARN:
+        case ARCHIVE_RETRY:
+            raise(ErrorCode::Generic, "{}", archive_error_string(m_a));
+    }
+    return count;
+}
+
 Archive::Archive(std::span<const std::byte> buf)
     : m_entry(open_from_buf(buf), nullptr) {}
 

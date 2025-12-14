@@ -46,3 +46,12 @@ TEST(Buffer, IterateNames) {
                  std::ranges::to<std::vector>();
     ASSERT_THAT(names, testing::ElementsAre("empty.txt"));
 }
+
+TEST(Buffer, IterateData) {
+    auto a = arc::Archive(MINIMAL_ARCHIVE);
+    auto it = a.begin();
+    auto& e = *it;
+    std::vector<std::byte> res{};
+    e >> res;
+    ASSERT_TRUE(res.empty());
+}
