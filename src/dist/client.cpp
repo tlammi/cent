@@ -198,7 +198,7 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
     }
     // TODO: Validate
     auto digest = sha256(resp);
-    consumer.on_manifest(resp);
+    consumer.on_manifest(digest, resp);
 
     auto layers = std::get<Manifest>(manifest).layers |
                   std::views::transform([](const auto& i) -> std::string_view {
@@ -212,7 +212,7 @@ void pull(Client& client, PullConsumer& consumer, const PullArgs& args) {
     auto cfg_blob = client.blob(blob_url(config_nm));
     auto cfg_view = std::string_view(
         reinterpret_cast<const char*>(cfg_blob.data()), cfg_blob.size());
-    consumer.on_config(cfg_view);
+    consumer.on_config(std::get<Manifest>(manifest).config.digest, cfg_view);
     auto layer_nm = Name(args.reference);
     for (const auto& layer : layers) {
         auto stream = consumer.layer_stream(layer);

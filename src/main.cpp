@@ -25,12 +25,12 @@ struct PullConsumer final : dist::PullConsumer {
 
     explicit PullConsumer(strg::Storage* s) : store(s) {}
 
-    void on_manifest(std::string_view mfest) override {
-        store->set_manifest("foo", mfest);
+    void on_manifest(std::string_view digest, std::string_view mfest) override {
+        store->set_manifest(digest, mfest);
     }
 
-    void on_config(std::string_view cfg) override {
-        store->set_config("bar", cfg);
+    void on_config(std::string_view digest, std::string_view cfg) override {
+        store->set_config(digest, cfg);
     }
 
     dist::BlobStream* get_layer_stream(std::string_view digest) override {
