@@ -56,6 +56,8 @@ class Entry {
         return *this;
     }
 
+    Entry& operator>>(io::FileO& f);
+
     size_t read(std::span<std::byte> buf);
 
  private:
@@ -78,7 +80,7 @@ template <class It, class Sent>
 class RangeReaderImpl final : public RangeReader {
  public:
     constexpr RangeReaderImpl(It it, Sent end) noexcept
-        : m_it(it), m_end(end) {}
+        : m_it(std::move(it)), m_end(std::move(end)) {}
     std::span<const std::byte> next() override {
         if (!m_skip_inc)
             ++m_it;
@@ -96,7 +98,8 @@ class RangeReaderImpl final : public RangeReader {
 
 template <class It, class Sent>
 auto make_reader(It it, Sent end) {
-    return std::make_unique<detail::RangeReaderImpl<It, Sent>>(it, end);
+    return std::make_unique<detail::RangeReaderImpl<It, Sent>>(std::move(it),
+                                                               std::move(end));
 }
 
 }  // namespace detail
@@ -157,4 +160,5 @@ class Archive {
     Entry m_entry{};
 };
 
+void extract_to(Archive& ar, const std::filesystem::path& p);
 }  // namespace cent::archive

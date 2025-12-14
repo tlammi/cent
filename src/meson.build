@@ -31,7 +31,7 @@ endforeach
 
 
 libcent = static_library('cent', FILTERED, dependencies: DEPS)
-libcent_dep = declare_dependency(link_with: libcent)
+libcent_dep = declare_dependency(link_with: libcent, include_directories: include_directories('.'))
 
 bin_srcs = files('main.cpp', 'cli.cpp')
 cent = executable('cent', bin_srcs, dependencies: [libcent_dep, dependency('grove', fallback: ['grove', 'grove_dep'])])

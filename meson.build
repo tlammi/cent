@@ -7,6 +7,7 @@ cmake = import('cmake')
 incdir = include_directories('include')
 
 subdir('src')
+subdir('test')
 #SRCS = []
 #subdir('lib')
 #

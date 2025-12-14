@@ -1,7 +1,8 @@
 
 tests = files(
-  'http_client.cpp',
-  'registry_client.cpp',
+  #'http_client.cpp',
+  #'registry_client.cpp',
+  'extractor.cpp',
 )
 
 fs = import('fs')
