@@ -5,7 +5,7 @@ compile: build
 	cd build && meson compile
 
 build:
-	meson setup build
+	meson setup -Db_sanitize=address build
 
 run: compile
 	cd build && bin/cent
