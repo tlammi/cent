@@ -70,3 +70,23 @@ TEST(Range, Meta) {
     auto a = arc::Archive(range);
     ASSERT_EQ(a.compression_name(), "gzip");
 }
+
+TEST(Range, IterateNames) {
+    auto range = MINIMAL_ARCHIVE | std::views::chunk(7);
+    auto a = arc::Archive(range);
+    auto names = a | std::views::transform([](const auto& e) {
+                     return std::string(e.path().c_str());
+                 }) |
+                 std::ranges::to<std::vector>();
+    ASSERT_THAT(names, testing::ElementsAre("empty.txt"));
+}
+
+TEST(Range, IterateData) {
+    auto range = MINIMAL_ARCHIVE | std::views::chunk(5);
+    auto a = arc::Archive(range);
+    auto it = a.begin();
+    auto& e = *it;
+    std::vector<std::byte> res{};
+    e >> res;
+    ASSERT_TRUE(res.empty());
+}
