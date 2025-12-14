@@ -1,11 +1,15 @@
 SRCS = files('archive.cpp', 'test_archive.cpp', 'crypto.cpp')
 
 DEPS = [
+  dependency('libcurl'),
+  dependency('boost', modules: ['url']),
   dependency('libarchive'),
   dependency('reflect-cpp', include_type: 'system', fallback: ['reflect-cpp', 'reflectcpp_dep']),
   dependency('magic-enum', include_type: 'system', fallback: ['magic_enum', 'magic_enum_dep']),
   dependency('sqlitecpp', fallback: ['sqlitecpp', 'sqlitecpp_dep']),
   dependency('sqlite3'),
+  dependency('openssl'),
+  dependency('simdjson'),
 ]
 
 subdir('io')
@@ -28,6 +32,9 @@ endforeach
 
 libcent = static_library('cent', FILTERED, dependencies: DEPS)
 libcent_dep = declare_dependency(link_with: libcent)
+
+bin_srcs = files('main.cpp', 'cli.cpp')
+cent = executable('cent', bin_srcs, dependencies: [libcent_dep, dependency('grove', fallback: ['grove', 'grove_dep'])])
 
 test_deps = [dependency('gtest'), dependency('gtest_main'), libcent_dep]
 
