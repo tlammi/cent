@@ -1,2 +1,0 @@
-
-SRCS += files('images.cpp')
