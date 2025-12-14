@@ -3,12 +3,13 @@
 #include <sqlite3.h>
 
 #include <cassert>
-#include <cent/c_str.hpp>
-#include <cent/core/bitmask.hpp>
-#include <cent/error.hpp>
 #include <cstdint>
 #include <ranges>
 #include <vector>
+
+#include "bitmask.hpp"
+#include "c_str.hpp"
+#include "error.hpp"
 
 namespace cent::strg::sqlite {
 

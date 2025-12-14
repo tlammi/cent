@@ -4,10 +4,13 @@ DEPS = [
   dependency('libarchive'),
   dependency('reflect-cpp', include_type: 'system', fallback: ['reflect-cpp', 'reflectcpp_dep']),
   dependency('magic-enum', include_type: 'system', fallback: ['magic_enum', 'magic_enum_dep']),
+  dependency('sqlitecpp', fallback: ['sqlitecpp', 'sqlitecpp_dep']),
+  dependency('sqlite3'),
 ]
 
 subdir('io')
 subdir('dist')
+subdir('strg')
 
 TESTS = []
 FILTERED = []

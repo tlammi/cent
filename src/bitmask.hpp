@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cent/core/cast.hpp>
-#include <cent/core/concepts.hpp>
+#include "cast.hpp"
+#include "concepts.hpp"
 
 namespace cent {
 

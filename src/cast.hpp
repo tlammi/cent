@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cent/core/concepts.hpp>
+#include "concepts.hpp"
 
 namespace cent {
 template <enum_type E>

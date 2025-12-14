@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cent/core/img_config.hpp>
-#include <cent/data/manifest.hpp>
 #include <filesystem>
 #include <ranges>
 #include <utility>
 #include <vector>
+
+#include "img_config.hpp"
+#include "manifest.hpp"
 
 namespace cent::strg {
 
