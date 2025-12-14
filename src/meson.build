@@ -1,4 +1,7 @@
-SRCS = []
+SRCS = files('archive.cpp', 'test_archive.cpp')
+
+DEPS = [dependency('libarchive')]
+
 subdir('io')
 
 TESTS = []
@@ -15,7 +18,7 @@ foreach f : SRCS
 endforeach
 
 
-libcent = static_library('cent', FILTERED)
+libcent = static_library('cent', FILTERED, dependencies: DEPS)
 libcent_dep = declare_dependency(link_with: libcent)
 
 test_deps = [dependency('gtest'), dependency('gtest_main'), libcent_dep]
