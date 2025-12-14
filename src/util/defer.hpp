@@ -12,7 +12,9 @@ class [[nodiscard]] Defer {
     Defer& operator=(const Defer&) = delete;
     Defer(Defer&&) = delete;
     Defer& operator=(Defer&&) = delete;
-    constexpr ~Defer() noexcept(noexcept(m_fn())) {}
+    constexpr ~Defer() noexcept(noexcept(m_fn())) {
+        if (!m_cancelled) m_fn();
+    }
     constexpr void cancel(bool c = true) noexcept { m_cancelled = c; }
 
  private:
