@@ -1,14 +1,15 @@
 #pragma once
 
-#include <cent/error.hpp>
-#include <cent/static_str.hpp>
-#include <cent/util/enum_arr.hpp>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include <string>
 #include <string_view>
 
-namespace cent::data {
+#include "error.hpp"
+#include "static_str.hpp"
+#include "util/enum_arr.hpp"
+
+namespace cent::dist {
 
 template <class T>
 class BasicMime {
@@ -105,7 +106,7 @@ consteval auto operator""_mime(const char* ptr, std::size_t len) {
 }
 }  // namespace literals
 namespace mimes {
-using namespace cent::data::literals;
+using namespace cent::dist::literals;
 constexpr auto oci_image_index = "application/vnd.oci.image.index.v1+json"_mime;
 constexpr auto oci_image_manifest =
     "application/vnd.oci.image.manifest.v1+json"_mime;
@@ -116,19 +117,19 @@ constexpr auto oci_image_layer =
 
 }  // namespace mimes
 
-}  // namespace cent::data
+}  // namespace cent::dist
 
 template <class T>
-class rfl::Reflector<cent::data::BasicMime<T>> {
+class rfl::Reflector<cent::dist::BasicMime<T>> {
  public:
     using ReflType = T;
-    static rfl::Result<cent::data::Mime> to(ReflType str) noexcept {
-        auto res = cent::data::mime(std::move(str));
+    static rfl::Result<cent::dist::Mime> to(ReflType str) noexcept {
+        auto res = cent::dist::mime(std::move(str));
         if (res) return *res;
         return rfl::error(std::format("Unsupported mime '{}'", str));
     }
 
-    static ReflType from(cent::data::Mime mime) noexcept {
+    static ReflType from(cent::dist::Mime mime) noexcept {
         return std::move(mime).full();
     }
 };

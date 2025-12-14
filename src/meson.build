@@ -1,8 +1,13 @@
-SRCS = files('archive.cpp', 'test_archive.cpp')
+SRCS = files('archive.cpp', 'test_archive.cpp', 'crypto.cpp')
 
-DEPS = [dependency('libarchive')]
+DEPS = [
+  dependency('libarchive'),
+  dependency('reflect-cpp', include_type: 'system', fallback: ['reflect-cpp', 'reflectcpp_dep']),
+  dependency('magic-enum', include_type: 'system', fallback: ['magic_enum', 'magic_enum_dep']),
+]
 
 subdir('io')
+subdir('dist')
 
 TESTS = []
 FILTERED = []

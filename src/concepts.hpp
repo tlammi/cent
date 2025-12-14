@@ -11,4 +11,7 @@ concept range_of = std::ranges::range<T> && requires(T t) {
 template <class T>
 concept character_type = std::integral<T> && sizeof(T) == 1;
 
+template <class T>
+concept enum_type = std::is_enum_v<T>;
+
 }  // namespace cent

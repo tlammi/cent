@@ -1,8 +1,9 @@
 #pragma once
 
 #include <array>
-#include <cent/util/concepts.hpp>
 #include <magic_enum.hpp>
+
+#include "concepts.hpp"
 
 namespace cent::util {
 

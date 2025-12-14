@@ -1,12 +1,14 @@
+#include "client.hpp"
+
 #include <simdjson.h>
 
-#include <cent/core/crypto.hpp>
-#include <cent/data/mime.hpp>
-#include <cent/dist/client.hpp>
-#include <cent/dist/http/smart_session.hpp>
-#include <cent/util/defer.hpp>
-#include <cent/util/split.hpp>
 #include <ranges>
+
+#include "crypto.hpp"
+#include "dist/http/smart_session.hpp"
+#include "mime.hpp"
+#include "util/defer.hpp"
+#include "util/split.hpp"
 
 namespace cent::dist {
 namespace {
@@ -55,13 +57,13 @@ void check_schema_ver(auto& mime) {
 std::variant<ImageIndex, Manifest> parse_manifest(std::string_view msg) {
     auto mime = rfl::json::read<Mimed>(msg);
     check_rfl(mime);
-    if (mime->mediaType == data::mimes::oci_image_index) {
+    if (mime->mediaType == mimes::oci_image_index) {
         check_schema_ver(mime);
         auto idx = rfl::json::read<ImageIndex>(msg);
         check_rfl(idx);
         return *std::move(idx);
     }
-    if (mime->mediaType == data::mimes::oci_image_manifest) {
+    if (mime->mediaType == mimes::oci_image_manifest) {
         check_schema_ver(mime);
         auto mfest = rfl::json::read<Manifest>(msg);
         check_rfl(mfest);

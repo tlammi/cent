@@ -1,7 +1,8 @@
 #pragma once
 
 #include <boost/url.hpp>
-#include <cent/name.hpp>
+
+#include "name.hpp"
 
 namespace cent::dist {
 

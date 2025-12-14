@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cent/static_str.hpp>
 #include <string>
+
+#include "static_str.hpp"
 
 namespace cent {
 

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cent/platform.hpp>
 #include <map>
 #include <memory>
 #include <vector>
+
+#include "platform.hpp"
 
 namespace cent {
 struct ImgConfig {

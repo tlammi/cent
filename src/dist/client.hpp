@@ -1,11 +1,12 @@
 #pragma once
 
-#include <cent/core/img_config.hpp>
-#include <cent/core/manifest.hpp>
-#include <cent/dist/http/session_pool.hpp>
-#include <cent/dist/url.hpp>
-#include <cent/platform.hpp>
 #include <memory>
+
+#include "dist/http/session_pool.hpp"
+#include "dist/url.hpp"
+#include "img_config.hpp"
+#include "manifest.hpp"
+#include "platform.hpp"
 
 namespace cent::dist {
 

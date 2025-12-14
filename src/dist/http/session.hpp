@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cent/dist/http/status.hpp>
-#include <cent/dist/url.hpp>
 #include <span>
 #include <string_view>
+
+#include "dist/http/status.hpp"
+#include "dist/url.hpp"
 
 using CURL = void;
 struct curl_slist;
