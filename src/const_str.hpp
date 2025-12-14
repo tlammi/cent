@@ -49,7 +49,7 @@ class ConstStr {
     }
 
     constexpr ~ConstStr() {
-        if (m_alloc) delete m_str.data();
+        if (m_alloc) ::free(const_cast<char*>(m_str.data()));
     }
 
     constexpr operator std::string_view() const noexcept { return m_str; }
