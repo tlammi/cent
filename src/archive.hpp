@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <generator>
 
 #include "c_str.hpp"
 #include "concepts.hpp"
@@ -65,12 +66,55 @@ class Entry {
     ::archive_entry* m_e{};
 };
 
+namespace detail {
+
+class RangeReader {
+ public:
+    virtual ~RangeReader() = default;
+    virtual std::span<const std::byte> next() = 0;
+};
+
+template <class It, class Sent>
+class RangeReaderImpl final : public RangeReader {
+ public:
+    constexpr RangeReaderImpl(It it, Sent end) noexcept
+        : m_it(it), m_end(end) {}
+    std::span<const std::byte> next() override {
+        if (!m_skip_inc)
+            ++m_it;
+        else
+            m_skip_inc = false;
+        if (m_it == m_end) return {};
+        return *m_it;
+    }
+
+ private:
+    It m_it;
+    Sent m_end;
+    bool m_skip_inc{true};
+};
+
+template <class It, class Sent>
+auto make_reader(It it, Sent end) {
+    return std::make_unique<detail::RangeReaderImpl<It, Sent>>(it, end);
+}
+
+}  // namespace detail
+
 class Archive {
  public:
     constexpr Archive() noexcept = default;
 
     explicit Archive(std::span<const std::byte> buf);
 
+    template <range_of<std::span<const std::byte>> Range>
+    explicit Archive(Range&& r)
+        : Archive(detail::make_reader(r.begin(), r.end())) {}
+
+    Archive(const Archive&) = delete;
+    Archive& operator=(const Archive&) = delete;
+    Archive(Archive&&) = delete;
+    Archive& operator=(Archive&&) = delete;
     ~Archive();
 
     CStr compression_name() const noexcept;
@@ -109,6 +153,7 @@ class Archive {
     constexpr auto end() const noexcept { return std::default_sentinel; }
 
  private:
+    Archive(std::unique_ptr<detail::RangeReader> reader);
     Entry m_entry{};
 };
 

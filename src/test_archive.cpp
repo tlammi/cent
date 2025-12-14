@@ -31,7 +31,16 @@ TEST(Ctor, Default) {
     (void)a;
 }
 
-TEST(Ctor, Buffer) { auto a = arc::Archive(MINIMAL_ARCHIVE); }
+TEST(Ctor, Buffer) {
+    auto a = arc::Archive(MINIMAL_ARCHIVE);
+    (void)a;
+}
+
+TEST(Ctor, Range) {
+    auto range = MINIMAL_ARCHIVE | std::views::chunk(10);
+    auto a = arc::Archive(range);
+    (void)a;
+}
 
 TEST(Buffer, Meta) {
     auto a = arc::Archive(MINIMAL_ARCHIVE);
@@ -54,4 +63,10 @@ TEST(Buffer, IterateData) {
     std::vector<std::byte> res{};
     e >> res;
     ASSERT_TRUE(res.empty());
+}
+
+TEST(Range, Meta) {
+    auto range = MINIMAL_ARCHIVE | std::views::chunk(10);
+    auto a = arc::Archive(range);
+    ASSERT_EQ(a.compression_name(), "gzip");
 }
