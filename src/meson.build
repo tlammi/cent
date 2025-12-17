@@ -15,6 +15,7 @@ DEPS = [
 subdir('io')
 subdir('dist')
 subdir('strg')
+subdir('process')
 
 TESTS = []
 FILTERED = []

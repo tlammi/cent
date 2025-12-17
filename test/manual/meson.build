@@ -3,6 +3,8 @@ tests = files(
   #'http_client.cpp',
   #'registry_client.cpp',
   'extractor.cpp',
+  'run.cpp',
+  'search_path.cpp',
 )
 
 fs = import('fs')

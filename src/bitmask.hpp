@@ -9,6 +9,7 @@ template <enum_type E>
 class BitMask {
  public:
     using value_type = std::underlying_type_t<E>;
+    constexpr explicit BitMask() noexcept = default;
     constexpr explicit BitMask(E e) noexcept : m_v(underlying_cast(e)) {}
 
     constexpr BitMask operator|(E e) const noexcept {
