@@ -16,6 +16,8 @@ subdir('io')
 subdir('dist')
 subdir('strg')
 subdir('process')
+subdir('os')
+subdir('util')
 
 TESTS = []
 FILTERED = []

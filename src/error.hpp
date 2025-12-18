@@ -41,9 +41,11 @@ inline auto make_error(ErrorCode ec, StaticStr s) {
     Error(ec, ConstStr(s)).raise();
 }
 
-[[noreturn]] inline void raise_errno() {
-    Error(ErrorCode::Generic, ConstStr(strerror(errno))).raise();
+[[noreturn]] inline void raise_errno(int ec) {
+    Error(ErrorCode::Generic, ConstStr(strerror(ec))).raise();
 }
+
+[[noreturn]] inline void raise_errno() { raise_errno(errno); }
 
 template <class... Ts>
     requires(sizeof...(Ts) > 0)
