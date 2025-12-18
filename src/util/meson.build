@@ -1,1 +1,1 @@
-SRCS += files('test_parse.cpp')
+SRCS += files('test_parse.cpp', 'test_ranges.cpp')
