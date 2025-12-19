@@ -18,6 +18,10 @@ uid_t unpack(std::optional<uid_t> opt) {
     return *opt;
 }
 
+uid_t parse_uid(std::string_view s) {
+    return unpack(util::parse_int<uid_t>(s));
+}
+
 std::vector<IdRange> subids_from_file(const std::filesystem::path& path,
                                       const char* username, uid_t uid) {
     using namespace std::views;
@@ -33,8 +37,8 @@ std::vector<IdRange> subids_from_file(const std::filesystem::path& path,
     auto to_id_range = transform([](auto split_line) {
         auto [_, start, count] = split_line;
         return IdRange{
-            .start = unpack(util::parse_int<uid_t>(start)),
-            .count = unpack(util::parse_int<uid_t>(count)),
+            .start = parse_uid(start),
+            .count = parse_uid(count),
         };
     });
     return split_subids(data) | filter_user | to_id_range |
