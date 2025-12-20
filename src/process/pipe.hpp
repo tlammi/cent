@@ -24,6 +24,8 @@ class PipeImpl {
     }
     ~PipeImpl();
 
+    void close();
+
  protected:
     PipeImpl(int fd) noexcept : m_fd(fd) {}
     void write(std::span<const std::byte> data);
@@ -42,7 +44,10 @@ class PipeIn : detail::PipeImpl {
     using Parent = detail::PipeImpl;
 
  public:
+    using Parent::close;
+
     explicit PipeIn(int fd) : Parent(fd) {}
+
     PipeIn& operator>>(T& out) {
         Parent::read(
             std::span(reinterpret_cast<std::byte*>(std::addressof(out)),
@@ -57,6 +62,8 @@ class PipeIn<T[]> : detail::PipeImpl {
     using Parent = detail::PipeImpl;
 
  public:
+    using Parent::close;
+
     explicit PipeIn(int fd) : Parent(fd) {}
 
     PipeIn& operator>>(std::vector<T>& out) {
@@ -74,6 +81,8 @@ class PipeOut : detail::PipeImpl {
     using Parent = detail::PipeImpl;
 
  public:
+    using Parent::close;
+
     explicit PipeOut(int fd) : Parent(fd) {}
     PipeOut& operator<<(const T& in) {
         Parent::write(
@@ -89,6 +98,8 @@ class PipeOut<T[]> : detail::PipeImpl {
     using Parent = detail::PipeImpl;
 
  public:
+    using Parent::close;
+
     explicit PipeOut(int fd) : Parent(fd) {}
 
     PipeOut& operator<<(std::span<const T> in) {
