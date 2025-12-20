@@ -16,10 +16,12 @@ void PipeImpl::write(std::span<const std::byte> data) {
     ::write(m_fd, data.data(), data.size());
 }
 
-void PipeImpl::read(std::span<std::byte> data) {
+size_t PipeImpl::read(std::span<std::byte> data) {
     if (data.size() > MAX_PACKET)
         raise(ErrorCode::InvalidArgument, "Buffer size exceeds maximum size");
-    ::read(m_fd, data.data(), data.size());
+    auto res = ::read(m_fd, data.data(), data.size());
+    if (res < 0) raise_errno();
+    return res;
 }
 
 std::pair<int, int> open_pipe(bool packet_mode) {

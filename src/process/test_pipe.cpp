@@ -17,3 +17,12 @@ TEST(RoundTrip, One) {
     reader >> res;
     ASSERT_EQ(res, 1);
 }
+
+TEST(RoundTrip, Arr) {
+    auto [reader, writer] = pipe<int[]>();
+    auto data = std::vector<int>{1, 2, 3};
+    writer << data;
+    auto out = std::vector<int>(3, 0);
+    reader >> out;
+    ASSERT_EQ(out, data);
+}

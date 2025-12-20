@@ -4,6 +4,7 @@
 
 #include <span>
 #include <utility>
+#include <vector>
 
 namespace cent::process {
 
@@ -26,7 +27,7 @@ class PipeImpl {
  protected:
     PipeImpl(int fd) noexcept : m_fd(fd) {}
     void write(std::span<const std::byte> data);
-    void read(std::span<std::byte> data);
+    size_t read(std::span<std::byte> data);
 
  private:
     int m_fd;
@@ -37,6 +38,7 @@ std::pair<int, int> open_pipe(bool packet_mode);
 }  // namespace detail
 template <class T>
 class PipeIn : detail::PipeImpl {
+    static_assert(std::is_trivially_copyable_v<T>);
     using Parent = detail::PipeImpl;
 
  public:
@@ -50,7 +52,25 @@ class PipeIn : detail::PipeImpl {
 };
 
 template <class T>
+class PipeIn<T[]> : detail::PipeImpl {
+    static_assert(std::is_trivially_copyable_v<T>);
+    using Parent = detail::PipeImpl;
+
+ public:
+    explicit PipeIn(int fd) : Parent(fd) {}
+
+    PipeIn& operator>>(std::vector<T>& out) {
+        auto raw_span = std::span<std::byte>(
+            reinterpret_cast<std::byte*>(out.data()), out.size() * sizeof(T));
+        auto count = Parent::read(raw_span);
+        out.resize(count / sizeof(T));
+        return *this;
+    }
+};
+
+template <class T>
 class PipeOut : detail::PipeImpl {
+    static_assert(std::is_trivially_copyable_v<T>);
     using Parent = detail::PipeImpl;
 
  public:
@@ -59,6 +79,23 @@ class PipeOut : detail::PipeImpl {
         Parent::write(
             std::span(reinterpret_cast<const std::byte*>(std::addressof(in)),
                       sizeof(std::remove_cvref_t<T>)));
+        return *this;
+    }
+};
+
+template <class T>
+class PipeOut<T[]> : detail::PipeImpl {
+    static_assert(std::is_trivially_copyable_v<T>);
+    using Parent = detail::PipeImpl;
+
+ public:
+    explicit PipeOut(int fd) : Parent(fd) {}
+
+    PipeOut& operator<<(std::span<const T> in) {
+        auto raw_span = std::span<const std::byte>(
+            reinterpret_cast<const std::byte*>(in.data()),
+            in.size() * sizeof(T));
+        Parent::write(raw_span);
         return *this;
     }
 };
