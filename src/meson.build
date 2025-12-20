@@ -33,6 +33,9 @@ foreach f : SRCS
 endforeach
 
 
+add_project_arguments('-include', 'macros.hpp', language: 'cpp')
+
+
 libcent = static_library('cent', FILTERED, dependencies: DEPS)
 libcent_dep = declare_dependency(link_with: libcent, include_directories: include_directories('.'))
 
