@@ -1,9 +1,3 @@
-CENT_META(
-suite: unit
-)
-
-#include <gtest/gtest.h>
-
 #include "parse.hpp"
 
 using cent::util::parse_int;

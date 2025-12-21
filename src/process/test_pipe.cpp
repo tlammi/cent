@@ -1,5 +1,3 @@
-#include <gtest/gtest.h>
-
 #include "pipe.hpp"
 
 using cent::process::pipe;
