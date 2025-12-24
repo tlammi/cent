@@ -48,3 +48,9 @@ TEST(Normalize, NotOrderedNoOverlap) {
     auto expected = mk_idranges({{0, 5}, {20, 10}});
     ASSERT_EQ(normalize(r), expected);
 }
+
+TEST(Normalize, NotOrderedOverlap) {
+    auto r = mk_idranges({{20, 10}, {0, 25}});
+    auto expected = mk_idranges({{0, 30}});
+    ASSERT_EQ(normalize(r), expected);
+}
