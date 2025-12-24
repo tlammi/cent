@@ -1,5 +1,6 @@
 #include "idmap.hpp"
 
+#include <algorithm>
 #include <ranges>
 #include <vector>
 
@@ -44,8 +45,34 @@ std::vector<IdRange> subids_from_file(const std::filesystem::path& path,
     return split_subids(data) | filter_user | to_id_range |
            std::ranges::to<std::vector>();
 }
+bool overlap(const IdRange& l, const IdRange& r) noexcept {
+    if (l.start + l.count < r.start) return false;
+    if (r.start + r.count < l.start) return false;
+    return true;
+}
+
+IdRange merge(const IdRange& l, const IdRange& r) noexcept {
+    assert(overlap(l, r));
+    const auto end = r.start + r.count;
+    return {l.start, end - l.start};
+}
 
 }  // namespace
+
+std::vector<IdRange> normalize(std::vector<IdRange> ranges) {
+    if (ranges.empty()) return {};
+    std::ranges::sort(
+        ranges, [](const auto& a, const auto& b) { return a.start < b.start; });
+    auto processed = std::vector<IdRange>{ranges.front()};
+    for (const auto& r : std::span(ranges).subspan(1)) {
+        if (overlap(processed.back(), r)) {
+            processed.back() = merge(processed.back(), r);
+        } else {
+            processed.push_back(r);
+        }
+    }
+    return processed;
+}
 
 std::vector<IdRange> subuid_ranges(const char* username, uid_t uid) {
     using namespace std::views;

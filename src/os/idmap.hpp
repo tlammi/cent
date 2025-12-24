@@ -10,7 +10,11 @@ namespace cent::os {
 struct IdRange {
     uid_t start{};
     uid_t count{};
+
+    constexpr auto operator<=>(const IdRange&) const noexcept = default;
 };
+
+std::vector<IdRange> normalize(std::vector<IdRange> ranges);
 
 std::vector<IdRange> subuid_ranges(const char* username, uid_t uid);
 std::vector<IdRange> subuid_ranges(const char* username);
