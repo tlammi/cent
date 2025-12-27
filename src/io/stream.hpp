@@ -1,0 +1,138 @@
+#pragma once
+
+#include <unistd.h>
+
+#include <filesystem>
+#include <limits>
+#include <memory>
+#include <span>
+
+#include "concepts.hpp"
+
+namespace cent::io {
+namespace detail {
+
+template <character_type C, spanlike<C> S>
+constexpr auto span_cast(S& s) {
+    return std::span(reinterpret_cast<C*>(s.data()), s.size());
+}
+}  // namespace detail
+
+class Fd {
+ public:
+    constexpr Fd() noexcept = default;
+    constexpr explicit Fd(int fd) noexcept : m_fd(fd) {}
+
+    Fd(const Fd&) = delete;
+    Fd& operator=(const Fd&) = delete;
+
+    Fd(Fd&& other) noexcept : m_fd(std::exchange(other.m_fd, 0)) {}
+
+    Fd& operator=(Fd&& other) noexcept {
+        std::destroy_at(this);
+        std::construct_at(this, std::move(other));
+        return *this;
+    }
+
+    constexpr ~Fd() {
+        if (!m_fd) return;
+        ::close(m_fd);
+    }
+
+    int fd() const noexcept { return m_fd; }
+
+    int release() noexcept { return std::exchange(m_fd, 0); }
+
+    void close() noexcept {
+        if (m_fd) ::close(std::exchange(m_fd, 0));
+    }
+
+ private:
+    int m_fd;
+};
+
+class Atomic {
+ public:
+    constexpr virtual ~Atomic() noexcept = default;
+
+    virtual void commit() = 0;
+};
+
+static constexpr auto UNKNOWN_SIZE = std::numeric_limits<size_t>::max();
+
+class OStream {
+ public:
+    virtual ~OStream() = default;
+    virtual size_t size() = 0;
+    virtual size_t write(std::span<const std::byte> buf) = 0;
+    template <anyspanlike S>
+    size_t write(const S& buf) {
+        return write(detail::span_cast<const std::byte>(buf));
+    }
+};
+
+class AtomicOStream : public OStream, public Atomic {};
+
+class OFStream : public OStream {
+ public:
+    explicit constexpr OFStream(int fd) noexcept : m_fd(fd) {}
+    explicit OFStream(const char* path);
+    explicit OFStream(const std::filesystem::path& path)
+        : OFStream(path.c_str()) {}
+    size_t size() override;
+    size_t write(std::span<const std::byte> buf) override;
+
+ private:
+    Fd m_fd{};
+};
+
+class AtomicOFStream : public AtomicOStream {
+ public:
+    explicit AtomicOFStream(std::filesystem::path path);
+
+    size_t size() override;
+    size_t write(std::span<const std::byte> buf) override;
+
+    void commit() override;
+
+ private:
+    std::filesystem::path m_tgt{};
+    Fd m_fd;
+};
+
+class AnyOStream : public OStream {
+ public:
+    explicit AnyOStream(std::unique_ptr<OStream> impl) noexcept
+        : m_impl(std::move(impl)) {}
+    size_t size() override { return m_impl->size(); }
+
+    size_t write(std::span<const std::byte> buf) override {
+        return m_impl->write(buf);
+    }
+
+ private:
+    std::unique_ptr<OStream> m_impl;
+};
+
+class IStream {
+ public:
+    virtual ~IStream() = default;
+    virtual size_t size() = 0;
+    virtual size_t read(std::span<std::byte> buf) = 0;
+    template <character_type C>
+    size_t read(std::span<C> buf) {
+        return read(detail::span_cast<std::byte>(buf));
+    }
+};
+
+class IFStream : public IStream {
+ public:
+    constexpr explicit IFStream(int fd) noexcept : m_fd(fd) {}
+
+    size_t size() override;
+    size_t read(std::span<std::byte> buf) override;
+
+ private:
+    Fd m_fd;
+};
+}  // namespace cent::io
