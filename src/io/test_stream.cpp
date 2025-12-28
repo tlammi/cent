@@ -2,6 +2,8 @@
 
 #include "stream.hpp"
 
+using namespace std::literals;
+
 namespace io = cent::io;
 struct MockIStream final : public io::IStream {
     explicit MockIStream(std::vector<std::byte> buf) : buf(std::move(buf)) {}
@@ -25,21 +27,25 @@ struct MockIStream final : public io::IStream {
     }
 };
 
-template <class... Ts>
-std::vector<std::byte> mk_buf(Ts&&... ts) {
-    return {std::bit_cast<std::byte>(ts)...};
+std::vector<std::byte> mk_buf(std::string_view s) {
+    return s | std::views::transform([](char c) {
+               return std::bit_cast<std::byte>(c);
+           }) |
+           std::ranges::to<std::vector>();
 }
 
 TEST(IStream, ReadStr) {
-    auto s = MockIStream{mk_buf('a', 'b', 'c')};
-    auto str = std::string();
-    s >> str;
-    ASSERT_EQ(str, "abc");
+    auto in = "abc"sv;
+    auto s = MockIStream{mk_buf(in)};
+    auto out = std::string();
+    s >> out;
+    ASSERT_EQ(out, in);
 }
 
 TEST(IStream, ReadStrUnknownSize) {
-    auto s = MockIStream(mk_buf('a', 'b', 'c'), io::UNKNOWN_SIZE);
-    auto str = std::string();
-    s >> str;
-    ASSERT_EQ(str, "abc");
+    auto in = "abc"sv;
+    auto s = MockIStream(mk_buf(in), io::UNKNOWN_SIZE);
+    auto out = std::string();
+    s >> out;
+    ASSERT_EQ(out, in);
 }
