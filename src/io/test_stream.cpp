@@ -54,8 +54,6 @@ struct MockOStream final : public io::OStream {
     std::string buf{};
     size_t max_write{std::numeric_limits<size_t>::max()};
 
-    size_t size() override { return io::UNKNOWN_SIZE; }
-
     size_t write(std::span<const std::byte> buf) override {
         if (buf.size() > max_write) buf = buf.subspan(0, max_write);
         auto orig_size = this->buf.size();

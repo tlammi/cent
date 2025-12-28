@@ -63,8 +63,6 @@ static constexpr auto UNKNOWN_SIZE = std::numeric_limits<size_t>::max();
 class OStream {
  public:
     virtual ~OStream() = default;
-    // TODO: Should this be removed?
-    virtual size_t size() = 0;
     virtual size_t write(std::span<const std::byte> buf) = 0;
     template <anyspanlike S>
     size_t write(const S& buf) {
@@ -90,7 +88,7 @@ class OFStream : public OStream {
     explicit OFStream(const char* path);
     explicit OFStream(const std::filesystem::path& path)
         : OFStream(path.c_str()) {}
-    size_t size() override;
+    size_t size();
     size_t write(std::span<const std::byte> buf) override;
 
  private:
@@ -101,7 +99,7 @@ class AtomicOFStream : public AtomicOStream {
  public:
     explicit AtomicOFStream(std::filesystem::path path);
 
-    size_t size() override;
+    size_t size();
     size_t write(std::span<const std::byte> buf) override;
 
     void commit() override;
@@ -115,7 +113,6 @@ class AnyOStream : public OStream {
  public:
     explicit AnyOStream(std::unique_ptr<OStream> impl) noexcept
         : m_impl(std::move(impl)) {}
-    size_t size() override { return m_impl->size(); }
 
     size_t write(std::span<const std::byte> buf) override {
         return m_impl->write(buf);
