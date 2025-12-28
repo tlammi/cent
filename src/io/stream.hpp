@@ -12,7 +12,7 @@
 namespace cent::io {
 namespace detail {
 
-template <character_type C, spanlike<C> S>
+template <class C, class S>
 constexpr auto span_cast(S& s) {
     return std::span(reinterpret_cast<C*>(s.data()), s.size());
 }
@@ -125,6 +125,39 @@ class IStream {
     }
 };
 
+template <class T>
+IStream& operator>>(IStream& is, T& out) {
+    out.clear();
+    if (auto sz = is.size(); sz != UNKNOWN_SIZE) {
+        out.resize(sz);
+        auto span = std::span(out.data(), out.size());
+        while (!span.empty()) {
+            auto count = is.read(span);
+            span = span.subspan(count);
+        }
+    } else {
+        static constexpr auto chunk_size = 1024uz;
+        auto total_read = 0uz;
+        while (true) {
+            auto orig_sz = out.size();
+            out.resize(orig_sz + chunk_size);
+            auto span = std::span(&out[orig_sz], chunk_size);
+            while (true) {
+                auto count = is.read(span);
+                if (!count) {
+                    // eof
+                    out.resize(total_read);
+                    return is;
+                }
+                total_read += count;
+                span = span.subspan(count);
+                if (span.empty()) break;
+            }
+        }
+    }
+    return is;
+}
+
 class IFStream : public IStream {
  public:
     constexpr explicit IFStream(int fd) noexcept : m_fd(fd) {}
@@ -134,5 +167,16 @@ class IFStream : public IStream {
 
  private:
     Fd m_fd;
+};
+
+class AnyIStream : public IStream {
+ public:
+    constexpr explicit AnyIStream(std::unique_ptr<IStream> impl) noexcept
+        : m_impl(std::move(impl)) {}
+    size_t size() override { return m_impl->size(); }
+    size_t read(std::span<std::byte> buf) override { return m_impl->read(buf); }
+
+ private:
+    std::unique_ptr<IStream> m_impl;
 };
 }  // namespace cent::io
