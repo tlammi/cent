@@ -49,3 +49,34 @@ TEST(IStream, ReadStrUnknownSize) {
     s >> out;
     ASSERT_EQ(out, in);
 }
+
+struct MockOStream final : public io::OStream {
+    std::string buf{};
+    size_t max_write{std::numeric_limits<size_t>::max()};
+
+    size_t size() override { return io::UNKNOWN_SIZE; }
+
+    size_t write(std::span<const std::byte> buf) override {
+        if (buf.size() > max_write) buf = buf.subspan(0, max_write);
+        auto orig_size = this->buf.size();
+        this->buf.append_range(buf | std::views::transform([](std::byte b) {
+                                   return std::bit_cast<char>(b);
+                               }));
+        return this->buf.size() - orig_size;
+    }
+};
+
+TEST(OStream, WriteAll) {
+    auto s = MockOStream();
+    auto in = "abc"sv;
+    s << in;
+    ASSERT_EQ(s.buf, in);
+}
+
+TEST(OStream, WriteInParts) {
+    auto s = MockOStream();
+    s.max_write = 2;
+    auto in = "abcdefg"sv;
+    s << in;
+    ASSERT_EQ(s.buf, in);
+}

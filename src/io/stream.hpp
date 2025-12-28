@@ -63,6 +63,7 @@ static constexpr auto UNKNOWN_SIZE = std::numeric_limits<size_t>::max();
 class OStream {
  public:
     virtual ~OStream() = default;
+    // TODO: Should this be removed?
     virtual size_t size() = 0;
     virtual size_t write(std::span<const std::byte> buf) = 0;
     template <anyspanlike S>
@@ -70,6 +71,16 @@ class OStream {
         return write(detail::span_cast<const std::byte>(buf));
     }
 };
+
+template <class T>
+OStream& operator<<(OStream& os, T&& t) {
+    auto span = std::span(std::forward<T>(t));
+    while (!span.empty()) {
+        auto count = os.write(span);
+        span = span.subspan(count);
+    }
+    return os;
+}
 
 class AtomicOStream : public OStream, public Atomic {};
 
