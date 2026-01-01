@@ -26,9 +26,6 @@ constexpr Meta meta{};
 
 void init(ModuleCtx& ctx) { ctx.add_driver(meta); }
 
-// CENT_MODULE(init);
-
-::cent::ModuleHook cent_module_ptr
-    __attribute__((section("cent_modules"), used)) = &init;
+CENT_MODULE(init);
 
 }  // namespace cent::mods

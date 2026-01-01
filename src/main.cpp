@@ -61,13 +61,7 @@ struct Visitor {
     }
 };
 
-struct MockCtx final : ModuleCtx {
-    void add_driver(const drv::Meta<drv::Mount>& meta) override {}
-};
-
 int run(int argc, char** argv) {
-    auto c = MockCtx();
-    init_modules(c);
     auto args = parse_cli(argc, argv);
     auto visitor = Visitor(&args);
     return std::visit(visitor, args.cmd);
