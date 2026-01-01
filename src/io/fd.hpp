@@ -5,10 +5,20 @@
 
 namespace cent::io {
 
+struct pidfd_t {};
+constexpr pidfd_t pidfd{};
+
 class Fd {
  public:
     constexpr Fd() noexcept = default;
     constexpr explicit Fd(int fd) noexcept : m_fd(fd) {}
+
+    /**
+     * \brief pidfd_open
+     *
+     * pid_t may be int so type cannot be used alone, alas, the tag
+     * */
+    explicit Fd(pidfd_t, pid_t pid);
 
     Fd(const Fd&) = delete;
     Fd& operator=(const Fd&) = delete;
