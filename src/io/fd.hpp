@@ -23,9 +23,9 @@ class Fd {
     Fd(const Fd&) = delete;
     Fd& operator=(const Fd&) = delete;
 
-    Fd(Fd&& other) noexcept : m_fd(std::exchange(other.m_fd, -1)) {}
+    constexpr Fd(Fd&& other) noexcept : m_fd(std::exchange(other.m_fd, -1)) {}
 
-    Fd& operator=(Fd&& other) noexcept {
+    constexpr Fd& operator=(Fd&& other) noexcept {
         std::destroy_at(this);
         std::construct_at(this, std::move(other));
         return *this;
@@ -36,7 +36,7 @@ class Fd {
         ::close(m_fd);
     }
 
-    int fd() const noexcept { return m_fd; }
+    constexpr int fd() const noexcept { return m_fd; }
 
     int release() noexcept { return std::exchange(m_fd, -1); }
 
