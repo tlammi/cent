@@ -42,11 +42,10 @@ deps = [
 srcdir = include_directories('src')
 
 libcent = static_library('cent', srcs, include_directories: srcdir, dependencies: deps)
-libcent_dep = declare_dependency(link_with: libcent, include_directories: srcdir)
-libcent_whole_dep = declare_dependency(link_whole: libcent, include_directories: srcdir)
+libcent_dep = declare_dependency(link_whole: libcent, include_directories: srcdir)
 
 foreach e : execs
-  executable(e[0], e[1], dependencies: deps + libcent_whole_dep)
+  executable(e[0], e[1], dependencies: deps + libcent_dep)
 endforeach
 
 

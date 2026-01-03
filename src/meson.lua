@@ -1,7 +1,7 @@
 SRCS({ "archive.cpp", "cli.cpp", "crypto.cpp", "module.cpp" })
 EXECUTABLE({ "main.cpp", name = "cent" })
 
-TEST({ "test_archive.cpp", suite = "unit" })
+TESTS({ "test_archive.cpp", "test_strg.cpp", suite = "unit" })
 
 INCLUDE("dist")
 INCLUDE("io")

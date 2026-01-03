@@ -1,7 +1,8 @@
 #include "error.hpp"
 #include "module.hpp"
+#include "sqlite.hpp"
 
-namespace cent::mods::strg {
+namespace cent::mods::strg::sqlite {
 namespace {
 
 class Impl final : public component::Storage {
@@ -57,4 +58,4 @@ constexpr Meta meta{};
 void init(::cent::ModuleCtx& ctx) { ctx.add_component(meta); }
 }  // namespace
 CENT_MODULE(init);
-}  // namespace cent::mods::strg
+}  // namespace cent::mods::strg::sqlite

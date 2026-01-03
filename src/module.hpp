@@ -16,12 +16,11 @@
 namespace cent {
 class ModuleCtx {
  public:
+    virtual void add_component(const component::Meta<component::Mount>& meta) {}
     virtual void add_component(
-        const component::Meta<component::Mount>& meta) = 0;
-    virtual void add_component(
-        const component::Meta<component::Storage>& meta) = 0;
+        const component::Meta<component::Storage>& meta) {}
 
-    virtual void add_aux_command(const component::AuxCmd& cmd) = 0;
+    virtual void add_aux_command(const component::AuxCmd& cmd) {}
 
  protected:
     ~ModuleCtx() = default;
