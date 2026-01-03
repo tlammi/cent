@@ -43,10 +43,10 @@ srcdir = include_directories('src')
 
 libcent = static_library('cent', srcs, include_directories: srcdir, dependencies: deps)
 libcent_dep = declare_dependency(link_with: libcent, include_directories: srcdir)
+libcent_whole_dep = declare_dependency(link_whole: libcent, include_directories: srcdir)
 
-objs = libcent.extract_all_objects()
 foreach e : execs
-  executable(e[0], e[1], objects: objs, include_directories: srcdir, dependencies: deps)
+  executable(e[0], e[1], dependencies: deps + libcent_whole_dep)
 endforeach
 
 

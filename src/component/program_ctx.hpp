@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cent::drv {
+namespace cent::component {
 
 /**
  * \brief Read only view of the program context
@@ -18,8 +18,8 @@ class ProgramCtxView {
  * Used by the drivers to get information about how cent is executed and to
  * access different "services".
  * */
-class ProgramCtx : public ProgramCtxView {
+class ProgramCtx {
  public:
 };
 
-}  // namespace cent::drv
+}  // namespace cent::component

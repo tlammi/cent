@@ -3,9 +3,9 @@
 #include <memory>
 #include <string_view>
 
-#include "drv/program_ctx.hpp"
+#include "component/program_ctx.hpp"
 
-namespace cent::drv {
+namespace cent::component {
 
 /**
  * \brief Provides information and constructs a driver
@@ -32,4 +32,4 @@ class Meta {
      * */
     virtual std::unique_ptr<T> create() const = 0;
 };
-}  // namespace cent::drv
+}  // namespace cent::component

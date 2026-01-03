@@ -1,6 +1,6 @@
 #pragma once
 
-namespace cent::drv {
+namespace cent::component {
 
 /**
  * \brief Mount driver
@@ -11,4 +11,4 @@ class Mount {
  public:
     virtual ~Mount() = default;
 };
-}  // namespace cent::drv
+}  // namespace cent::component
