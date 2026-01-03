@@ -3,6 +3,7 @@
 #include "component/auxcmd.hpp"
 #include "component/meta.hpp"
 #include "component/mount.hpp"
+#include "component/storage.hpp"
 
 #define CENT_MODULE_SECTION    cent_modules
 #define CENT_STRINGIFY_IMPL(s) #s
@@ -15,7 +16,10 @@
 namespace cent {
 class ModuleCtx {
  public:
-    virtual void add_driver(const component::Meta<component::Mount>& meta) = 0;
+    virtual void add_component(
+        const component::Meta<component::Mount>& meta) = 0;
+    virtual void add_component(
+        const component::Meta<component::Storage>& meta) = 0;
 
     virtual void add_aux_command(const component::AuxCmd& cmd) = 0;
 

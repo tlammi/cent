@@ -26,7 +26,7 @@ constexpr Meta meta{};
 
 }  // namespace
 
-void init(ModuleCtx& ctx) { ctx.add_driver(meta); }
+void init(ModuleCtx& ctx) { ctx.add_component(meta); }
 
 CENT_MODULE(init);
 
