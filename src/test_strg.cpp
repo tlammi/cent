@@ -48,6 +48,12 @@ TEST_P(StrgTest, NoManifests) {
     ASSERT_TRUE(m.empty());
 }
 
+TEST_P(StrgTest, AddManifest) {
+    storage->manifest_set("foo", "bar");
+    ASSERT_EQ(storage->manifest("foo"), "bar");
+    ASSERT_THAT(storage->manifest_ls(), ::testing::ElementsAre("foo"));
+}
+
 INSTANTIATE_TEST_SUITE_P(AllStorages, StrgTest,
                          testing::ValuesIn(get_storages()),
                          [](const auto& info) {
