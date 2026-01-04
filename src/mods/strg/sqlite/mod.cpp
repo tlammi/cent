@@ -36,8 +36,6 @@ class Impl final : public component::Storage {
 
     std::vector<std::string> layer_ls() override { return {}; }
 
-    void migrate(component::Storage& other) override {}
-
  private:
 };
 

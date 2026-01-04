@@ -77,13 +77,6 @@ class Storage {
      * \brief List layers
      * */
     virtual std::vector<std::string> layer_ls() = 0;
-
-    /**
-     * \brief Migrate from one storage to another
-     *
-     * TODO: Write better spec
-     * */
-    virtual void migrate(Storage& other) = 0;
 };
 
 }  // namespace cent::component
