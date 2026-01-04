@@ -1,7 +1,7 @@
 #pragma once
 
-namespace cent::bin {
+namespace cent {
 
 struct Config {};
 
-}  // namespace cent::bin
+}  // namespace cent

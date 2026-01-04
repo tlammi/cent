@@ -56,7 +56,11 @@ test_kwargs = {
   'unit': {
     'dependencies': [libcent_dep, gtest_dep, gtest_main_dep],
     'cpp_args': ['-include', 'gtest/gtest.h', '-include', 'gmock/gmock.h']
-  }
+  },
+  'component': {
+    'dependencies': [libcent_dep, gtest_dep, gtest_main_dep],
+    'cpp_args': ['-include', 'gtest/gtest.h', '-include', 'gmock/gmock.h']
+  },
 }
 
 test_deps = [libcent_dep, dependency('gtest'), dependency('gtest_main')]
