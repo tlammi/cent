@@ -6,7 +6,6 @@
 
 #include "cli.hpp"
 #include "dist/client.hpp"
-#include "module.hpp"
 #include "name.hpp"
 #include "strg/storage.hpp"
 
