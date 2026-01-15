@@ -1,4 +1,4 @@
-SRCS({ "archive.cpp", "cli.cpp", "crypto.cpp" })
+SRCS({ "archive.cpp", "cli.cpp" })
 EXECUTABLE({ "main.cpp", name = "cent" })
 
 TEST({ "test_archive.cpp", suite = "unit" })
@@ -11,4 +11,5 @@ INCLUDE("process")
 INCLUDE("strg")
 INCLUDE("util")
 INCLUDE("logs")
+INCLUDE("crypto")
 --INCLUDE("mods")
