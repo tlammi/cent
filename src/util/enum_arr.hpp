@@ -3,7 +3,7 @@
 #include <array>
 #include <magic_enum/magic_enum.hpp>
 
-#include "concepts.hpp"
+#include "cent/concepts.hpp"
 
 namespace cent::util {
 
